@@ -34,7 +34,7 @@
     - 我的帳號 (登出登入)
     - 我的行程 (新增行程/歷史記錄)
     - 旅遊分享 (暫無討論)
-<br>![圖片載入失敗](/img/trip-planning-1.jpg "")
+<br>![圖片載入失敗](img/trip-planning-1.jpg "")
 <br>
 
 - 行程規劃: (使用過程可多個帳號共同編輯)
@@ -44,8 +44,8 @@
 <br>→ 加入行程
 <br>→ 地圖更新行程路徑, 下方更新當日行程
 <br>→ 點搜尋飯店 (地圖上顯示 + 清單顯示 + 標註價位, 可跳到訂房網站)
-<br>![圖片載入失敗](/img/trip-planning-2.jpg "")
-<br>![圖片載入失敗](/img/trip-planning-3.jpg "")
+<br>![圖片載入失敗](img/trip-planning-2.jpg "")
+<br>![圖片載入失敗](img/trip-planning-3.jpg "")
 <br>
 
 - 搜尋功能整理: 
@@ -56,7 +56,7 @@
     - 加入行程 (輸入 停留時間 / 備註 / 新增花費(分帳功能)) 
     - 導航 (跳至 google map app 的路線規劃)
     - 訂房 (搜尋飯店才有, 跳至訂房網站)
-<br>![圖片載入失敗](/img/trip-planning-4.jpg "")
+<br>![圖片載入失敗](img/trip-planning-4.jpg "")
 <br>
 
 - 其他備註: 
