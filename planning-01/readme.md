@@ -88,7 +88,7 @@
     - (圖片待補充)
 
 - 框線圖範例 (功能、大略UI)
-    - (圖片待補充)
+<br>![圖片載入失敗](img/architecture-diagram.jpg "")
 	
 - 團隊合作
     - Branching Model: Git
