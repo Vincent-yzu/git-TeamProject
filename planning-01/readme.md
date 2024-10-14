@@ -85,10 +85,10 @@
             - 所有景點：景點名稱、位置、類型
 
 - 核心功能架構圖 ([目前架構](https://app.eraser.io/workspace/Cp7kn6PmNW3jZoLf93oS))
-    - (圖片待補充)
+<br>![圖片載入失敗](img/architecture-diagram.jpg "")
 
 - 框線圖範例 (功能、大略UI)
-<br>![圖片載入失敗](img/architecture-diagram.jpg "")
+    - (圖片待補充)
 	
 - 團隊合作
     - Branching Model: Git
