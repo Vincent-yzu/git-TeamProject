@@ -88,8 +88,17 @@
 <br>![圖片載入失敗](img/architecture-diagram.jpg "")
 
 - 框線圖範例 (功能、大略UI)
-    - (圖片待補充)
-    - 可以至 [Figma Prototype](hhttps://www.figma.com/proto/N92rOqL4BzICTsdclVLZi8/Cloud-Group-14?page-id=0%3A1&node-id=3-345&node-type=frame&viewport=-3541%2C-635%2C0.67&t=Fsw1N5Ns6zwkqEJR-1&scaling=contain&content-scaling=fixed&starting-point-node-id=3%3A345) 實際操作	
+    - 查看已經安排行程的介面（假設裡面已經有一個行程）：
+      <br>![圖片載入失敗](img/編輯行程_1.png "")
+    - 點選新增景點按鈕後，進入查詢畫面：
+      <br>![圖片載入失敗](img/編輯行程_2.png "")
+    - 點選有興趣的景點，出現介紹景點的視窗:
+      <br>![圖片載入失敗](img/編輯行程_3.png "")
+    - 點選加入行程後新的景點會出現在已經安排行程的介面，並且地圖上會呈現路徑圖:
+      <br>![圖片載入失敗](img/編輯行程_4.png "")
+    - 可以查看所有已建立之個人及群組行程的地方，也可點選建立新行程的按鈕進入設定行程的頁面：
+      <br>![圖片載入失敗](img/編輯行程_5.png "")
+    - 可以至 [Figma Prototype](https://www.figma.com/proto/N92rOqL4BzICTsdclVLZi8/Cloud-Group-14?page-id=0%3A1&node-id=3-345&node-type=frame&viewport=-3541%2C-635%2C0.67&t=Fsw1N5Ns6zwkqEJR-1&scaling=contain&content-scaling=fixed&starting-point-node-id=3%3A345) 實際操作	
 - 團隊合作
     - Branching Model: Git
     - 如何用 Trello 專案管理: 三個區塊 (ToDo、Doing、Done)
