@@ -89,7 +89,7 @@
 
 - 框線圖範例 (功能、大略UI)
     - (圖片待補充)
-    - 可以至 [Figma Prototype](https://www.figma.com/proto/N92rOqL4BzICTsdclVLZi8/Cloud-Group-14?page-id=0%3A1&node-id=51-1568&node-type=frame&viewport=-3541%2C-635%2C0.67&t=Fsw1N5Ns6zwkqEJR-1&scaling=contain&content-scaling=fixed&starting-point-node-id=3%3A345) 操作	
+    - 可以至 [Figma Prototype](hhttps://www.figma.com/proto/N92rOqL4BzICTsdclVLZi8/Cloud-Group-14?page-id=0%3A1&node-id=3-345&node-type=frame&viewport=-3541%2C-635%2C0.67&t=Fsw1N5Ns6zwkqEJR-1&scaling=contain&content-scaling=fixed&starting-point-node-id=3%3A345) 實際操作	
 - 團隊合作
     - Branching Model: Git
     - 如何用 Trello 專案管理: 三個區塊 (ToDo、Doing、Done)
