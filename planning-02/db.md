@@ -102,7 +102,8 @@ model Comments {  // 留言區  *新增
 註: 大致看起來應該是蠻完整的了，但感覺要有一個使用者正在編輯畫面的boolean，來判斷其他人當下可不可以編輯，但目前不太確定擺在哪裡會比較好，可以先不加 ，之後討論。
 
 1.1 prisma schema
-<br>![圖片載入失敗](img/prismaSchema.png "")
+<br>![image](https://github.com/user-attachments/assets/26f85d01-3a94-434e-ac3a-172cdfb3e704)
 
 1.2 raw SQL schema
-<br>![圖片載入失敗](img/rawSQLSchema.png "")
+<br>![image](https://github.com/user-attachments/assets/0fb572aa-12c9-4210-81c0-9bc65793c9eb)
+
