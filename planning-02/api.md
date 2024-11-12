@@ -1,7 +1,12 @@
 # API
-- 以下是 api endpoints 的草稿，細節到時候再說
-- 先跑起來，再做redis (cache layer)
-- 共編的項目卡片 (行程順序、備註文字)
+- 討論備註: 
+  - 以下是 api endpoints 的草稿，細節到時候再說
+  - 先跑起來，再做 redis (cache layer)
+  - 共編的項目卡片 (行程順序、備註文字)
+  - 目前待解決: 如何偵測正在 race condition
+  - 稍微了解一下 Prisma Models
+  - 缺的 note、景點資料庫、權限(這個行程的user, 每個user的權限)、留言 部分已補上
+
 
 2. Create Trip
 ```javascript
