@@ -110,10 +110,9 @@ model Comments {  // 留言區  *新增
 
 
 # API
-以下是 api endpoints 的草稿，細節到時候再說
-有少 api endpoints 再說一聲
-先讓他跑起來，再做redis(cache layer)
-共編的項目有啥？卡片順序，文字
+- 以下是 api endpoints 的草稿，細節到時候再說
+- 先跑起來，再做redis (cache layer)
+- 共編的項目卡片 (行程順序、備註文字)
 
 2. Create Trip
 ```javascript
