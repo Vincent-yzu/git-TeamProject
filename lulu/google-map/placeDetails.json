@@ -1,0 +1,463 @@
+{
+  "types": [
+    "tourist_attraction",
+    "point_of_interest",
+    "establishment"
+  ],
+  "addressComponents": [
+    {
+      "types": [
+        "street_number"
+      ],
+      "longText": "9",
+      "shortText": "9",
+      "languageCode": "en-US"
+    },
+    {
+      "types": [
+        "route"
+      ],
+      "longText": "Lane 50, Hanzhong Street",
+      "shortText": "Lane 50, Hanzhong St",
+      "languageCode": "en"
+    },
+    {
+      "types": [
+        "neighborhood",
+        "political"
+      ],
+      "longText": "Ximen",
+      "shortText": "Ximen",
+      "languageCode": "en"
+    },
+    {
+      "types": [
+        "administrative_area_level_3",
+        "political"
+      ],
+      "longText": "萬壽里",
+      "shortText": "萬壽里",
+      "languageCode": "zh-TW"
+    },
+    {
+      "types": [
+        "administrative_area_level_2",
+        "political"
+      ],
+      "longText": "Wanhua District",
+      "shortText": "Wanhua District",
+      "languageCode": "en"
+    },
+    {
+      "types": [
+        "administrative_area_level_1",
+        "political"
+      ],
+      "longText": "Taipei City",
+      "shortText": "Taipei City",
+      "languageCode": "en"
+    },
+    {
+      "types": [
+        "country",
+        "political"
+      ],
+      "longText": "Taiwan",
+      "shortText": "TW",
+      "languageCode": "en"
+    },
+    {
+      "types": [
+        "postal_code"
+      ],
+      "longText": "108",
+      "shortText": "108",
+      "languageCode": "en-US"
+    }
+  ],
+  "attributions": [],
+  "currentSecondaryOpeningHours": [],
+  "regularSecondaryOpeningHours": [],
+  "reviews": [
+    {
+      "name": "places/ChIJu8BdQQmpQjQRyAwMGhhFVD8/reviews/ChZDSUhNMG9nS0VJQ0FnSUNQdXFxR2N3EAE",
+      "relativePublishTimeDescription": "in the last week",
+      "rating": 5,
+      "text": {
+        "text": "A vibrant hub filled with colorful shops, delicious street food, and lively entertainment, making it a must-visit destination. Don't miss the chance to enjoy refreshing milk tea and explore Pop Mart for unique collectibles. With its pedestrian-friendly streets, it's perfect for a fun evening stroll.",
+        "languageCode": "en"
+      },
+      "originalText": {
+        "text": "A vibrant hub filled with colorful shops, delicious street food, and lively entertainment, making it a must-visit destination. Don't miss the chance to enjoy refreshing milk tea and explore Pop Mart for unique collectibles. With its pedestrian-friendly streets, it's perfect for a fun evening stroll.",
+        "languageCode": "en"
+      },
+      "authorAttribution": {
+        "displayName": "Emi",
+        "uri": "https://www.google.com/maps/contrib/106177243458834522393/reviews",
+        "photoUri": "https://lh3.googleusercontent.com/a-/ALV-UjU62h1wZQeE2wF2a0r7NPyl1FERc9Ci0sNLwvHfPxpyVJJaAnTA7g=s128-c0x00000000-cc-rp-mo-ba3"
+      },
+      "publishTime": {
+        "seconds": "1732370988",
+        "nanos": 816656000
+      }
+    },
+    {
+      "name": "places/ChIJu8BdQQmpQjQRyAwMGhhFVD8/reviews/ChdDSUhNMG9nS0VJQ0FnSUNQNnA2RXBRRRAB",
+      "relativePublishTimeDescription": "in the last week",
+      "rating": 5,
+      "text": {
+        "text": "This vibrant walking district truly comes alive after dark! With a bustling night market atmosphere, the food stalls offer a delicious array of diverse and affordable eats.   From sizzling skewers to fragrant curries, there's something to tempt every palate. Interspersed between the food stalls are a variety of unique shops, perfect for souvenir hunting or finding a special treasure. Highly recommend exploring this lively district for a taste of local culture and a memorable evening.",
+        "languageCode": "en"
+      },
+      "originalText": {
+        "text": "This vibrant walking district truly comes alive after dark! With a bustling night market atmosphere, the food stalls offer a delicious array of diverse and affordable eats.   From sizzling skewers to fragrant curries, there's something to tempt every palate. Interspersed between the food stalls are a variety of unique shops, perfect for souvenir hunting or finding a special treasure. Highly recommend exploring this lively district for a taste of local culture and a memorable evening.",
+        "languageCode": "en"
+      },
+      "authorAttribution": {
+        "displayName": "Duncan Waples",
+        "uri": "https://www.google.com/maps/contrib/113329235771320667468/reviews",
+        "photoUri": "https://lh3.googleusercontent.com/a-/ALV-UjUFBqoJ_q84Dh9-QZm2SnWLV1nVpVdy3E2W_bHABP0MagaHL4jR7g=s128-c0x00000000-cc-rp-mo-ba3"
+      },
+      "publishTime": {
+        "seconds": "1732353796",
+        "nanos": 926729000
+      }
+    },
+    {
+      "name": "places/ChIJu8BdQQmpQjQRyAwMGhhFVD8/reviews/ChZDSUhNMG9nS0VJQ0FnSUNIZ282TVhnEAE",
+      "relativePublishTimeDescription": "2 months ago",
+      "rating": 5,
+      "text": {
+        "text": "walked here in the early evening after dinner. lots to do here and lots of shops of course! i bought some sugar apples and other fruits for dessert. later in the evening, the performers come out and is worth the watch! don’t forget to tip!",
+        "languageCode": "en"
+      },
+      "originalText": {
+        "text": "walked here in the early evening after dinner. lots to do here and lots of shops of course! i bought some sugar apples and other fruits for dessert. later in the evening, the performers come out and is worth the watch! don’t forget to tip!",
+        "languageCode": "en"
+      },
+      "authorAttribution": {
+        "displayName": "Jonathan Agoot",
+        "uri": "https://www.google.com/maps/contrib/115547429332987787090/reviews",
+        "photoUri": "https://lh3.googleusercontent.com/a-/ALV-UjVoeJnmYopMvF_ar2GpN_7GaEsFrOmNnTerrG0dBWgWrYbxMsUpdQ=s128-c0x00000000-cc-rp-mo-ba6"
+      },
+      "publishTime": {
+        "seconds": "1725299537",
+        "nanos": 836249000
+      }
+    },
+    {
+      "name": "places/ChIJu8BdQQmpQjQRyAwMGhhFVD8/reviews/ChdDSUhNMG9nS0VJQ0FnSUQzdGQyTjhRRRAB",
+      "relativePublishTimeDescription": "a week ago",
+      "rating": 3,
+      "text": {
+        "text": "Food standards in ximending have dropped so much, so disappointing. The deep fried chicken and shaved ice are not good and it is getting more and more pricey.\nJust a reminder that the fruits stalls are selling by weight (per 100g) and it can go up to a big amount so be careful, there are many other fruit options available that are more economic.\nBut it is still bustling with tourists and worth a visit if you’re visiting Taipei for the first time.",
+        "languageCode": "en"
+      },
+      "originalText": {
+        "text": "Food standards in ximending have dropped so much, so disappointing. The deep fried chicken and shaved ice are not good and it is getting more and more pricey.\nJust a reminder that the fruits stalls are selling by weight (per 100g) and it can go up to a big amount so be careful, there are many other fruit options available that are more economic.\nBut it is still bustling with tourists and worth a visit if you’re visiting Taipei for the first time.",
+        "languageCode": "en"
+      },
+      "authorAttribution": {
+        "displayName": "Lee Jia Sheng",
+        "uri": "https://www.google.com/maps/contrib/118317192168151606174/reviews",
+        "photoUri": "https://lh3.googleusercontent.com/a-/ALV-UjWJ2pWCBzvgeAvyH7gAlChZZy5ry-jeEhk4FeSBCOBrhPM6x3pA=s128-c0x00000000-cc-rp-mo-ba4"
+      },
+      "publishTime": {
+        "seconds": "1731838020",
+        "nanos": 837464000
+      }
+    },
+    {
+      "name": "places/ChIJu8BdQQmpQjQRyAwMGhhFVD8/reviews/ChZDSUhNMG9nS0VJQ0FnSUMzcjd1TUxBEAE",
+      "relativePublishTimeDescription": "2 weeks ago",
+      "rating": 5,
+      "text": {
+        "text": "I visited here on a weekend evening. It was very crowded and lively, with many people, street performers, and shops. It’s a great place to explore.",
+        "languageCode": "en"
+      },
+      "originalText": {
+        "text": "I visited here on a weekend evening. It was very crowded and lively, with many people, street performers, and shops. It’s a great place to explore.",
+        "languageCode": "en"
+      },
+      "authorAttribution": {
+        "displayName": "Melvin J.",
+        "uri": "https://www.google.com/maps/contrib/110204106470894976302/reviews",
+        "photoUri": "https://lh3.googleusercontent.com/a-/ALV-UjVHKKE4XHFnVHRDNrO2ea7V_nwc_rfG1rpKkg5Zp1FmmX_KPEPR=s128-c0x00000000-cc-rp-mo-ba6"
+      },
+      "publishTime": {
+        "seconds": "1731418122",
+        "nanos": 802098000
+      }
+    }
+  ],
+  "photos": [
+    {
+      "authorAttributions": [
+        {
+          "displayName": "林景華",
+          "uri": "https://maps.google.com/maps/contrib/100141161477537645588",
+          "photoUri": "https://lh3.googleusercontent.com/a/ACg8ocLrPuw-n_5zUjXWBXtiyBmL7y8au2kIWWfsLVZ6MursU1G_cg=s100-p-k-no-mo"
+        }
+      ],
+      "name": "places/ChIJu8BdQQmpQjQRyAwMGhhFVD8/photos/AdDdOWreopJrBN14YsKZw6af8W5Ckn_IaHY2KXnkuRXsansub8PWFK95bVaopKr4rqq4Qo0DBw57MCLtjLCGd1h6Uc-BJn-h_FafTbDORLezvbfudKc-m7hNqRgWhSjhFDspTh3mF07bS6SjA17oSviNBqA5i89RHP1MA4_V",
+      "widthPx": 4800,
+      "heightPx": 2850
+    },
+    {
+      "authorAttributions": [
+        {
+          "displayName": "阿爾特",
+          "uri": "https://maps.google.com/maps/contrib/107125095530668474073",
+          "photoUri": "https://lh3.googleusercontent.com/a-/ALV-UjWBkaNzmQrTfqx2nRr4Rt9kO3jzb8dCpq-ITfEf9tgx1pGrX12BDw=s100-p-k-no-mo"
+        }
+      ],
+      "name": "places/ChIJu8BdQQmpQjQRyAwMGhhFVD8/photos/AdDdOWowdcV9c9jWu0cknPBQMF4cGSPzPE3fhRAZEoi_IyK2IkHlnRx-z9O056g1wfjosI_QQVijLvw_brZghVylBDBenQv0Vxx1X_a9BNCW1V4C6zMcAmlMNtsPFHcGhGjY_9Oo2sUZfYdjMrHr6-1RbvSf-qg-fHCU93Qk",
+      "widthPx": 3880,
+      "heightPx": 2910
+    },
+    {
+      "authorAttributions": [
+        {
+          "displayName": "洪邦定",
+          "uri": "https://maps.google.com/maps/contrib/106155742109538345316",
+          "photoUri": "https://lh3.googleusercontent.com/a-/ALV-UjU5_mMhCBbwLJlxTEHZqOQb1b2y_dtrc5l9nWRx8Vxoz-Nsz3kj_Q=s100-p-k-no-mo"
+        }
+      ],
+      "name": "places/ChIJu8BdQQmpQjQRyAwMGhhFVD8/photos/AdDdOWpkGwYSfp6Ar-y1B6I_dh3S27k0o8Fko6XX0XF5Yhh7Sj1XuQEQvT6matN1mQm8SWqQUxvv7WKTwbTntnwiaeFZYrAiC2eHvrylmrDOun3fUhGOL9mQCF4ZL_C6PaPgZdvKlpn0utTTs-0vS7LRxMVE7Zn-tuY5eabU",
+      "widthPx": 3072,
+      "heightPx": 2304
+    },
+    {
+      "authorAttributions": [
+        {
+          "displayName": "Lisa CHEN",
+          "uri": "https://maps.google.com/maps/contrib/101658010026187299441",
+          "photoUri": "https://lh3.googleusercontent.com/a-/ALV-UjUFwN2IciBQoxLVWdzvJxxUD2IMk7j4_PytR0kuvy-j_vlTfTKb=s100-p-k-no-mo"
+        }
+      ],
+      "name": "places/ChIJu8BdQQmpQjQRyAwMGhhFVD8/photos/AdDdOWqYpszzin1By_HwUkWzh_4JDnuK9JXARogCgLgRevRdFWEvHC9Op_K--PpBp0Tws2jG6jYV9Cz7JoLzyhSQA9SQZq7I2JdCFNcSVwd8goVsWpkVH81R76UYaeAmB87Mi9JBOBvny6Yz9niaQxX0eqP6HmyKx7w9Hv-d",
+      "widthPx": 4624,
+      "heightPx": 3468
+    },
+    {
+      "authorAttributions": [
+        {
+          "displayName": "Wymen Wong",
+          "uri": "https://maps.google.com/maps/contrib/107487342332110539120",
+          "photoUri": "https://lh3.googleusercontent.com/a/ACg8ocIHFZIyVHsKFSjD1ovbhB5P7jYzUtde4N8Uuq6hPAejCjJjjA=s100-p-k-no-mo"
+        }
+      ],
+      "name": "places/ChIJu8BdQQmpQjQRyAwMGhhFVD8/photos/AdDdOWpnCapGWgD0AzYA1Uig2FPu6R_QwhN38HGFb4JH6yRMso5cV9cGjhrNlFf6NdzQ4-V50nJm6kn_cjzip0lehSZY2Y_m3c0gXqxcawBUGSiYDR-hI_Kdsc_PWbMNHwWUMoaR1Dncjx9FQ67hQfs37aCkOB-RwkrVM5KR",
+      "widthPx": 4032,
+      "heightPx": 3024
+    },
+    {
+      "authorAttributions": [
+        {
+          "displayName": "David T",
+          "uri": "https://maps.google.com/maps/contrib/116492101983454687974",
+          "photoUri": "https://lh3.googleusercontent.com/a-/ALV-UjVrh7j1T2QdCOqX3k5q0L9dmSUH10WZQ9FTb2fwYzgTcTsfbAx6SQ=s100-p-k-no-mo"
+        }
+      ],
+      "name": "places/ChIJu8BdQQmpQjQRyAwMGhhFVD8/photos/AdDdOWrj4vVAl2vntYN7ovOEzPwc4WDy14c54BW3_K5UD80CFGxlmbyZ0H6kdantlBdgl4NJ7XTddtXxi4fR5bwfar9Kw6iwUJSxDOIKRwE2WaiWjZGfIGh-JyIm0bAP3h9hulp_598ZqqKd2-8qm5BCFYj0R4vQ14OuK-VS",
+      "widthPx": 4032,
+      "heightPx": 3024
+    },
+    {
+      "authorAttributions": [
+        {
+          "displayName": "陳福建",
+          "uri": "https://maps.google.com/maps/contrib/101134476367778160850",
+          "photoUri": "https://lh3.googleusercontent.com/a/ACg8ocI65pPWXLaMVZKlFusVEiD5utgVF-EaoXZQLyYAgHJ_shmT5A=s100-p-k-no-mo"
+        }
+      ],
+      "name": "places/ChIJu8BdQQmpQjQRyAwMGhhFVD8/photos/AdDdOWr8PdxIuKD6hAJwJFcXVxJNsL23-1L7HzXzP8uaZnXDMwn-66eut1Wz_2-Iy3IhgEGDEVFd9lMJ1T3jLHUp4ZhqwBXKA-5NaQP5TSos4bOfVHLsaj6yuePty1lqCz6l2E_6OCk-JkgyXZAtqqC_3FEY3rvFxPGiCqTh",
+      "widthPx": 3742,
+      "heightPx": 2742
+    },
+    {
+      "authorAttributions": [
+        {
+          "displayName": "宜蘭囝仔",
+          "uri": "https://maps.google.com/maps/contrib/117458031178949225120",
+          "photoUri": "https://lh3.googleusercontent.com/a-/ALV-UjVyDxb4WR2W-8q5Kz5vRKdJn9MS3jFy3WjOrICgQGXe2ZwIyPUD=s100-p-k-no-mo"
+        }
+      ],
+      "name": "places/ChIJu8BdQQmpQjQRyAwMGhhFVD8/photos/AdDdOWqZoT64PM1f4c68xdhtM5UmYIczQoLxUJ-AM54COnnr-O1CWllxnwfHrXNWArA_UHWdo2lmZ4X6wzdEsAZNyjAsTUnnwWJFC1Q7mnrRrDKZ7wJScigeGnSCDbTAStTg44P1BsFmI7DRb8zNpUjIeaUz1rLoTpHmV_mp",
+      "widthPx": 3468,
+      "heightPx": 4624
+    },
+    {
+      "authorAttributions": [
+        {
+          "displayName": "Formosa",
+          "uri": "https://maps.google.com/maps/contrib/113090850023731042679",
+          "photoUri": "https://lh3.googleusercontent.com/a-/ALV-UjWfoHZd_yKzNNMU1LZoX4dyiTyn7ADr5fMdB09g2CtzMGQT1JXxKQ=s100-p-k-no-mo"
+        }
+      ],
+      "name": "places/ChIJu8BdQQmpQjQRyAwMGhhFVD8/photos/AdDdOWo52IAPprusIVmERwy9zR9M8ZytqFtk_QL20xjkixiZTLUc1XYCddRLzF6VgmtgxreYEnXYbCRWK2gLjxmnMkgFV6xue6KWcKHq1FNAH5JM7gobRqY92XjmQCY2pDzKaQjWlBcDRCgLHwJ6YSBFvId5xLObe6eahJc6",
+      "widthPx": 3024,
+      "heightPx": 4032
+    },
+    {
+      "authorAttributions": [
+        {
+          "displayName": "c c",
+          "uri": "https://maps.google.com/maps/contrib/116313595472103818627",
+          "photoUri": "https://lh3.googleusercontent.com/a-/ALV-UjU95aGrt-fMICDjjBnxMgYQTXpHnjI652LAeap7inDg-vxmJ1LvIA=s100-p-k-no-mo"
+        }
+      ],
+      "name": "places/ChIJu8BdQQmpQjQRyAwMGhhFVD8/photos/AdDdOWrfp1QzN5V7vBfRlT4XK-EDy7LhLmHWATl7qwLYFcOX-RoH5xGh-zCnIfGkpEE-zxSAujH5cA12BXn9NItSplUqOGqHuARxdKhI3Sgu6k4G9KRGln5Mdv0OWkyL3gFzYLrW-WqwIRTyTXF_Fk9SZLCFh7Ov7CJwaus2",
+      "widthPx": 4000,
+      "heightPx": 3000
+    }
+  ],
+  "subDestinations": [],
+  "containingPlaces": [],
+  "name": "places/ChIJu8BdQQmpQjQRyAwMGhhFVD8",
+  "id": "ChIJu8BdQQmpQjQRyAwMGhhFVD8",
+  "nationalPhoneNumber": "02 2375 4205",
+  "internationalPhoneNumber": "+886 2 2375 4205",
+  "formattedAddress": "No. 9, Lane 50, Hanzhong St, Wanhua District, Taipei City, Taiwan 108",
+  "plusCode": {
+    "globalCode": "7QQ32GV4+JW",
+    "compoundCode": "2GV4+JW Taiwan, 台北市萬華區萬壽里"
+  },
+  "location": {
+    "latitude": 25.044043,
+    "longitude": 121.5073209
+  },
+  "viewport": {
+    "low": {
+      "latitude": 25.042700719708495,
+      "longitude": 121.50597386970851
+    },
+    "high": {
+      "latitude": 25.0453986802915,
+      "longitude": 121.50867183029149
+    }
+  },
+  "rating": 4.4,
+  "googleMapsUri": "https://maps.google.com/?cid=4563348292251684040",
+  "websiteUri": "",
+  "regularOpeningHours": {
+    "periods": [
+      {
+        "open": {
+          "truncated": false,
+          "date": null,
+          "day": 0,
+          "_day": "day",
+          "hour": 0,
+          "_hour": "hour",
+          "minute": 0,
+          "_minute": "minute"
+        },
+        "close": null
+      }
+    ],
+    "weekdayDescriptions": [
+      "Monday: Open 24 hours",
+      "Tuesday: Open 24 hours",
+      "Wednesday: Open 24 hours",
+      "Thursday: Open 24 hours",
+      "Friday: Open 24 hours",
+      "Saturday: Open 24 hours",
+      "Sunday: Open 24 hours"
+    ],
+    "specialDays": [],
+    "secondaryHoursType": "SECONDARY_HOURS_TYPE_UNSPECIFIED",
+    "nextOpenTime": null,
+    "nextCloseTime": null,
+    "openNow": true,
+    "_openNow": "openNow"
+  },
+  "adrFormatAddress": "<span class=\"street-address\">No. 9, Lane 50, Hanzhong St, 萬壽里</span> <span class=\"locality\">Wanhua District</span>, <span class=\"region\">Taipei City</span>, <span class=\"country-name\">Taiwan</span> <span class=\"postal-code\">108</span>",
+  "businessStatus": "OPERATIONAL",
+  "priceLevel": "PRICE_LEVEL_UNSPECIFIED",
+  "iconMaskBaseUri": "https://maps.gstatic.com/mapfiles/place_api/icons/v2/generic_pinlet",
+  "iconBackgroundColor": "#13B5C7",
+  "displayName": {
+    "text": "Ximending Walking District",
+    "languageCode": "en"
+  },
+  "primaryTypeDisplayName": {
+    "text": "Tourist Attraction",
+    "languageCode": "en-US"
+  },
+  "currentOpeningHours": {
+    "periods": [
+      {
+        "open": {
+          "truncated": true,
+          "date": {
+            "year": 2024,
+            "month": 11,
+            "day": 28
+          },
+          "day": 4,
+          "_day": "day",
+          "hour": 0,
+          "_hour": "hour",
+          "minute": 0,
+          "_minute": "minute"
+        },
+        "close": {
+          "truncated": true,
+          "date": {
+            "year": 2024,
+            "month": 12,
+            "day": 4
+          },
+          "day": 3,
+          "_day": "day",
+          "hour": 23,
+          "_hour": "hour",
+          "minute": 59,
+          "_minute": "minute"
+        }
+      }
+    ],
+    "weekdayDescriptions": [
+      "Monday: Open 24 hours",
+      "Tuesday: Open 24 hours",
+      "Wednesday: Open 24 hours",
+      "Thursday: Open 24 hours",
+      "Friday: Open 24 hours",
+      "Saturday: Open 24 hours",
+      "Sunday: Open 24 hours"
+    ],
+    "specialDays": [],
+    "secondaryHoursType": "SECONDARY_HOURS_TYPE_UNSPECIFIED",
+    "nextOpenTime": null,
+    "nextCloseTime": null,
+    "openNow": true,
+    "_openNow": "openNow"
+  },
+  "primaryType": "tourist_attraction",
+  "shortFormattedAddress": "No. 9, Lane 50, Hanzhong St",
+  "editorialSummary": {
+    "text": "Bustling shopping & recreation district known for its many restaurants, bars, boutiques & theaters.",
+    "languageCode": "en"
+  },
+  "paymentOptions": null,
+  "parkingOptions": null,
+  "fuelOptions": null,
+  "evChargeOptions": null,
+  "generativeSummary": null,
+  "areaSummary": null,
+  "priceRange": null,
+  "utcOffsetMinutes": 480,
+  "_utcOffsetMinutes": "utcOffsetMinutes",
+  "userRatingCount": 12566,
+  "_userRatingCount": "userRatingCount",
+  "goodForChildren": true,
+  "_goodForChildren": "goodForChildren",
+  "accessibilityOptions": {
+    "wheelchairAccessibleEntrance": true,
+    "_wheelchairAccessibleEntrance": "wheelchairAccessibleEntrance"
+  },
+  "_accessibilityOptions": "accessibilityOptions",
+  "pureServiceAreaBusiness": false,
+  "_pureServiceAreaBusiness": "pureServiceAreaBusiness"
+}

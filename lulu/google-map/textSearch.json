@@ -1,0 +1,805 @@
+{
+  "places": [
+    {
+      "types": [
+        "tourist_attraction",
+        "historical_landmark",
+        "historical_place",
+        "museum",
+        "point_of_interest",
+        "establishment"
+      ],
+      "addressComponents": [
+        {
+          "types": [
+            "street_number"
+          ],
+          "longText": "221",
+          "shortText": "221",
+          "languageCode": "en-US"
+        },
+        {
+          "types": [
+            "route"
+          ],
+          "longText": "Section 2, Zhi Shan Road",
+          "shortText": "Sec 2, Zhi Shan Rd",
+          "languageCode": "en"
+        },
+        {
+          "types": [
+            "administrative_area_level_2",
+            "political"
+          ],
+          "longText": "Shilin District",
+          "shortText": "Shilin District",
+          "languageCode": "en"
+        },
+        {
+          "types": [
+            "administrative_area_level_1",
+            "political"
+          ],
+          "longText": "Taipei City",
+          "shortText": "Taipei City",
+          "languageCode": "en"
+        },
+        {
+          "types": [
+            "country",
+            "political"
+          ],
+          "longText": "Taiwan",
+          "shortText": "TW",
+          "languageCode": "en"
+        },
+        {
+          "types": [
+            "postal_code"
+          ],
+          "longText": "111",
+          "shortText": "111",
+          "languageCode": "en-US"
+        }
+      ],
+      "attributions": [],
+      "currentSecondaryOpeningHours": [],
+      "regularSecondaryOpeningHours": [],
+      "reviews": [
+        {
+          "name": "places/ChIJfUpAzTqsQjQRwQl6ORhwbV0/reviews/ChdDSUhNMG9nS0VJQ0FnSUQzejgydzhRRRAB",
+          "relativePublishTimeDescription": "a week ago",
+          "rating": 5,
+          "text": {
+            "text": "Wonderful museum with many precious artifacts and rare pieces. I enjoyed the special exhibition collaborating with a few European museums to put together a beautiful display. All the signs had many languages, and there were audio guides in different languages. Definitely a must-see when visiting Taiwan!",
+            "languageCode": "en"
+          },
+          "originalText": {
+            "text": "Wonderful museum with many precious artifacts and rare pieces. I enjoyed the special exhibition collaborating with a few European museums to put together a beautiful display. All the signs had many languages, and there were audio guides in different languages. Definitely a must-see when visiting Taiwan!",
+            "languageCode": "en"
+          },
+          "authorAttribution": {
+            "displayName": "Elizabeth C",
+            "uri": "https://www.google.com/maps/contrib/116676696212232320712/reviews",
+            "photoUri": "https://lh3.googleusercontent.com/a-/ALV-UjV8bD8mqhESTt-b6rwZFk823cI4PbAEiPpK0S8poT8fQqF3e98Y=s128-c0x00000000-cc-rp-mo-ba4"
+          },
+          "publishTime": {
+            "seconds": "1732080380",
+            "nanos": 385970000
+          }
+        },
+        {
+          "name": "places/ChIJfUpAzTqsQjQRwQl6ORhwbV0/reviews/ChZDSUhNMG9nS0VJQ0FnSUNQaXYtemNBEAE",
+          "relativePublishTimeDescription": "in the last week",
+          "rating": 4,
+          "text": {
+            "text": "If you like museums, this is a good place to visit. Be prepared for bus loads of tourists. If you try to avoid the galleries they are in while wandering through the museum, it will make your visit more pleasant. Don’t forget to walk around the outdoor garden area too.",
+            "languageCode": "en"
+          },
+          "originalText": {
+            "text": "If you like museums, this is a good place to visit. Be prepared for bus loads of tourists. If you try to avoid the galleries they are in while wandering through the museum, it will make your visit more pleasant. Don’t forget to walk around the outdoor garden area too.",
+            "languageCode": "en"
+          },
+          "authorAttribution": {
+            "displayName": "Ted Eckman",
+            "uri": "https://www.google.com/maps/contrib/110312244119305396297/reviews",
+            "photoUri": "https://lh3.googleusercontent.com/a-/ALV-UjV7_JsRqUkv4itYN64o7FzGGZsAUsgjG37A-Kog9yXTDojSyKyQEQ=s128-c0x00000000-cc-rp-mo-ba8"
+          },
+          "publishTime": {
+            "seconds": "1732338233",
+            "nanos": 145102000
+          }
+        },
+        {
+          "name": "places/ChIJfUpAzTqsQjQRwQl6ORhwbV0/reviews/ChdDSUhNMG9nS0VJQ0FnSUNQZ3Y2MG93RRAB",
+          "relativePublishTimeDescription": "in the last week",
+          "rating": 5,
+          "text": {
+            "text": "Simply extraordinary museum, jam-packed with relics from prehistoric ceramics to Five Dynasty maps to Qing dynasty jade. It’s a comprehensive and wonderfully annotated selection which inspires great emotion in the viewer. I felt truly in awe of the modern and ancient craftsmen of the various artefacts, and easily spent 5 hours here poring over everything. Out of the way but a mandatory trip.",
+            "languageCode": "en"
+          },
+          "originalText": {
+            "text": "Simply extraordinary museum, jam-packed with relics from prehistoric ceramics to Five Dynasty maps to Qing dynasty jade. It’s a comprehensive and wonderfully annotated selection which inspires great emotion in the viewer. I felt truly in awe of the modern and ancient craftsmen of the various artefacts, and easily spent 5 hours here poring over everything. Out of the way but a mandatory trip.",
+            "languageCode": "en"
+          },
+          "authorAttribution": {
+            "displayName": "Nathan McCain",
+            "uri": "https://www.google.com/maps/contrib/103191302183948389962/reviews",
+            "photoUri": "https://lh3.googleusercontent.com/a-/ALV-UjXMaTd10qU1yoxV34Ts6SnYTvzeaAiPCQDHNmqrHxF1m_kacFSH=s128-c0x00000000-cc-rp-mo-ba5"
+          },
+          "publishTime": {
+            "seconds": "1732285293",
+            "nanos": 40105000
+          }
+        },
+        {
+          "name": "places/ChIJfUpAzTqsQjQRwQl6ORhwbV0/reviews/ChZDSUhNMG9nS0VJQ0FnSUQzblBqZlN3EAE",
+          "relativePublishTimeDescription": "2 weeks ago",
+          "rating": 5,
+          "text": {
+            "text": "The Taiwan National Palace Museum is truly exceptional and one of the best museums I’ve visited worldwide. The collection is vast and beautifully curated, showcasing a rich array of Chinese art and history.\n\nThe exhibits are thoughtfully organized, allowing you to appreciate each piece’s significance, and the attention to detail is outstanding. A must-visit for anyone in Taiwan!",
+            "languageCode": "en"
+          },
+          "originalText": {
+            "text": "The Taiwan National Palace Museum is truly exceptional and one of the best museums I’ve visited worldwide. The collection is vast and beautifully curated, showcasing a rich array of Chinese art and history.\n\nThe exhibits are thoughtfully organized, allowing you to appreciate each piece’s significance, and the attention to detail is outstanding. A must-visit for anyone in Taiwan!",
+            "languageCode": "en"
+          },
+          "authorAttribution": {
+            "displayName": "James Gibson",
+            "uri": "https://www.google.com/maps/contrib/116744805519868704105/reviews",
+            "photoUri": "https://lh3.googleusercontent.com/a-/ALV-UjV1Rbh5lW5D59tZ7GEj1IXxc_gJSq6cOGe4iI2cUGDZm6mMQYCoTA=s128-c0x00000000-cc-rp-mo-ba2"
+          },
+          "publishTime": {
+            "seconds": "1731467180",
+            "nanos": 6551000
+          }
+        },
+        {
+          "name": "places/ChIJfUpAzTqsQjQRwQl6ORhwbV0/reviews/ChdDSUhNMG9nS0VJQ0FnSUNYNzdmV2dnRRAB",
+          "relativePublishTimeDescription": "a month ago",
+          "rating": 5,
+          "text": {
+            "text": "Our cruise excursion stopped here. Many items from Mainland China were brought here when the Taiwanese government was fleeing from the communists. Many items are 3-4000 years old. Lots of pottery,  jewelry and other sculptures.  Practically nothing from the rest of the world. There is a nice garden with several ponds and multiple sculptures on the grounds outside. Worth seeing once.",
+            "languageCode": "en"
+          },
+          "originalText": {
+            "text": "Our cruise excursion stopped here. Many items from Mainland China were brought here when the Taiwanese government was fleeing from the communists. Many items are 3-4000 years old. Lots of pottery,  jewelry and other sculptures.  Practically nothing from the rest of the world. There is a nice garden with several ponds and multiple sculptures on the grounds outside. Worth seeing once.",
+            "languageCode": "en"
+          },
+          "authorAttribution": {
+            "displayName": "Blaise Vitale",
+            "uri": "https://www.google.com/maps/contrib/117220806217751630300/reviews",
+            "photoUri": "https://lh3.googleusercontent.com/a-/ALV-UjVcHYo67FxaKiHfupskQQDFBeqf97lTDDYAlFMj7VKwHhWrLR8eWw=s128-c0x00000000-cc-rp-mo-ba6"
+          },
+          "publishTime": {
+            "seconds": "1729773136",
+            "nanos": 147990000
+          }
+        }
+      ],
+      "photos": [
+        {
+          "authorAttributions": [
+            {
+              "displayName": "Daniel Chang",
+              "uri": "https://maps.google.com/maps/contrib/107695457717781779022",
+              "photoUri": "https://lh3.googleusercontent.com/a-/ALV-UjVp5o_rQ_hVxyT2ZBOF2qtNi76zRrULQL16MLWHzm7CgzGR9qY=s100-p-k-no-mo"
+            }
+          ],
+          "name": "places/ChIJfUpAzTqsQjQRwQl6ORhwbV0/photos/AdDdOWq1NHDb2YWRAA4eZdW4sypNx6FCXUjXyBC7cy03BlCf8de6qd8eek49wnpnnEfkI5pBd9aseSvZA87HrbMC6-Ad5_ZTjx_orBB5OWOnyN5RilmYgpXuOEfy6QaP17Yj576YX31ay0mNYQbMjlYWjAHbbDN5HI19epl4",
+          "widthPx": 4032,
+          "heightPx": 3024
+        },
+        {
+          "authorAttributions": [
+            {
+              "displayName": "Sweet sweetcandy",
+              "uri": "https://maps.google.com/maps/contrib/111660258905664216571",
+              "photoUri": "https://lh3.googleusercontent.com/a/ACg8ocKZHaVxecRpqIbQHSW7qORdL6pU_wSsJwRswoXj7no1cW0ahA=s100-p-k-no-mo"
+            }
+          ],
+          "name": "places/ChIJfUpAzTqsQjQRwQl6ORhwbV0/photos/AdDdOWrpEYHE9ls2JbnuBWsPFGDqw9zSKzi3rZPJ1yCKeoKhPK7eYh_s8Tl5-TfWIuFYfgkv3Yu_E62Bpx5Lm0O6bmtPmefYjGHazY3kPkVHicUy7w5XDlTP0owRIYNO7laH8xmaSneeYJa7noJxTQhARWyeuyB-78-NmfTX",
+          "widthPx": 4032,
+          "heightPx": 3024
+        },
+        {
+          "authorAttributions": [
+            {
+              "displayName": "Sheng Chang",
+              "uri": "https://maps.google.com/maps/contrib/105177070251159713764",
+              "photoUri": "https://lh3.googleusercontent.com/a/ACg8ocJMpgnYxu-wgLkulK8MvaBLZiOGgYdIhVUmO7YZuVIfm0SJaA=s100-p-k-no-mo"
+            }
+          ],
+          "name": "places/ChIJfUpAzTqsQjQRwQl6ORhwbV0/photos/AdDdOWrPekCIOu8CueqsEwSzeye1oKB9HomUguDBtUdwKJzuT6XzqRO-4w9zG-yzGM0MHGhYsZUgXRA6OLmiQhW4KsdEiyNiCNc51oQgjYZ6GK9Yb6sjQklPygncEYGV2wz1f6Z8mwVkZI5ruk-8vJrg0g838Vcnf4aB_ezg",
+          "widthPx": 4640,
+          "heightPx": 2610
+        },
+        {
+          "authorAttributions": [
+            {
+              "displayName": "정봉엽",
+              "uri": "https://maps.google.com/maps/contrib/103274685734014888162",
+              "photoUri": "https://lh3.googleusercontent.com/a/ACg8ocKkbksOlCJ_2UFWIChD700Gn9vORxZ7f-3YeUZtrK5_wO2I6Q=s100-p-k-no-mo"
+            }
+          ],
+          "name": "places/ChIJfUpAzTqsQjQRwQl6ORhwbV0/photos/AdDdOWr4AbnUJLyjxx9Q8dKIdVNSpm3KixoC5BJMs3lkMELcTv9vq0qXs6nsN_1nci5QavPkeN7pNJnfWxXDYHVZ0dqSd9-vKnfr4KSkZ4YYF853Ltxi6Boc7NjEv622Vlvy0Du3EnbJMazFNru3-mulIxGSsTKS3jdgJsYK",
+          "widthPx": 4000,
+          "heightPx": 3000
+        },
+        {
+          "authorAttributions": [
+            {
+              "displayName": "justin joseph ng",
+              "uri": "https://maps.google.com/maps/contrib/100449940666440520467",
+              "photoUri": "https://lh3.googleusercontent.com/a/ACg8ocJpCI6-WbcmzKBPIRp-ua9Y0Wtg2XoN2Rv9inBueDUmT4aOaQ=s100-p-k-no-mo"
+            }
+          ],
+          "name": "places/ChIJfUpAzTqsQjQRwQl6ORhwbV0/photos/AdDdOWq-NV6gor2qETW4B3apMiXHubhh8s9PRHqiA8zHB3rzMOaAIX4kqKTEAsuM0jZmIYwLQchoOi52oY4_4buHGbTWhAbogcAiCwaOp4r5DFiBZX4mBhbC7EZxStdZyqL7hSVA9qlkZ1N75JrlzgW6Ws0emCXr6AmQ8tiG",
+          "widthPx": 4800,
+          "heightPx": 3600
+        },
+        {
+          "authorAttributions": [
+            {
+              "displayName": "Michelle Shih",
+              "uri": "https://maps.google.com/maps/contrib/105302798450941189280",
+              "photoUri": "https://lh3.googleusercontent.com/a-/ALV-UjUMcRlPnvKc4abT4n6Z0gFHHTWwxOTF23NtOgl4kZaVCfx83Ko=s100-p-k-no-mo"
+            }
+          ],
+          "name": "places/ChIJfUpAzTqsQjQRwQl6ORhwbV0/photos/AdDdOWrsiif1HQwNeltKX3mL7yyF2mg0rwIL3Gfo1OVajmq2Ns2u_zYGXByYXuKZ9KvjuAaZOj76qXzB0qezY3qPOu0rmI2LW4RgpyVlPuOBt4OcJaZR3GmCT4kXDL20OaAhNPxrbExABvGtG7zdir6QySnxjwVlx4VRkcQk",
+          "widthPx": 4800,
+          "heightPx": 3600
+        },
+        {
+          "authorAttributions": [
+            {
+              "displayName": "Lewis Su",
+              "uri": "https://maps.google.com/maps/contrib/107888139893897324970",
+              "photoUri": "https://lh3.googleusercontent.com/a/ACg8ocJOX52iLVI7lroMBV2DTofVWxm0uT9-iKWoPHwOVtUkAa0zeQ=s100-p-k-no-mo"
+            }
+          ],
+          "name": "places/ChIJfUpAzTqsQjQRwQl6ORhwbV0/photos/AdDdOWqCH-gCdve1o-ZllVouVaCW6pxQFT8wpkSnvUTklRR36A6i4USBHlWj-2_7p8HN5AlTC0zEwI57h-A7u3NZ4S6mxGseHQG61ylzjXsJJaQ6oDlzC9kDaiuDMTtMzFxtSyKA_UKVbTX-zHPyePG3zAHzdILNp-NL-yc7",
+          "widthPx": 3600,
+          "heightPx": 4800
+        },
+        {
+          "authorAttributions": [
+            {
+              "displayName": "abode abode",
+              "uri": "https://maps.google.com/maps/contrib/111030368240275651949",
+              "photoUri": "https://lh3.googleusercontent.com/a/ACg8ocJNYR6p6u3YzmqKrPPjIii2pQzwkP0VBswYUpFA5YIA0c7spg=s100-p-k-no-mo"
+            }
+          ],
+          "name": "places/ChIJfUpAzTqsQjQRwQl6ORhwbV0/photos/AdDdOWqwpz0txTAngjs93JwSb2CNeyLfjOlUqbqzXIY4IY69n1dn8qpvL5Aqtu5QRp9BUSHArC5d-BwFPnUkqsyrpEadPr5sD1pc-WEVB_0Vz5vxc8MGF07vIMRhyIUVPYz50zo1VwctU3tdZNQmj5dEA3-9qSXzTB1slysK",
+          "widthPx": 986,
+          "heightPx": 658
+        },
+        {
+          "authorAttributions": [
+            {
+              "displayName": "Sweet sweetcandy",
+              "uri": "https://maps.google.com/maps/contrib/111660258905664216571",
+              "photoUri": "https://lh3.googleusercontent.com/a/ACg8ocKZHaVxecRpqIbQHSW7qORdL6pU_wSsJwRswoXj7no1cW0ahA=s100-p-k-no-mo"
+            }
+          ],
+          "name": "places/ChIJfUpAzTqsQjQRwQl6ORhwbV0/photos/AdDdOWrtKBhjXHVQSahiAO1Zr1YRK2Gk2yI47XobmtArgTaloHz9-4DEo59ysdLUTAJDHR-yvl1m0mWVNd_3ZJR69WblJWmo4qN7rXWqvB5TWcfm-GA7wpfMXNY11QPgpdSPSjiHk2mGYJf1IMUzmae1pO8DugbMRzcAPiWx",
+          "widthPx": 4032,
+          "heightPx": 3024
+        },
+        {
+          "authorAttributions": [
+            {
+              "displayName": "Shih-En Juan",
+              "uri": "https://maps.google.com/maps/contrib/100507725960037952632",
+              "photoUri": "https://lh3.googleusercontent.com/a-/ALV-UjWPXAVn97-eK96m9Tfdwui9xFy0Op4dHEz_jUpmllsULebqgVza=s100-p-k-no-mo"
+            }
+          ],
+          "name": "places/ChIJfUpAzTqsQjQRwQl6ORhwbV0/photos/AdDdOWoIdG3TWVzDJztE4eEUEkrBsJnwbslWsWFaYKQ7HZf3_xUdooavDQbTCKRVaDKmVjC9D9lxZevW0JUeWgZyaTIK-x40xo5CxphQPC2rdlPe5PBqv_LrgsDkjQ3zF-DIvESTm3bEavQjccI-w_LlBwVj8vB8nJWdFd9q",
+          "widthPx": 3024,
+          "heightPx": 4032
+        }
+      ],
+      "subDestinations": [],
+      "containingPlaces": [],
+      "name": "places/ChIJfUpAzTqsQjQRwQl6ORhwbV0",
+      "id": "ChIJfUpAzTqsQjQRwQl6ORhwbV0",
+      "nationalPhoneNumber": "02 2881 2021",
+      "internationalPhoneNumber": "+886 2 2881 2021",
+      "formattedAddress": "No. 221, Sec 2, Zhi Shan Rd, Shilin District, Taipei City, Taiwan 111",
+      "plusCode": {
+        "globalCode": "7QQ34G2X+W9",
+        "compoundCode": "4G2X+W9 Shilin District, Taipei City, Taiwan"
+      },
+      "location": {
+        "latitude": 25.1023554,
+        "longitude": 121.54849250000001
+      },
+      "viewport": {
+        "low": {
+          "latitude": 25.099937669708495,
+          "longitude": 121.54787521970852
+        },
+        "high": {
+          "latitude": 25.102635630291502,
+          "longitude": 121.5505731802915
+        }
+      },
+      "rating": 4.6,
+      "googleMapsUri": "https://maps.google.com/?cid=6732160267334584769",
+      "websiteUri": "https://www.npm.gov.tw/",
+      "regularOpeningHours": {
+        "periods": [
+          {
+            "open": {
+              "truncated": false,
+              "date": null,
+              "day": 0,
+              "_day": "day",
+              "hour": 9,
+              "_hour": "hour",
+              "minute": 0,
+              "_minute": "minute"
+            },
+            "close": {
+              "truncated": false,
+              "date": null,
+              "day": 0,
+              "_day": "day",
+              "hour": 17,
+              "_hour": "hour",
+              "minute": 0,
+              "_minute": "minute"
+            }
+          },
+          {
+            "open": {
+              "truncated": false,
+              "date": null,
+              "day": 2,
+              "_day": "day",
+              "hour": 9,
+              "_hour": "hour",
+              "minute": 0,
+              "_minute": "minute"
+            },
+            "close": {
+              "truncated": false,
+              "date": null,
+              "day": 2,
+              "_day": "day",
+              "hour": 17,
+              "_hour": "hour",
+              "minute": 0,
+              "_minute": "minute"
+            }
+          },
+          {
+            "open": {
+              "truncated": false,
+              "date": null,
+              "day": 3,
+              "_day": "day",
+              "hour": 9,
+              "_hour": "hour",
+              "minute": 0,
+              "_minute": "minute"
+            },
+            "close": {
+              "truncated": false,
+              "date": null,
+              "day": 3,
+              "_day": "day",
+              "hour": 17,
+              "_hour": "hour",
+              "minute": 0,
+              "_minute": "minute"
+            }
+          },
+          {
+            "open": {
+              "truncated": false,
+              "date": null,
+              "day": 4,
+              "_day": "day",
+              "hour": 9,
+              "_hour": "hour",
+              "minute": 0,
+              "_minute": "minute"
+            },
+            "close": {
+              "truncated": false,
+              "date": null,
+              "day": 4,
+              "_day": "day",
+              "hour": 17,
+              "_hour": "hour",
+              "minute": 0,
+              "_minute": "minute"
+            }
+          },
+          {
+            "open": {
+              "truncated": false,
+              "date": null,
+              "day": 5,
+              "_day": "day",
+              "hour": 9,
+              "_hour": "hour",
+              "minute": 0,
+              "_minute": "minute"
+            },
+            "close": {
+              "truncated": false,
+              "date": null,
+              "day": 5,
+              "_day": "day",
+              "hour": 17,
+              "_hour": "hour",
+              "minute": 0,
+              "_minute": "minute"
+            }
+          },
+          {
+            "open": {
+              "truncated": false,
+              "date": null,
+              "day": 6,
+              "_day": "day",
+              "hour": 9,
+              "_hour": "hour",
+              "minute": 0,
+              "_minute": "minute"
+            },
+            "close": {
+              "truncated": false,
+              "date": null,
+              "day": 6,
+              "_day": "day",
+              "hour": 17,
+              "_hour": "hour",
+              "minute": 0,
+              "_minute": "minute"
+            }
+          }
+        ],
+        "weekdayDescriptions": [
+          "Monday: Closed",
+          "Tuesday: 9:00 AM – 5:00 PM",
+          "Wednesday: 9:00 AM – 5:00 PM",
+          "Thursday: 9:00 AM – 5:00 PM",
+          "Friday: 9:00 AM – 5:00 PM",
+          "Saturday: 9:00 AM – 5:00 PM",
+          "Sunday: 9:00 AM – 5:00 PM"
+        ],
+        "specialDays": [],
+        "secondaryHoursType": "SECONDARY_HOURS_TYPE_UNSPECIFIED",
+        "nextOpenTime": {
+          "seconds": "1732842000",
+          "nanos": 0
+        },
+        "nextCloseTime": null,
+        "openNow": false,
+        "_openNow": "openNow"
+      },
+      "adrFormatAddress": "<span class=\"street-address\">No. 221, Sec 2, Zhi Shan Rd</span>, <span class=\"locality\">Shilin District</span>, <span class=\"region\">Taipei City</span>, <span class=\"country-name\">Taiwan</span> <span class=\"postal-code\">111</span>",
+      "businessStatus": "OPERATIONAL",
+      "priceLevel": "PRICE_LEVEL_UNSPECIFIED",
+      "iconMaskBaseUri": "https://maps.gstatic.com/mapfiles/place_api/icons/v2/museum_pinlet",
+      "iconBackgroundColor": "#13B5C7",
+      "displayName": {
+        "text": "National Palace Museum",
+        "languageCode": "en"
+      },
+      "primaryTypeDisplayName": {
+        "text": "Museum",
+        "languageCode": "en-US"
+      },
+      "currentOpeningHours": {
+        "periods": [
+          {
+            "open": {
+              "truncated": false,
+              "date": {
+                "year": 2024,
+                "month": 12,
+                "day": 1
+              },
+              "day": 0,
+              "_day": "day",
+              "hour": 9,
+              "_hour": "hour",
+              "minute": 0,
+              "_minute": "minute"
+            },
+            "close": {
+              "truncated": false,
+              "date": {
+                "year": 2024,
+                "month": 12,
+                "day": 1
+              },
+              "day": 0,
+              "_day": "day",
+              "hour": 17,
+              "_hour": "hour",
+              "minute": 0,
+              "_minute": "minute"
+            }
+          },
+          {
+            "open": {
+              "truncated": false,
+              "date": {
+                "year": 2024,
+                "month": 12,
+                "day": 3
+              },
+              "day": 2,
+              "_day": "day",
+              "hour": 9,
+              "_hour": "hour",
+              "minute": 0,
+              "_minute": "minute"
+            },
+            "close": {
+              "truncated": false,
+              "date": {
+                "year": 2024,
+                "month": 12,
+                "day": 3
+              },
+              "day": 2,
+              "_day": "day",
+              "hour": 17,
+              "_hour": "hour",
+              "minute": 0,
+              "_minute": "minute"
+            }
+          },
+          {
+            "open": {
+              "truncated": false,
+              "date": {
+                "year": 2024,
+                "month": 12,
+                "day": 4
+              },
+              "day": 3,
+              "_day": "day",
+              "hour": 9,
+              "_hour": "hour",
+              "minute": 0,
+              "_minute": "minute"
+            },
+            "close": {
+              "truncated": false,
+              "date": {
+                "year": 2024,
+                "month": 12,
+                "day": 4
+              },
+              "day": 3,
+              "_day": "day",
+              "hour": 17,
+              "_hour": "hour",
+              "minute": 0,
+              "_minute": "minute"
+            }
+          },
+          {
+            "open": {
+              "truncated": false,
+              "date": {
+                "year": 2024,
+                "month": 11,
+                "day": 28
+              },
+              "day": 4,
+              "_day": "day",
+              "hour": 9,
+              "_hour": "hour",
+              "minute": 0,
+              "_minute": "minute"
+            },
+            "close": {
+              "truncated": false,
+              "date": {
+                "year": 2024,
+                "month": 11,
+                "day": 28
+              },
+              "day": 4,
+              "_day": "day",
+              "hour": 17,
+              "_hour": "hour",
+              "minute": 0,
+              "_minute": "minute"
+            }
+          },
+          {
+            "open": {
+              "truncated": false,
+              "date": {
+                "year": 2024,
+                "month": 11,
+                "day": 29
+              },
+              "day": 5,
+              "_day": "day",
+              "hour": 9,
+              "_hour": "hour",
+              "minute": 0,
+              "_minute": "minute"
+            },
+            "close": {
+              "truncated": false,
+              "date": {
+                "year": 2024,
+                "month": 11,
+                "day": 29
+              },
+              "day": 5,
+              "_day": "day",
+              "hour": 17,
+              "_hour": "hour",
+              "minute": 0,
+              "_minute": "minute"
+            }
+          },
+          {
+            "open": {
+              "truncated": false,
+              "date": {
+                "year": 2024,
+                "month": 11,
+                "day": 30
+              },
+              "day": 6,
+              "_day": "day",
+              "hour": 9,
+              "_hour": "hour",
+              "minute": 0,
+              "_minute": "minute"
+            },
+            "close": {
+              "truncated": false,
+              "date": {
+                "year": 2024,
+                "month": 11,
+                "day": 30
+              },
+              "day": 6,
+              "_day": "day",
+              "hour": 17,
+              "_hour": "hour",
+              "minute": 0,
+              "_minute": "minute"
+            }
+          }
+        ],
+        "weekdayDescriptions": [
+          "Monday: Closed",
+          "Tuesday: 9:00 AM – 5:00 PM",
+          "Wednesday: 9:00 AM – 5:00 PM",
+          "Thursday: 9:00 AM – 5:00 PM",
+          "Friday: 9:00 AM – 5:00 PM",
+          "Saturday: 9:00 AM – 5:00 PM",
+          "Sunday: 9:00 AM – 5:00 PM"
+        ],
+        "specialDays": [],
+        "secondaryHoursType": "SECONDARY_HOURS_TYPE_UNSPECIFIED",
+        "nextOpenTime": {
+          "seconds": "1732842000",
+          "nanos": 0
+        },
+        "nextCloseTime": null,
+        "openNow": false,
+        "_openNow": "openNow"
+      },
+      "primaryType": "museum",
+      "shortFormattedAddress": "No. 221, Sec 2, Zhi Shan Rd",
+      "editorialSummary": {
+        "text": "Bustling museum featuring one of the largest collections of Chinese art & artifacts in the world.",
+        "languageCode": "en"
+      },
+      "paymentOptions": {
+        "acceptsNfc": true,
+        "_acceptsNfc": "acceptsNfc"
+      },
+      "parkingOptions": null,
+      "fuelOptions": null,
+      "evChargeOptions": null,
+      "generativeSummary": null,
+      "areaSummary": null,
+      "priceRange": null,
+      "utcOffsetMinutes": 480,
+      "_utcOffsetMinutes": "utcOffsetMinutes",
+      "userRatingCount": 51160,
+      "_userRatingCount": "userRatingCount",
+      "goodForChildren": true,
+      "_goodForChildren": "goodForChildren",
+      "restroom": true,
+      "_restroom": "restroom",
+      "accessibilityOptions": {
+        "wheelchairAccessibleParking": true,
+        "_wheelchairAccessibleParking": "wheelchairAccessibleParking",
+        "wheelchairAccessibleEntrance": true,
+        "_wheelchairAccessibleEntrance": "wheelchairAccessibleEntrance",
+        "wheelchairAccessibleRestroom": true,
+        "_wheelchairAccessibleRestroom": "wheelchairAccessibleRestroom"
+      },
+      "_accessibilityOptions": "accessibilityOptions"
+    }
+  ],
+  "routingSummaries": [],
+  "contextualContents": [
+    {
+      "reviews": [],
+      "photos": [
+        {
+          "authorAttributions": [
+            {
+              "displayName": "From a Google User",
+              "uri": "https://maps.google.com/maps/contrib/107695457717781779022",
+              "photoUri": "https://lh3.googleusercontent.com/a-/ALV-UjVp5o_rQ_hVxyT2ZBOF2qtNi76zRrULQL16MLWHzm7CgzGR9qY=s100-p-k-no-mo"
+            }
+          ],
+          "name": "places/ChIJfUpAzTqsQjQRwQl6ORhwbV0/photos/AdDdOWr9sw1O1HiLGMu7t7nZF6tYtFujgt5G53M2UO81O0w8yStAWtXme1Iu1rt2umoxYvNaRyjkNGDm9viPzX64P6sgk5kzBkjXWVOCtes-TuuRUHDLD_J31ONNX_p78KFQEOz8hpYcg2-J_0nosZ3lwERrZFOsg6Yd3Zpg",
+          "widthPx": 4032,
+          "heightPx": 3024
+        },
+        {
+          "authorAttributions": [
+            {
+              "displayName": "鮮菇",
+              "uri": "https://maps.google.com/maps/contrib/111660258905664216571",
+              "photoUri": "https://lh3.googleusercontent.com/a/ACg8ocKZHaVxecRpqIbQHSW7qORdL6pU_wSsJwRswoXj7no1cW0ahA=s100-p-k-no-mo"
+            }
+          ],
+          "name": "places/ChIJfUpAzTqsQjQRwQl6ORhwbV0/photos/AdDdOWq5B_JMhkCNZBDM8YJQVkqsn5k7-RbHab8FRrWH1LdNwyire1QnLleN--rQ43wFU1Oi8HlPVRSeCVWEA2ktNZwTWlrAci_BwaJrcqz9sACzKDbatQKNxg18byviYQBcqbwD2b3KKNxvkG1GsQf2Kev9nH89AVt8O8yy",
+          "widthPx": 4032,
+          "heightPx": 3024
+        },
+        {
+          "authorAttributions": [
+            {
+              "displayName": "Sheng Chang",
+              "uri": "https://maps.google.com/maps/contrib/105177070251159713764",
+              "photoUri": "https://lh3.googleusercontent.com/a/ACg8ocJMpgnYxu-wgLkulK8MvaBLZiOGgYdIhVUmO7YZuVIfm0SJaA=s100-p-k-no-mo"
+            }
+          ],
+          "name": "places/ChIJfUpAzTqsQjQRwQl6ORhwbV0/photos/AdDdOWo-lLlVQFc5LF6mR4cF4bj5GXRFFOynzRA4JHuaLVXQbs8SY-mcELOJiuOFJtYR95z1QcP8rc_OyOZ3ptCxQlfm6rJhwYUGdlJEo3lcl3vxudDmDFiySlwxrRkQf0mAoD4gMDzyW2JGGhuidZ2M16cvyv5lm444IYYi",
+          "widthPx": 4640,
+          "heightPx": 2610
+        },
+        {
+          "authorAttributions": [
+            {
+              "displayName": "정봉엽",
+              "uri": "https://maps.google.com/maps/contrib/103274685734014888162",
+              "photoUri": "https://lh3.googleusercontent.com/a/ACg8ocKkbksOlCJ_2UFWIChD700Gn9vORxZ7f-3YeUZtrK5_wO2I6Q=s100-p-k-no-mo"
+            }
+          ],
+          "name": "places/ChIJfUpAzTqsQjQRwQl6ORhwbV0/photos/AdDdOWokkjN1pYTMkcjWikWK67cEh4x9u122WBCDDJCYjgQLJiu0mB3ZGNdmD5CQuRsG8xzvFwlv4FUxj18oiwS9QRK4QKZbH5PMCxR_XHlixQWorTxwn8S_kEEowopERk5joVl6hAz9uzMKeZ4o9q3AHfX0bov6O8ikSa9K",
+          "widthPx": 4000,
+          "heightPx": 3000
+        },
+        {
+          "authorAttributions": [
+            {
+              "displayName": "justin joseph ng",
+              "uri": "https://maps.google.com/maps/contrib/100449940666440520467",
+              "photoUri": "https://lh3.googleusercontent.com/a/ACg8ocJpCI6-WbcmzKBPIRp-ua9Y0Wtg2XoN2Rv9inBueDUmT4aOaQ=s100-p-k-no-mo"
+            }
+          ],
+          "name": "places/ChIJfUpAzTqsQjQRwQl6ORhwbV0/photos/AdDdOWpQFCezW0BB_XuTJudFct3Z-_MgJ4mzQ4s1FQfJ9JCDmnA-JxO8dautvNYv96QV4O7xMbAlcm5_YYthrP2OMBYhhjV-QNep-hBK8PeWVzq8sth8KlkMDp7qzrBbYbdcxiRghkw1_CrjUvTsX7xhk-OJ_xr4fc4KSG8O",
+          "widthPx": 4800,
+          "heightPx": 3600
+        }
+      ],
+      "justifications": [
+        {}
+      ]
+    }
+  ]
+}

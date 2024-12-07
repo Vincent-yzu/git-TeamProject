@@ -1,0 +1,11 @@
+{
+  "name": "lulu",
+  "private": true,
+  "type": "module",
+  "version": "0.0.0",
+  "workspaces": [
+    "packages/*",
+    "client",
+    "server"
+  ]
+}
