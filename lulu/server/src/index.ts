@@ -5,17 +5,16 @@ import cors from "cors"
 import "express-async-errors"
 
 import { authRouter, userRouter } from "@/routes"
-import { requireSocketAuth } from "@/socket/require-auth"
 import cookieParser from "cookie-parser"
 import express from "express"
 import helmet from "helmet"
 import { Server } from "socket.io"
-
 import { NotFoundError } from "@/lib/error"
 import { logger } from "@/lib/logger"
 import { csrfHandler } from "@/middleware/csrf-handler"
 import { errorHandler } from "@/middleware/error-handler"
 import { createRateLimiter } from "@/middleware/rate-limiter"
+import { requireSocketAuth } from "@/socket/require-auth"
 
 const app = express()
 
@@ -49,8 +48,7 @@ const io = new Server(server, {
   },
 })
 
-requireSocketAuth(io) 
-  
+requireSocketAuth(io)
 io.on("connection", (socket) => {
   console.log("A user connected:", socket.id)
   // 客戶端請求建立/加入房間事件

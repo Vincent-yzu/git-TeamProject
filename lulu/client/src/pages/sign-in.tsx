@@ -32,6 +32,10 @@ const BACKEND_URL = import.meta.env.VITE_BACKEND_URL
 export default function SignInForm() {
   const form = useForm<z.infer<typeof credentialsSchema>>({
     resolver: zodResolver(credentialsSchema),
+    defaultValues: {
+      email: "",
+      password: "",
+    },
   })
   const navigate = useNavigate()
   const { toast } = useToast()
