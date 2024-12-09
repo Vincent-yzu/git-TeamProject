@@ -43,12 +43,15 @@ export default function SignUpForm() {
 
   const mutation = useMutation({
     mutationFn: async (data: z.infer<typeof credentialsSchema>) => {
-      await fetcher("/api/auth/sign-up", {
+      const response = await fetcher("/api/auth/sign-up", {
         options: {
           method: "POST",
           body: JSON.stringify(data),
         },
       })
+      if (!response.ok) {
+        throw new Error("Failed to sign up")
+      }
     },
     onSuccess: () => {
       toast({
