@@ -4,7 +4,7 @@ import cors from "cors"
 
 import "express-async-errors"
 
-import { authRouter, userRouter } from "@/routes"
+import { authRouter, userRouter, googlesearchRouter } from "@/routes"
 import cookieParser from "cookie-parser"
 import express from "express"
 import helmet from "helmet"
@@ -15,6 +15,7 @@ import { csrfHandler } from "@/middleware/csrf-handler"
 import { errorHandler } from "@/middleware/error-handler"
 import { createRateLimiter } from "@/middleware/rate-limiter"
 import { requireSocketAuth } from "@/socket/require-auth"
+import { addactivityRouter } from "@/routes/addactivity"
 
 const app = express()
 
@@ -25,8 +26,13 @@ app.use(cookieParser())
 app.use(cors(corsConfig))
 app.use(express.json())
 app.use(createRateLimiter({ windowMs: 15 * 60 * 1000, limit: 100 }))
+
+app.use("/api", googlesearchRouter)  // for google map api (備註: 暫時繞過認證 (待修改!!))
+app.use("/api/addactivity", addactivityRouter)  // add activity (備註: 暫時繞過認證 (待修改!!))
+
 app.use(csrfHandler)
 
+// app.use("/api/googlesearch", googlesearchRouter)  // for google map api
 app.use("/api/auth", authRouter)
 app.use("/api/user", userRouter)
 app.get("/", (req, res) => {

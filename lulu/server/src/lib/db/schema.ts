@@ -143,3 +143,5 @@ export type Session = InferSelectModel<typeof sessions>
 export type InsertSession = InferInsertModel<typeof sessions>
 export type Verification = InferSelectModel<typeof verifications>
 export type InsertVerification = InferInsertModel<typeof verifications>
+
+export type InsertActivity = InferInsertModel<typeof activities>;

@@ -10,7 +10,7 @@ import {
   SidebarGroup,
   SidebarGroupContent,
   SidebarHeader,
-  SidebarInput,
+  //SidebarInput,
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
@@ -19,6 +19,10 @@ import {
 import { Switch } from "@/components/ui/switch"
 import { NavUser } from "@/components/nav-user"
 import { ReorderMails } from "./reorder-mails"
+import { MapProvider } from "@/components/MapContext"
+import { SearchBarGoogleMap } from "./searchbar-googlemap"
+import { DisplayMap } from "@/components/displaymap"
+
 // This is sample data
 const data = {
   user: {
@@ -156,7 +160,11 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
               <Switch className="shadow-none" />
             </Label>
           </div>
-          <SidebarInput placeholder="Type to search..." />
+
+          {/* google map search */}
+          {/* <SidebarInput placeholder="Type to search..." /> */}
+          <SearchBarGoogleMap placeholder="Type to search..." />
+
         </SidebarHeader>
         <SidebarContent>
           <SidebarGroup className="px-0">
