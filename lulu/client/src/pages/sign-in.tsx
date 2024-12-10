@@ -42,12 +42,15 @@ export default function SignInForm() {
 
   const mutation = useMutation({
     mutationFn: async (data: z.infer<typeof credentialsSchema>) => {
-      await fetcher("/api/auth/sign-in", {
+      const response = await fetcher("/api/auth/sign-in", {
         options: {
           method: "POST",
           body: JSON.stringify(data),
         },
       })
+      if (!response.ok) {
+        throw new Error("Failed to sign in")
+      }
     },
     onSuccess: () => {
       toast({
