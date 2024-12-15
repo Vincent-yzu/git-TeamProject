@@ -27,9 +27,19 @@ export const users = pgTable("users", {
     .$onUpdate(() => new Date()),
 })
 
+export const userTrips = pgTable("user_trips", {
+  userId: text("user_id")
+    .references(() => users.id)
+    .notNull(),
+  tripId: integer("trip_id")
+    .references(() => trips.id)
+    .notNull(),
+  role: text("role") // "editor", "viewer"
+});
+
 // 行程表
 export const trips = pgTable("trips", {
-  id: serial("id").primaryKey(),
+  id: serial("id").primaryKey().unique(),
   title: text("title").notNull(),
   startDate: timestamp("start_date", { withTimezone: true }),
   endDate: timestamp("end_date", { withTimezone: true }),

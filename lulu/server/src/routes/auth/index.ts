@@ -18,13 +18,14 @@ import {
   verifyPassword,
 } from "@/lib/auth"
 import { db } from "@/lib/db"
-import { users, verifications } from "@/lib/db/schema"
+import { users, verifications, trips, userTrips } from "@/lib/db/schema"
 import {
   BadRequestError,
   InternalServerError,
   UnauthorizedError,
 } from "@/lib/error"
 import { requireAuth } from "@/middleware/require-auth"
+import { randomInt } from "crypto";
 
 const router = Router()
 
@@ -84,6 +85,37 @@ router.post("/sign-up", async (req, res) => {
       hashedPassword,
     })
     .returning()
+
+  //TODO: also sent to "trips" table
+
+  const randomTripId = randomInt(1, 10001);
+
+  // 插入新行程到 trips 表
+  const [newTrip] = await db
+    .insert(trips)
+    .values({
+      id: randomTripId,
+      title: `Default Trip for ${result.data.email}`,
+      destination: "Default Destination",
+      startDate: new Date(),
+      endDate: new Date(new Date().setDate(new Date().getDate() + 7)), // 預設為一周後結束
+    })
+    .returning();
+
+  // 插入用戶與行程的關聯到 userTrips 表
+  if (!insertedUser) {
+    throw new InternalServerError("User insertion failed");
+  }
+
+  if (!newTrip) {
+    throw new InternalServerError("Trip insertion failed");
+  }
+
+  await db.insert(userTrips).values({
+    userId: insertedUser.id,
+    tripId: newTrip.id,
+    role: "editor", // 預設角色為 editor
+  });
 
   const session = await createSession(insertedUser!.id)
 
