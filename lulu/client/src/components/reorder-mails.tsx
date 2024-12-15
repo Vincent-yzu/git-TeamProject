@@ -10,22 +10,25 @@ const BACKEND_URL = import.meta.env.VITE_BACKEND_URL
 
 const initialMails: Mail[] = [
   {
-    name: "William Smith",
-    dwell_time: "09:34 AM",
+    id: 0,
+    name: "國立政治大學-校門口",
+    dwell_time: "1小時 | 08:50 ~ 08:55",
     formatted_address:
-      "Hi team, just a reminder about our meeting tomorrow at 10 AM.\nPlease come prepared with your project updates.",
+      "No. 64, Section 2, Zhinan Rd, Wenshan District, Taipei City, Taiwan 116",
     icon: "",
   },
   {
-    name: "Sophia White",
-    dwell_time: "1 week ago",
+    id: 1,
+    name: "國立政治大學-大仁樓",
+    dwell_time: "1小時 | 08:55 ~ 09:00",
     formatted_address:
-      "To celebrate our recent project success, I'd like to organize a team dinner.\nAre you available next Friday evening? Please let me know your preferences.",
+      "No. 64, Section 2, in National Chengchi University",
     icon: "",
   },
 ]
 
 interface Mail {
+  id: number
   name: string
   dwell_time: string
   formatted_address: string
@@ -41,11 +44,12 @@ const ReorderMails = () => {
   const socketRef = useRef<Socket | null>(null)
   const [roomId] = useState<string>("2123")
 
- 
+  // Insert
   useEffect(() => {
     if (addedPlace) {
       const updatedMails = [
         {
+          id: addedPlace.id,
           name: `${addedPlace.name}`,
           dwell_time: `1小時 | 09:00 ~ 10:00`,
           formatted_address: `地址: ${addedPlace.formatted_address}`,
@@ -60,7 +64,7 @@ const ReorderMails = () => {
     }
   }, [addedPlace]);
   
-
+  // Reorder
   useEffect(() => {
     const handleMouseUp = (e: MouseEvent) => {
       if (
@@ -120,6 +124,30 @@ const ReorderMails = () => {
     // 不在這裡 emit，改由 handleMouseUp 完成最後的 emit
   }
 
+  // 刪除行程
+  const handleDeletePlace = async (id: number) => {
+    const place = {
+      place: { id }
+    };
+
+    // delete from DataBase
+    const response = await fetch(`${BACKEND_URL}/api/addactivity/delete`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(place),
+    });
+    if (!response.ok) {
+      throw new Error('Failed to delete trip');
+    }
+    
+    // 
+    setMails((prevMails) => prevMails.filter(mail => mail.id !== id));
+  };
+
+
+
   return (
     <div ref={containerRef}>
       <Reorder.Group axis="y" values={mails} onReorder={handleReorder}>
@@ -143,6 +171,7 @@ const ReorderMails = () => {
             <span className="line-clamp-2 w-[260px] whitespace-break-spaces text-xs">
               {mail.formatted_address}
             </span>
+            <button onClick={() => handleDeletePlace(mail.id)}>⮕ Delete!</button>
           </Reorder.Item>
         ))}
       </Reorder.Group>

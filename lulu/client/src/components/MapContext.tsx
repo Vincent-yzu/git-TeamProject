@@ -2,6 +2,7 @@ import React, { createContext, useState, useContext, ReactNode } from "react";
 
 // 定義類型
 interface Place {
+  id: number;  // 0 = empty
   place_id: string;
   name: string;
   formatted_address: string;

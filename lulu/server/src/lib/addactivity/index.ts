@@ -18,14 +18,15 @@ import {
 } from "@/lib/db/schema"
 import { env } from "@/config/env"
 
-export const createActivity = async (title: string) => {
+// Insert
+export const createActivity = async (name: string, description: string) => {
   const activity: InsertActivity = {
-    title: title,
+    title: name,
     startTime: new Date(Date.now()),
     estimatedDuration: 60,
     attractionId: 1,
     subTripId: 1,
-    note: "no note now",
+    note: description,
     order: 1,
   }
 
@@ -36,3 +37,14 @@ export const createActivity = async (title: string) => {
 
   return result[0] as Activity
 }
+
+// Delete
+export const deleteActivity = async (activityId: number) => {
+  try {
+    await db.delete(activities).where(eq(activities.id, activityId));
+    console.log(`Activity with id ${activityId} has been deleted successfully.`);
+  } catch (error) {
+    console.error("Error deleting activity:", error);
+  }
+}
+
