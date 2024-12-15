@@ -4,7 +4,8 @@ import { useMapContext } from "./MapContext"; // 引入 Context
 
 export const DisplayMap = () => {
   const { selectedPlace } = useMapContext(); // 從 Context 中取用 `selectedPlace`
-  const [defaultCenter] = useState({ lat: 37.7749, lng: -122.4194 }); // 預設中心位置
+  const { zoomLevel } = useMapContext(); // 從 Context 中取用 `selectedPlace`
+  const [defaultCenter] = useState({ lat: 35.6803, lng: 139.7638 }); // 預設中心位置
 
   const { isLoaded } = useJsApiLoader({
     googleMapsApiKey: import.meta.env.VITE_GOOGLE_API_KEY!,
@@ -20,7 +21,7 @@ export const DisplayMap = () => {
   return (
     <GoogleMap
       mapContainerStyle={mapContainerStyle}
-      zoom={10}
+      zoom={zoomLevel}
       center={
         selectedPlace
           ? {

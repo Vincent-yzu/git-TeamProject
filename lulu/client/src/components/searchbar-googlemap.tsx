@@ -19,6 +19,7 @@ interface Place {
       lng: number;
     };
   };
+  icon: string;
   // 根據需要添加其他欄位
 }
 
@@ -26,6 +27,8 @@ export const SearchBarGoogleMap = ({ placeholder }: SearchBarGoogleMapProps) => 
   const [query, setQuery] = useState(""); // 儲存搜尋文字
   const [places, setPlaces] = useState<any[]>([]); // 儲存搜尋結果
   const { setSelectedPlace } = useMapContext(); // 從 Context 中取用 `setSelectedPlace`
+  const { setAddedPlace } = useMapContext(); // 從 Context 中取用 `setSelectedPlace`
+  const { setZoomLevel } = useMapContext(); // 從 Context 中取用 `setSelectedPlace`
 
   const handleSearchChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
     const newQuery = e.target.value;
@@ -45,28 +48,29 @@ export const SearchBarGoogleMap = ({ placeholder }: SearchBarGoogleMapProps) => 
       }
 
       try {
+        // 使用 text search 取得景點資料
         const response = await fetch(`${BACKEND_URL}/api/googlesearch?query=${query}`);
         if (!response.ok) {
           throw new Error("Failed to fetch places");
         }
 
         const data = await response.json();
-        //console.log(data);
         setPlaces(data);
 
-        // 假設 data[0] 包含經緯度資訊
+        // 更新右側地圖 (使用第一筆資料)
         if (data.length > 0) {
-          const lat = data[0].geometry.location.lat;
-          const lng = data[0].geometry.location.lng;
-          //console.log("接收到的經緯度資訊:", { lat, lng });
-
+          setZoomLevel(15);
           setSelectedPlace({
+            place_id: data[0].place_id,
+            name: data[0].name,
+            formatted_address: data[0].formatted_address,
             geometry: {
               location: {
-                lat: lat,
-                lng: lng,
+                lat: data[0].geometry.location.lat,
+                lng: data[0].geometry.location.lng,
               },
             },
+            icon: data[0].icon,
           });
         }
       } catch (error) {
@@ -75,7 +79,7 @@ export const SearchBarGoogleMap = ({ placeholder }: SearchBarGoogleMapProps) => 
     }
   }, [query, setSelectedPlace]);
 
-  // add to DataBase
+  // 加入行程
   const handleAddPlace = async (place: Place) => {
     const placeWithTitle = {
       title: place.name, // 假設 place.name 是標題
@@ -84,6 +88,7 @@ export const SearchBarGoogleMap = ({ placeholder }: SearchBarGoogleMapProps) => 
     };
     console.log("place:", place);
 
+    // add to DataBase
     const response = await fetch(`${BACKEND_URL}/api/addactivity`, {
       method: 'POST',
       headers: {
@@ -94,6 +99,21 @@ export const SearchBarGoogleMap = ({ placeholder }: SearchBarGoogleMapProps) => 
     if (!response.ok) {
       throw new Error('Failed to add trip');
     }
+
+    // add to Left interface
+    setAddedPlace({
+      place_id: place.place_id,
+      name: place.name,
+      formatted_address: place.formatted_address,
+      geometry: {
+        location: {
+          lat: place.geometry.location.lat,
+          lng: place.geometry.location.lng,
+        },
+      },
+      icon: place.icon,
+    });
+
     return response.json();
   };
 
