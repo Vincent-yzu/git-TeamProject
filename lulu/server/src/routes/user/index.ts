@@ -7,6 +7,7 @@ router.get("/", requireAuth, async (req, res) => {
   const { hashedPassword, ...filteredUser } = req.user!
   res.status(200).json({
     user: filteredUser,
+    isLoggedIn: true,
   })
 })
 

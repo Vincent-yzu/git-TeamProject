@@ -33,6 +33,7 @@ export const trips = pgTable("trips", {
   title: text("title").notNull(),
   startDate: timestamp("start_date", { withTimezone: true }),
   endDate: timestamp("end_date", { withTimezone: true }),
+  destination: text("destination").notNull(),
   editableList: text("editable_list"), // 可編輯用戶ID列表，可能是JSON格式
   viewableList: text("viewable_list"), // 可查看用戶ID列表，可能是JSON格式
   createdAt: timestamp("created_at", { withTimezone: true }).defaultNow(),
