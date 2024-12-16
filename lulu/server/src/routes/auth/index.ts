@@ -18,7 +18,7 @@ import {
   verifyPassword,
 } from "@/lib/auth"
 import { db } from "@/lib/db"
-import { users, verifications, trips, userTrips } from "@/lib/db/schema"
+import { users, verifications } from "@/lib/db/schema"
 import {
   BadRequestError,
   InternalServerError,
@@ -86,35 +86,6 @@ router.post("/sign-up", async (req, res) => {
     })
     .returning()
 
-  //TODO: also sent to "trips" and "userTrips" table
-
-  const randomTripId = randomInt(1, 10001); // 隨機設行程的ID
-
-  // 插入新行程到 trips 表
-  const [newTrip] = await db
-    .insert(trips)
-    .values({
-      id: randomTripId,
-      title: `Default Trip for ${result.data.email}`,
-      destination: "Default Destination",
-      startDate: new Date(),
-    })
-    .returning();
-
-  // 插入用戶與行程的關聯到 userTrips 表
-  if (!insertedUser) {
-    throw new InternalServerError("User insertion failed");
-  }
-
-  if (!newTrip) {
-    throw new InternalServerError("Trip insertion failed");
-  }
-
-  await db.insert(userTrips).values({
-    userId: insertedUser.id,
-    tripId: newTrip.id,
-    role: "editor", // 預設角色為 editor
-  });
 
   const session = await createSession(insertedUser!.id)
 
