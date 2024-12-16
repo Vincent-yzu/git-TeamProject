@@ -86,9 +86,9 @@ router.post("/sign-up", async (req, res) => {
     })
     .returning()
 
-  //TODO: also sent to "trips" table
+  //TODO: also sent to "trips" and "userTrips" table
 
-  const randomTripId = randomInt(1, 10001);
+  const randomTripId = randomInt(1, 10001); // 隨機設行程的ID
 
   // 插入新行程到 trips 表
   const [newTrip] = await db
@@ -98,7 +98,6 @@ router.post("/sign-up", async (req, res) => {
       title: `Default Trip for ${result.data.email}`,
       destination: "Default Destination",
       startDate: new Date(),
-      endDate: new Date(new Date().setDate(new Date().getDate() + 7)), // 預設為一周後結束
     })
     .returning();
 

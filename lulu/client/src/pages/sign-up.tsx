@@ -58,7 +58,7 @@ export default function SignUpForm() {
         title: "Sign-up successful!",
         description: "You can now sign in.",
       })
-      navigate("/dashboard")
+      navigate("/dashboard") // FIXME: shouldn't directly navigate to dashboard, go to home page and click the trip we had created
     },
     onError: () => {
       toast({
