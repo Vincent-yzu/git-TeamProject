@@ -15,6 +15,7 @@ import {
 } from "@/components/ui/sidebar"
 import { MapProvider  } from "@/components/MapContext"; // 引入 Context
 import { DisplayMap } from "@/components/displaymap"
+import { AttractionDetail } from "@/components/attraction-detail"
 import { SearchBarGoogleMap } from "@/components/searchbar-googlemap"
 import { useAuth } from "@/hooks/use-auth"
 export default function Dashboard() {
@@ -32,7 +33,8 @@ export default function Dashboard() {
       }
     >
       <MapProvider>
-        <AppSidebar />
+        <AppSidebar />  {/* 文字搜尋欄在裡面 */}
+        <AttractionDetail />  {/* 景點詳細資訊 */}
         <SidebarInset>
           <header className="sticky top-0 flex shrink-0 items-center gap-2 border-b bg-background p-4">
             <SidebarTrigger className="-ml-1" />
@@ -57,6 +59,7 @@ export default function Dashboard() {
               />
             ))} */}
             
+            {/* 右側 google map 大地圖 */}
             <DisplayMap />
 
           </div>
