@@ -10,6 +10,7 @@ interface SearchBarGoogleMapProps {
 }
 
 interface Place {
+  id: number;  // 0 = empty
   place_id: string;
   name: string;
   formatted_address: string;
@@ -61,6 +62,7 @@ export const SearchBarGoogleMap = ({ placeholder }: SearchBarGoogleMapProps) => 
         if (data.length > 0) {
           setZoomLevel(15);
           setSelectedPlace({
+            id: 0,
             place_id: data[0].place_id,
             name: data[0].name,
             formatted_address: data[0].formatted_address,
@@ -82,14 +84,14 @@ export const SearchBarGoogleMap = ({ placeholder }: SearchBarGoogleMapProps) => 
   // 加入行程
   const handleAddPlace = async (place: Place) => {
     const placeWithTitle = {
-      title: place.name, // 假設 place.name 是標題
+      name: place.name, // 假設 place.name 是標題
       description: place.formatted_address, // 假設 formatted_address 是描述
       coordinates: place.geometry.location, // 假設這是經緯度資料
     };
-    console.log("place:", place);
+    //console.log("place:", place);
 
     // add to DataBase
-    const response = await fetch(`${BACKEND_URL}/api/addactivity`, {
+    const response = await fetch(`${BACKEND_URL}/api/addactivity/insert`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -99,9 +101,16 @@ export const SearchBarGoogleMap = ({ placeholder }: SearchBarGoogleMapProps) => 
     if (!response.ok) {
       throw new Error('Failed to add trip');
     }
+    
+    // 解析回應資料
+    const data = await response.json();
+
+    // 打印回應資料來檢查結構
+    // console.log("Received data:", data.activity.id);
 
     // add to Left interface
     setAddedPlace({
+      id: data.activity.id,
       place_id: place.place_id,
       name: place.name,
       formatted_address: place.formatted_address,
@@ -113,8 +122,6 @@ export const SearchBarGoogleMap = ({ placeholder }: SearchBarGoogleMapProps) => 
       },
       icon: place.icon,
     });
-
-    return response.json();
   };
 
 
@@ -127,10 +134,10 @@ export const SearchBarGoogleMap = ({ placeholder }: SearchBarGoogleMapProps) => 
       onKeyDown={handleKeyDown}
       />
       <ul>
-        {places.map((place) => (
+        {places.slice(0, 5).map((place) => (  // 最多顯示5筆
           <li key={place.place_id}>
             <strong>{place.name}</strong> - {place.formatted_address}
-            <br/>
+            <br />
             <button onClick={() => handleAddPlace(place)}>⮕⮕⮕ Add to Trips!</button>
           </li>
         ))}

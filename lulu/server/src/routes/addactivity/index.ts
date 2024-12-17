@@ -158,4 +158,25 @@ router.get("/", requireAuth, async (req, res) => {
   res.status(201).json({ msg: "success" })
 })
 
+// Delete
+// router.post("/delete", async (req, res) => {
+//   try {
+//     // 檢查 place
+//     const { place } = req.body;
+//     if (!place || typeof place.id === "undefined") {
+//       res.status(400).json({ error: "Invalid request: place and id are required" });
+//     }
+
+//     // 呼叫 deleteActivity 並獲取結果
+//     const { id } = place;
+//     const activity = await deleteActivity(id);
+
+//     // 回傳結果作為 JSON
+//     res.status(201).json({ message: "Activity deleted successfully", activity });
+//   } catch (error) {
+//     console.error("Error deleting activity:", error);
+//     res.status(500).json({ error: "Internal server error" });
+//   }
+// })
+
 export { router as addactivityRouter }
