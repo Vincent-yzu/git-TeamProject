@@ -67,6 +67,7 @@ CREATE TABLE IF NOT EXISTS "trips" (
 	"created_at" timestamp with time zone DEFAULT now(),
 	"updated_at" timestamp with time zone DEFAULT now()
 );
+
 --> statement-breakpoint
 ALTER TABLE "users" ADD COLUMN "name" text;--> statement-breakpoint
 DO $$ BEGIN

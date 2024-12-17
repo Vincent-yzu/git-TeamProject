@@ -25,6 +25,7 @@ import {
   UnauthorizedError,
 } from "@/lib/error"
 import { requireAuth } from "@/middleware/require-auth"
+import { randomInt } from "crypto";
 
 const router = Router()
 
@@ -84,6 +85,7 @@ router.post("/sign-up", async (req, res) => {
       hashedPassword,
     })
     .returning()
+
 
   const session = await createSession(insertedUser!.id)
 

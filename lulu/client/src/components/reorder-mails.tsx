@@ -142,7 +142,7 @@ const ReorderMails = () => {
       throw new Error('Failed to delete trip');
     }
     
-    // 
+    // 資料庫刪除後更新網頁UI  (寫法待修改!!)
     setMails((prevMails) => prevMails.filter(mail => mail.id !== id));
   };
 
