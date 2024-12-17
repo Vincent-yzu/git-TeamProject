@@ -19,9 +19,7 @@ import {
 import { Switch } from "@/components/ui/switch"
 import { NavUser } from "@/components/nav-user"
 import { ReorderMails } from "./reorder-mails"
-import { MapProvider } from "@/components/MapContext"
 import { SearchBarGoogleMap } from "./searchbar-googlemap"
-import { DisplayMap } from "@/components/displaymap"
 
 // This is sample data
 const data = {
@@ -81,7 +79,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const { setOpen } = useSidebar()
 
 
-  if (!auth) {
+  if (!auth?.user) {
     return null
   }
 

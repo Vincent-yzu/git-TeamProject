@@ -15,11 +15,10 @@ import {
 } from "@/components/ui/sidebar"
 import { MapProvider  } from "@/components/MapContext"; // 引入 Context
 import { DisplayMap } from "@/components/displaymap"
-import { SearchBarGoogleMap } from "@/components/searchbar-googlemap"
 import { useAuth } from "@/hooks/use-auth"
 export default function Dashboard() {
   const { data: auth } = useAuth()
-  if (!auth) {
+  if (!auth?.user) {
     return null
   }
 
@@ -31,6 +30,7 @@ export default function Dashboard() {
         } as React.CSSProperties
       }
     >
+     
       <MapProvider>
         <AppSidebar />
         <SidebarInset>

@@ -1,24 +1,26 @@
-import React from "react";
-import { useNavigate } from "react-router-dom";
-import "./home.css";
+import React from "react"
+import { useNavigate } from "react-router-dom"
+
+import "./home.css"
+
 
 const HomePage: React.FC = () => {
-  const navigate = useNavigate();
+  const navigate = useNavigate()
 
   const handleNavigateToMyTrip = () => {
-    navigate("/my-trip");
-  };
+    navigate("/my-trip")
+  }
 
   const handleNavigateToHome = () => {
-    navigate("/home");
-  };
+    navigate("/home")
+  }
 
   return (
     <div className="home-page">
       <header className="header">
         {/* Logo 按鈕 */}
         <button className="logo-button" onClick={handleNavigateToHome}>
-          <img src="/img/logl.png" alt="Logo" className="logo-image"/>
+          <img src="/img/logl.png" alt="Logo" className="logo-image" />
         </button>
 
         <div className="menu">
@@ -28,9 +30,10 @@ const HomePage: React.FC = () => {
           <div className="profile-icon"></div>
           <div className="hamburger-menu"></div>
         </div>
+       
       </header>
       <main className="main-content">
-      <div className="hero-section">
+        <div className="hero-section">
           <div className="button-container">
             <div className="action-buttons">
               <button
@@ -53,7 +56,7 @@ const HomePage: React.FC = () => {
         </section>
       </main>
     </div>
-  );
-};
+  )
+}
 
-export default HomePage;
+export default HomePage

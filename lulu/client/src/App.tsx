@@ -6,7 +6,7 @@ import MyTripPage from "@/pages/my-trip"; // 引入 MyTripPage
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Route, Routes } from "react-router-dom";
 import { Toaster } from "@/components/ui/toaster";
-
+import AddActivityPage from "@/pages/add-activity";
 const queryClient = new QueryClient();
 
 function App() {
@@ -20,6 +20,7 @@ function App() {
             <Route path="/dashboard" element={<Dashboard />} />
             <Route path="/home" element={<HomePage />} />
             <Route path="/my-trip" element={<MyTripPage />} />
+            <Route path="/add-activity" element={<AddActivityPage />} />
           </Routes>
         </BrowserRouter>
       </QueryClientProvider>
