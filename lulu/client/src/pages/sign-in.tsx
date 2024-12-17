@@ -4,7 +4,9 @@ import { useForm } from "react-hook-form"
 import { Link, useNavigate } from "react-router-dom"
 import { credentialsSchema } from "validation"
 import * as z from "zod"
+
 import { fetcher } from "@/lib/fetcher"
+import { useAuth } from "@/hooks/use-auth"
 import { useToast } from "@/hooks/use-toast"
 import { Button } from "@/components/ui/button"
 import {
@@ -30,6 +32,11 @@ import { PasswordField } from "@/components/password-field"
 const BACKEND_URL = import.meta.env.VITE_BACKEND_URL
 
 export default function SignInForm() {
+  const { data: auth } = useAuth()
+  const navigate = useNavigate()
+  if (auth?.user) {
+    navigate("/dashboard")
+  }
   const form = useForm<z.infer<typeof credentialsSchema>>({
     resolver: zodResolver(credentialsSchema),
     defaultValues: {
@@ -37,7 +44,6 @@ export default function SignInForm() {
       password: "",
     },
   })
-  const navigate = useNavigate()
   const { toast } = useToast()
 
   const mutation = useMutation({

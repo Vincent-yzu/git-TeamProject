@@ -26,7 +26,7 @@ import { Input } from "@/components/ui/input"
 import { Separator } from "@/components/ui/separator"
 import { GoogleIcon } from "@/components/google-icon"
 import { PasswordField } from "@/components/password-field"
-
+import { useAuth } from "@/hooks/use-auth"
 const BACKEND_URL = import.meta.env.VITE_BACKEND_URL
 
 export default function SignUpForm() {
@@ -37,7 +37,11 @@ export default function SignUpForm() {
       password: "",
     },
   })
+  const { data: auth } = useAuth()
   const navigate = useNavigate()
+  if (auth?.user) {
+    navigate("/dashboard")
+  }
 
   const { toast } = useToast()
 

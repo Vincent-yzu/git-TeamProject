@@ -20,7 +20,7 @@ import { SearchBarGoogleMap } from "@/components/searchbar-googlemap"
 import { useAuth } from "@/hooks/use-auth"
 export default function Dashboard() {
   const { data: auth } = useAuth()
-  if (!auth) {
+  if (!auth?.user) {
     return null
   }
 
@@ -32,6 +32,7 @@ export default function Dashboard() {
         } as React.CSSProperties
       }
     >
+     
       <MapProvider>
         <AppSidebar />  {/* 文字搜尋欄在裡面 */}
         <AttractionDetail />  {/* 景點詳細資訊 */}

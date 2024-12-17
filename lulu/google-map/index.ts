@@ -4,75 +4,129 @@ import path from "path";
 import fs from "fs";
 dotenv.config();
 
-if (!process.env.GOOGLE_MAPS_API_KEY) {
-  throw new Error("GOOGLE_MAPS_API_KEY is not set");
-}
+// if (!process.env.GOOGLE_MAPS_API_KEY) {
+//   throw new Error("GOOGLE_MAPS_API_KEY is not set");
+// }
 
-const writeFile = (filePath: string, data: any) => {
-  fs.writeFileSync(filePath, JSON.stringify(data, null, 2));
-};
+// const writeFile = (filePath: string, data: any) => {
+//   fs.writeFileSync(filePath, JSON.stringify(data, null, 2));
+// };
 
 const client = new Client({
   apiKey: process.env.GOOGLE_MAPS_API_KEY,
 });
 
-async function textSearch(query: string) {
-  try {
-    const response = await client.searchText(
-      {
-        textQuery: query,
-      },
-      {
-        otherArgs: {
-          headers: {
-            "X-Goog-FieldMask":
-              "*",
-          },
-        },
-      }
-    );
-    const filePath = path.join(__dirname, "textSearch.json");
+// async function textSearch(query: string) {
+//   try {
+//     const response = await client.searchText(
+//       {
+//         textQuery: query,
+//       },
+//       {
+//         otherArgs: {
+//           headers: {
+//             "X-Goog-FieldMask":
+//               "*",
+//           },
+//         },
+//       }
+//     );
+//     const filePath = path.join(__dirname, "textSearch.json");
 
-    writeFile(filePath, response[0]);
-    console.log(response[0].places?.length);
-  } catch (error) {
-    console.error(error);
-  }
-}
+//     writeFile(filePath, response[0]);
+//     console.log(response[0].places?.length);
+//   } catch (error) {
+//     console.error(error);
+//   }
+// }
 
-async function getPlaceDetails(placeName: string) {
-  const response = await client.getPlace(
-    {
-      name: placeName,
-    },
-    {
-      otherArgs: {
-        headers: {
-          "X-Goog-FieldMask": "*",
-        },
-      },
-    }
-  );
-  const filePath = path.join(__dirname, "placeDetails.json");
-  writeFile(filePath, response[0]);
-}
+// async function getPlaceDetails(placeName: string) {
+//   const response = await client.getPlace(
+//     {
+//       name: placeName,
+//     },
+//     {
+//       otherArgs: {
+//         headers: {
+//           "X-Goog-FieldMask": "*",
+//         },
+//       },
+//     }
+//   );
+//   const filePath = path.join(__dirname, "placeDetails.json");
+//   writeFile(filePath, response[0]);
+// }
 
-async function getPhoto(photoName: string) {
-  const response = await client.getPhotoMedia({
-    name: photoName,
-    maxHeightPx: 1000,
-    maxWidthPx: 1000,
-  });
-  const filePath = path.join(__dirname, "photo.json");
-  writeFile(filePath, response[0]);
-}
+// async function getPhoto(photoName: string) {
+//   const response = await client.getPhotoMedia({
+//     name: photoName,
+//     maxHeightPx: 1000,
+//     maxWidthPx: 1000,
+//   });
+//   const filePath = path.join(__dirname, "photo.json");
+//   writeFile(filePath, response[0]);
+// }
 
-// Usage
-textSearch("台北市20個熱門景點");
+// // Usage
+// textSearch("台北市20個熱門景點");
 // getPlaceDetails("places/ChIJu8BdQQmpQjQRyAwMGhhFVD8");
 // getPhoto(
 //   "places/ChIJK4Tktz-uEmsR4wAu4Lf6dCg/photos/AdDdOWokMez2JlecauKn8i4ATbo9nb_2WVjPbVa-Tku8hbc-wUSqHIU6QW_ZHS0kn86mDECnSC-XZ_vAmYHOYNmw5Ac4jWX8ZeflA5VViGB8vc_HAn8jsXsCXMFu4TOzMXaXydzXXkjz6OpDv2bfKevYnLuFQgBRKyH2Hjfk/media"
 // );
+const a = "東京都台東區淺草2丁目3-1";
+
+async function getPlaceDetails(query: string) {
+  // Step 1: Perform text search and get place name
+  const start = Date.now()
+  const [textSearchResponse] = await client.searchText(
+    { textQuery: query },
+    { otherArgs: { headers: { "X-Goog-FieldMask": "places.name" } } }
+  );
+  const placeName = textSearchResponse.places?.[0]?.name;
+  const end = Date.now()
+  console.log((end - start)/1000)
+
+  if (!placeName) throw new Error("Place not found");
+
+  // Step 2: Start fetching place details and photos in parallel
+  const placeDetailsPromise = client.getPlace(
+    { name: placeName },
+    {
+      otherArgs: {
+        headers: { "X-Goog-FieldMask": "photos,formattedAddress,location" },
+      },
+    }
+  );
+
+  const [placeResponse] = await placeDetailsPromise;
+  // Step 3: Fetch all photos in parallel
+  const photoPromises = (placeResponse.photos || []).map((photo) =>
+    client
+      .getPhotoMedia({
+        name: `${photo.name}/media`,
+        maxHeightPx: 500,
+        maxWidthPx: 500,
+      })
+      .then((photoResponse) => photoResponse[0].photoUri)
+  );
+
+  const photoUrls = await Promise.all(photoPromises);
+
+  return {
+    photoUrls,
+    latitude: placeResponse.location?.latitude,
+    longitude: placeResponse.location?.longitude,
+  };
+}
+
+async function main() {
+  const start = Date.now()
+  console.log(await getPlaceDetails(a));
+  const end = Date.now()
+  console.log((end - start)/1000)
+}
+
+main();
 
 
 // displayName,rating,editSummary,weekdayDesciptions,photos,types,formattedAddress,viewport,phonenumber

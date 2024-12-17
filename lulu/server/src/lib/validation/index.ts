@@ -18,7 +18,7 @@
         "Family & Group Activities",
       ])
     ),
-    language: z.enum(["en", "zh-TW"]),
+    language: z.enum(["英文", "中文"]),
   })
 
   export const itineraryBackendSchema = z.object({
