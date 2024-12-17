@@ -3,6 +3,8 @@ import {
   BadRequestError,
 } from "@/lib/error"
 import axios from 'axios';
+import dotenv from 'dotenv';
+dotenv.config();
 
 const router = Router()
 
@@ -24,6 +26,7 @@ router.get("/googlesearch", async (req, res) => {
     const url = `https://maps.googleapis.com/maps/api/place/textsearch/json?query=${queryString}&key=${apiKey}`;
 
     const response = await axios.get(url);
+    console.log(response.data)
     res.json(response.data.results); // 返回景點資料
   } catch (error: unknown) {
     if (error instanceof Error) {

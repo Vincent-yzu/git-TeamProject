@@ -1,6 +1,7 @@
 import { userRouter } from "@/routes/user"
 import { authRouter } from "@/routes/auth"
 import { googlesearchRouter } from "@/routes/googlesearch"
-import { addactivityRouter } from "@/routes/addactivity"
+import { itineraryRouter } from "@/routes/itinerary"
 
-export { userRouter, authRouter, googlesearchRouter, addactivityRouter }
+export { userRouter, authRouter, googlesearchRouter, itineraryRouter }
+ 

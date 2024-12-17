@@ -1,8 +1,6 @@
 import { useState, useCallback } from "react";
 import { SidebarInput } from "@/components/ui/sidebar";
 import { useMapContext } from "./MapContext"; // 引入 Context
-import axios from "axios";
-import { debug } from "console";
 
 const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
 

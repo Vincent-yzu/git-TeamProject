@@ -1,7 +1,7 @@
 import { PlacesClient as Client } from "@googlemaps/places"
 import dotenv from "dotenv"
 import { Router } from "express"
-
+import { eq, and} from "drizzle-orm"
 import { db } from "@/lib/db"
 import { itineraries } from "@/lib/db/schema"
 import { BadRequestError } from "@/lib/error"
@@ -61,14 +61,21 @@ async function getPlaceDetails(query: string) {
 }
 
 router.get("/", requireAuth, async (req, res) => {
-  // 模擬使用者輸入
-  // req.body = {
-  //   location: "Taipei, Taiwan",
-  //   startDate: "2024-04-01T10:00:00Z",
-  //   endDate: "2024-04-05T18:00:00Z",
-  //   travelCategories: ["City & Sightseeing"],
-  //   language: "中文",
-  // }
+  const itinerary = await db.select().from(itineraries).where(eq(itineraries.userId, req.user!.id))
+  res.json(itinerary)
+})
+
+router.get("/:id", requireAuth, async (req, res) => {
+  const { id } = req.params;
+  if (typeof id !== "string") {
+    throw new BadRequestError("Invalid itinerary id")
+  }
+  const [itinerary] = await db.select().from(itineraries).where(and(eq(itineraries.id, id), eq(itineraries.userId, req.user!.id)))
+  res.json(itinerary)
+})
+
+
+router.post("/", requireAuth, async (req, res) => {
 
   const parsedBody = itineraryFrontendSchema.safeParse(req.body)
 
@@ -124,7 +131,7 @@ router.get("/", requireAuth, async (req, res) => {
     ),
   };
   // @ts-ignore
-  await db.insert(itineraries).values({
+  const [itinerary] = await db.insert(itineraries).values({
     userId: req.user!.id,
     allowedEditors: [req.user!.id],
     isPublic: false,
@@ -136,9 +143,9 @@ router.get("/", requireAuth, async (req, res) => {
     language: language,
     days: completedItinerary.days,
     description: completedItinerary.description,
-  })
+  }).returning()
 
-  res.status(201).json({ msg: "success" })
+  res.status(201).json({ msg: "success", id: itinerary?.id })
 })
 
 // Delete
@@ -162,4 +169,4 @@ router.get("/", requireAuth, async (req, res) => {
 //   }
 // })
 
-export { router as addactivityRouter }
+export { router as itineraryRouter }
