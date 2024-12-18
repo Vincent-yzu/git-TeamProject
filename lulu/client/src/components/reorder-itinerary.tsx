@@ -17,7 +17,7 @@ const ReorderItinerary = () => {
   const [selectedDayIndex, setSelectedDayIndex] = useState("0")
   const containerRef = useRef<HTMLDivElement>(null)
   const socketRef = useRef<Socket | null>(null)
-  const [roomId] = useState<string>("123")
+  const [roomId] = useState<string>(id as string)
 
   useEffect(() => {
     if (itinerary && itinerary.days && itinerary.days.length > 0) {

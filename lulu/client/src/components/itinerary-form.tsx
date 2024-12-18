@@ -69,8 +69,7 @@ const itineraryFrontendSchema = z.object({
         "Adventure & Sports",
         "Family & Group Activities",
       ])
-    )
-    .nonempty("Please select at least one category"),
+    ).default([]),
   language: z.enum(["英文", "中文"]),
 })
 
@@ -117,9 +116,9 @@ export default function ItineraryForm() {
   const [open, setOpen] = useState(false)
 
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
+    <Dialog open={open || mutation.isPending} onOpenChange={setOpen}>｀
       <DialogTrigger asChild>
-        <Button className=" size-[44px] px-14" variant="outline">AI Planner</Button>
+        <Button className=" size-[44px] px-14" disabled={mutation.isPending} variant="outline">AI Planner</Button>
       </DialogTrigger>
       <DialogContent className="sm:max-w-sm md:max-w-md lg:max-w-lg">
         <DialogHeader>

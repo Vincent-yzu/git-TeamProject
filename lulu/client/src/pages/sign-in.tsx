@@ -35,7 +35,7 @@ export default function SignInForm() {
   const { data: auth } = useAuth()
   const navigate = useNavigate()
   if (auth?.user) {
-    navigate("/dashboard")
+    navigate("/my-trip")
   }
   const form = useForm<z.infer<typeof credentialsSchema>>({
     resolver: zodResolver(credentialsSchema),
@@ -63,7 +63,7 @@ export default function SignInForm() {
         title: "Sign-in successful!",
         description: "You can now explore the world.",
       })
-      navigate("/dashboard")
+      navigate("/my-trip")
     },
     onError: () => {
       toast({

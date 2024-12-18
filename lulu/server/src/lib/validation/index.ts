@@ -17,7 +17,7 @@
         "Adventure & Sports",
         "Family & Group Activities",
       ])
-    ),
+    ).default([]),
     language: z.enum(["英文", "中文"]),
   })
 

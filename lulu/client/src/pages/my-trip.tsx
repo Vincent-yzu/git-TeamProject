@@ -52,7 +52,7 @@ const MyTripPage: React.FC = () => {
   }
 
   const handleConfirmTrip = async () => {
-    navigate("/dashboard") // 無論如何，先跳轉至 Dashboard 頁面
+    // navigate("/dashboard") // 無論如何，先跳轉至 Dashboard 頁面
 
     //   const tripData = {
     //     title: tripName, // 使用者輸入的行程名稱

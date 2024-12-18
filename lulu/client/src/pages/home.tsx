@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom"
 
 import "./home.css"
 
-import { useItineraries } from "@/hooks/use-itineraries"
+import { useItinerariesRecommended } from "@/hooks/use-itineraries"
 
 function getRandomInt(min: number, max: number) {
   return Math.floor(Math.random() * (max - min + 1)) + min
@@ -11,7 +11,7 @@ function getRandomInt(min: number, max: number) {
 
 const HomePage: React.FC = () => {
   const navigate = useNavigate()
-  const { data: itineraries, isLoading } = useItineraries()
+  const { data: itineraries, isLoading } = useItinerariesRecommended()
   if (isLoading) return null
   console.log(itineraries)
 

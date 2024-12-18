@@ -9,12 +9,18 @@ import { AppSidebar } from "@/components/app-sidebar"
 import { AttractionDetail } from "@/components/attraction-detail"
 import { DisplayMap } from "@/components/displaymap"
 import { MapProvider } from "@/components/MapContext" // 引入 Context
+import { useParams, useNavigate } from "react-router-dom"
 
 export default function Dashboard() {
   const { data: auth } = useAuth()
-
+  const { id } = useParams()
+  const navigate = useNavigate()
   if (!auth?.user) {
-    return null
+    navigate("/sign-in")
+  }
+
+  if (!id) {
+    navigate("/my-trip")
   }
 
   return (

@@ -40,7 +40,7 @@ export default function SignUpForm() {
   const { data: auth } = useAuth()
   const navigate = useNavigate()
   if (auth?.user) {
-    navigate("/dashboard")
+    navigate("/my-trip")
   }
 
   const { toast } = useToast()
@@ -62,7 +62,7 @@ export default function SignUpForm() {
         title: "Sign-up successful!",
         description: "You can now sign in.",
       })
-      navigate("/dashboard") // FIXME: shouldn't directly navigate to dashboard, go to home page and click the trip we had created
+      navigate("/my-trip") // FIXME: shouldn't directly navigate to dashboard, go to home page and click the trip we had created
     },
     onError: () => {
       toast({

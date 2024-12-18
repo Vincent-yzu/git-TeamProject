@@ -60,9 +60,20 @@ async function getPlaceDetails(query: string) {
   }
 }
 
+router.get("/recommended", async (req, res) => {
+  const itinerariesFromDB = await db.select().from(itineraries).where(eq(itineraries.isPublic, true))
+  const responseData = itinerariesFromDB.map((itinerary) => {
+    const {userId, allowedEditors, ...rest} = itinerary
+    return {
+      ...rest
+    }
+  }) 
+  res.json(responseData)
+})
+
 router.get("/", requireAuth, async (req, res) => {
-  const itinerary = await db.select().from(itineraries).where(eq(itineraries.userId, req.user!.id))
-  res.json(itinerary)
+  const itinerariesFromDB = await db.select().from(itineraries).where(eq(itineraries.userId, req.user!.id))
+  res.json(itinerariesFromDB)
 })
 
 router.get("/:id", requireAuth, async (req, res) => {
@@ -87,7 +98,7 @@ router.post("/", requireAuth, async (req, res) => {
     parsedBody.data
 
   const total_days = Math.ceil(
-    (new Date(endDate).getTime() - new Date(startDate).getTime()) /
+    (new Date(endDate).getTime() - new Date(startDate).getTime() + 1000 * 60 * 60 * 18) /
       (1000 * 60 * 60 * 24)
   )
   const modelizedItinerary = await generateItinerary({
