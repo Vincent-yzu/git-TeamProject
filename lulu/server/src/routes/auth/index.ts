@@ -146,6 +146,13 @@ router.get("/verification", async (req, res) => {
   res.status(200).send()
 })
 
+router.post("/sign-out", requireAuth, async (req, res) => {
+  await invalidateSession(req.session!.id)
+  res.clearCookie("session", cookieConfig)
+
+  res.status(200).send()
+})
+
 router.get("/google/sign-in", async (req, res) => {
   const state = generateState()
   const code = generateCodeVerifier()

@@ -8,6 +8,7 @@ import {
   Sparkles,
 } from "lucide-react"
 
+import { fetcher } from "@/lib/fetcher"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import {
   DropdownMenu,
@@ -24,10 +25,10 @@ import {
   SidebarMenuItem,
   useSidebar,
 } from "@/components/ui/sidebar"
-
+import { useNavigate } from "react-router-dom"
 export function NavUser({ user }: { user: User }) {
   const { isMobile } = useSidebar()
-
+  const navigate = useNavigate()
   return (
     <SidebarMenu>
       <SidebarMenuItem>
@@ -93,7 +94,14 @@ export function NavUser({ user }: { user: User }) {
               </DropdownMenuItem>
             </DropdownMenuGroup>
             <DropdownMenuSeparator />
-            <DropdownMenuItem>
+            <DropdownMenuItem onClick={async () => {
+              await fetcher("/api/auth/sign-out", {
+                options: {
+                  method: "POST",
+                },
+              })
+              navigate("/home")
+            }}>
               <LogOut />
               Log out
             </DropdownMenuItem>
