@@ -241,8 +241,9 @@ const ReorderMails = () => {
       throw new Error('Failed to delete trip');
     }
     
-    // 
-    setMails((prevMails) => prevMails.filter(mail => mail.name !== name));
+    // update
+    fetchData(); 
+    //setMails((prevMails) => prevMails.filter(mail => mail.name !== name));
   };
 
 
