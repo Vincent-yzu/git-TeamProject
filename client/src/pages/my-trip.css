@@ -1,0 +1,248 @@
+/* 全局樣式重置 */
+body {
+    margin: 0;
+    font-family: Arial, sans-serif;
+  }
+  
+  /* 頁面容器 */
+  .my-trip-page {
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+    background-color: #f5f5f5;
+  }
+  
+  /* 頁首樣式 */
+  .header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0 16px;
+    background-color: #fff;
+    height: 56px;
+    box-shadow: 0px 1px 4px rgba(0, 0, 0, 0.1);
+  }
+  
+  .logo-button {
+    background: none;
+    border: none;
+    padding: 0;
+    cursor: pointer;
+  }
+
+  .logo-image {
+    width: 300px;
+    height: auto;
+    display: block;
+  }
+  
+  .menu {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+  }
+  
+  .my-trip-button {
+    background: #e5e5e5;
+    border: none;
+    border-radius: 8px;
+    padding: 8px 12px;
+    cursor: pointer;
+  }
+  
+  .profile-icon,
+  .hamburger-menu {
+    width: 24px;
+    height: 24px;
+    background-color: #ccc;
+    border-radius: 50%;
+  }
+  
+  /* 主體內容樣式 */
+  .main-content {
+    padding: 16px;
+    flex-grow: 1;
+  }
+  
+  .page-title {
+    font-size: 24px;
+    margin-bottom: 16px;
+  }
+  
+  /* Tabs 樣式 */
+  .tabs {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 24px;
+  }
+  
+  .tab {
+    background: #f0f0f0;
+    border: none;
+    border-radius: 8px;
+    padding: 8px 16px;
+    cursor: pointer;
+  }
+  
+  .tab.active {
+    background: #d8d8d8;
+  }
+  
+  /* 行程占位區 */
+  .trip-placeholder {
+    text-align: center;
+    margin-top: 50px;
+  }
+  
+  .placeholder-image {
+    width: 100px;
+    height: auto;
+    background-color: none;
+    margin: 0 auto 16px;
+  }
+  
+  .placeholder-text {
+    color: #666;
+    margin-bottom: 16px;
+  }
+  
+  .create-trip-button {
+    background: #007bff;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    padding: 10px 20px;
+    cursor: pointer;
+  }
+  
+  .create-trip-button:hover {
+    background: #0056b3;
+  }
+ /* 背景遮罩 */
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+  }
+  
+  /* 彈窗內容 */
+  .modal-content {
+    background: white;
+    border-radius: 8px;
+    width: 90%;
+    max-width: 600px;
+    padding: 20px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    text-align: left;
+  }
+  
+  .modal-content h2 {
+    margin-bottom: 16px;
+    text-align: left; /* 標題靠左 */
+  }
+  
+  /* 選項按鈕 */
+.option-button {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    border-radius: 8px;
+    padding: 10px;
+    width: 100%;
+    cursor: pointer;
+    text-align: left; /* 文本靠左對齊 */
+    transition: background-color 0.3s ease, transform 0.2s ease;
+  }
+  
+  .option-button:hover {
+    background: #f5e0d0; /* 懸停時的背景色 */
+    transform: translateY(-2px); /* 懸停時微微提升效果 */
+  }
+  
+  .option-icon {
+    width: 24px;
+    height: 24px;
+    border-radius: 4px;
+  }
+  
+  .option-button span {
+    font-size: 16px;
+    color: #333; /* 按鈕文字顏色 */
+  }
+  
+  /* 取消按鈕 */
+  .cancel-button {
+    background: #c7c7c7;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    padding: 8px 16px;
+    cursor: pointer;
+    margin-top: 16px;
+    margin-left: 493px;
+  }
+  
+  .cancel-button:hover {
+    background: #787878;
+  }  
+  
+  /*自建行程*/
+  form {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+  
+  form label {
+    display: flex;
+    flex-direction: column;
+    font-size: 16px;
+    color: #333;
+  }
+  
+  form input {
+    padding: 8px;
+    border: 1px solid #cccccc;
+    border-radius: 4px;
+    font-size: 14px;
+  }
+  
+  form span {
+    margin: 0 8px;
+    font-size: 16px;
+  }
+
+  .confirm-create-trip-button {
+    background: #f1cbad;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    padding: 8px 16px;
+    cursor: pointer;
+    margin-top: 16px;
+  }
+
+  .confirm-create-trip-button:hover {
+    background: #e99759;
+  }
+
+  .cancel-trip-button {
+    background: #c7c7c7;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    padding: 8px 16px;
+    cursor: pointer;
+    margin-top: 16px;
+  }
+  
+  .cancel-trip-button:hover {
+    background: #787878;
+  }
