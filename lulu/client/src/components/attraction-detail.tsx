@@ -21,6 +21,7 @@ interface Place {
 export const AttractionDetail = () => {
   const { selectedPlace } = useMapContext(); // 從 Context 中取用 `selectedPlace`
   const { setAddedPlace } = useMapContext(); // 從 Context 中取用 `setSelectedPlace`
+  const { heyUpdateData, setHeyUpdateData } = useMapContext(); // 從 Context 中取用 `heyUpdateData`
   const [isVisible, setIsVisible] = useState(false); // 控制容器顯示/隱藏的狀態
 
   // Update visibility when selectedPlace changes
@@ -32,10 +33,16 @@ export const AttractionDetail = () => {
 
   // 加入行程
   const handleAddPlace = async (place: Place) => {
-    const placeWithTitle = {
+    const placeWithDetail = {
       name: place.name, // 假設 place.name 是標題
-      description: place.formatted_address, // 假設 formatted_address 是描述
-      coordinates: place.geometry.location, // 假設這是經緯度資料
+      type: "activity", 
+      order: 99,
+      latitude: place.geometry.location.lat,
+      location: place.formatted_address,
+      longitude: place.geometry.location.lng,
+      photoUrls: [], 
+      description: "這是景點的描述!",
+      recommendDuration: 60,
     };
     //console.log("place:", place);
 
@@ -45,7 +52,7 @@ export const AttractionDetail = () => {
       headers: {
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify(placeWithTitle),
+      body: JSON.stringify(placeWithDetail),
     });
     if (!response.ok) {
       throw new Error('Failed to add trip');
@@ -58,19 +65,20 @@ export const AttractionDetail = () => {
     // console.log("Received data:", data.activity.id);
 
     // add to Left interface
-    setAddedPlace({
-      id: data.activity.id,
-      place_id: place.place_id,
-      name: place.name,
-      formatted_address: place.formatted_address,
-      geometry: {
-        location: {
-          lat: place.geometry.location.lat,
-          lng: place.geometry.location.lng,
-        },
-      },
-      icon: place.icon,
-    });
+    setHeyUpdateData(heyUpdateData + 1);
+    // setAddedPlace({
+    //   id: data.activity.id,
+    //   place_id: place.place_id,
+    //   name: place.name,
+    //   formatted_address: place.formatted_address,
+    //   geometry: {
+    //     location: {
+    //       lat: place.geometry.location.lat,
+    //       lng: place.geometry.location.lng,
+    //     },
+    //   },
+    //   icon: place.icon,
+    // });
   };
 
   // 處理關閉容器

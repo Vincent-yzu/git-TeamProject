@@ -29,6 +29,10 @@ interface MapContextType {
   // 新增 zoomLevel
   zoomLevel: number;  
   setZoomLevel: React.Dispatch<React.SetStateAction<number>>;
+
+  // 新增 heyUpdateData
+  heyUpdateData: number;  
+  setHeyUpdateData: React.Dispatch<React.SetStateAction<number>>;
 }
 
 // 創建 Context、Provider
@@ -38,9 +42,10 @@ export const MapProvider = ({ children }: { children: ReactNode }) => {
   const [selectedPlace, setSelectedPlace] = useState<Place | null>(null);
   const [addedPlace, setAddedPlace] = useState<Place | null>(null);
   const [zoomLevel, setZoomLevel] = useState<number>(9);
+  const [heyUpdateData, setHeyUpdateData] = useState<number>(0);
 
   return (
-    <MapContext.Provider value={{ selectedPlace, setSelectedPlace, addedPlace, setAddedPlace, zoomLevel, setZoomLevel }}>
+    <MapContext.Provider value={{ selectedPlace, setSelectedPlace, addedPlace, setAddedPlace, zoomLevel, setZoomLevel, heyUpdateData, setHeyUpdateData }}>
       {children}
     </MapContext.Provider>
   );
