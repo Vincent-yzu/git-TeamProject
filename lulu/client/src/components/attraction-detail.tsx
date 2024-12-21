@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useMapContext } from "./MapContext"; // 引入 Context
+import { useParams } from "react-router-dom"
 
 const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
 
@@ -22,6 +23,8 @@ export const AttractionDetail = () => {
   const { selectedPlace } = useMapContext(); // 從 Context 中取用 `selectedPlace`
   const { setAddedPlace } = useMapContext(); // 從 Context 中取用 `setSelectedPlace`
   const { heyUpdateData, setHeyUpdateData } = useMapContext(); // 從 Context 中取用 `heyUpdateData`
+  const {selectedDayIndex} = useMapContext(); // 從 Context 中取用 `selectedDayIndex`
+  const { id } = useParams()
   const [isVisible, setIsVisible] = useState(false); // 控制容器顯示/隱藏的狀態
 
   // Update visibility when selectedPlace changes
@@ -44,7 +47,12 @@ export const AttractionDetail = () => {
       description: "這是景點的描述!",
       recommendDuration: 60,
     };
-    //console.log("place:", place);
+    // 新增 id 和 days
+    const updatedPlaceWithDetail = {
+      itineraryId: id, // 替換為實際的 id 值
+      curDays: selectedDayIndex, // 替換為實際的 days 值
+      placeWithDetail, // 包含原始活動資料
+    };
 
     // add to DataBase
     const response = await fetch(`${BACKEND_URL}/api/addactivity/insert`, {
@@ -52,7 +60,7 @@ export const AttractionDetail = () => {
       headers: {
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify(placeWithDetail),
+      body: JSON.stringify(updatedPlaceWithDetail),
     });
     if (!response.ok) {
       throw new Error('Failed to add trip');

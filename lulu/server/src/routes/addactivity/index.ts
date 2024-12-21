@@ -60,11 +60,18 @@ interface Mail {
 
 // Save updated mails (activities order)
 router.post("/save", async (req, res) => {
-  const { currentActivities } = req.body; // 取得前端傳來的資料
-  const itineraryId = "k81RtOSyvV3EuVNtAx6YM"; // 指定要查詢的行程 ID
+  const { updatedActivities } = req.body;
+  const { itineraryId, curDays, currentActivities } = updatedActivities;
+  const curDay = parseInt(curDays, 10) + 1;
+  
+  // console.log("RRR: " + currentActivities);
+  // console.log("itineraryId: " + itineraryId);
+  // console.log("curDay: " + curDay);
 
-  // console.log("RRRRR");
-  // console.log(mails);
+  // 驗證資料是否存在
+  if (!itineraryId || !curDays || !currentActivities) {
+    res.status(400).json({ error: 'Missing required fields: id, days, or currentActivities' });
+  }
 
   try {
     // 從資料庫查詢行程並找到對應的 `days` 資料
@@ -86,12 +93,12 @@ router.post("/save", async (req, res) => {
     // console.log("days:", days);
 
     if(!days)  throw new BadRequestError("Invalided days");
-    const dayOne = ((days as unknown) as any[]).find((day: any) => day.day === 1);
+    const dayOne = ((days as unknown) as any[]).find((day: any) => day.day === curDay);
     // console.log(dayOne);
 
 
     if (!dayOne) {
-      res.status(404).json({ error: "Day 1 not found" });
+      res.status(404).json({ error: "Days not found" });
     }
 
     // 找到 day 1 裡面的 activities 並根據 name 更新 order
@@ -118,9 +125,10 @@ router.post("/save", async (req, res) => {
 });
 
 router.post('/insert', async (req, res) => {
-  const { name, type, order, latitude, longitude, location, photoUrls, description, recommendDuration } = req.body;
-
-  const itineraryId = "k81RtOSyvV3EuVNtAx6YM";
+  //const { updatedPlaceWithDetail } = req.body;
+  const { itineraryId, curDays, placeWithDetail } = req.body;
+  const { name, type, order, latitude, longitude, location, photoUrls, description, recommendDuration } = placeWithDetail;
+  const curDay = parseInt(curDays, 10) + 1;
 
   try {
     // Validate input data to prevent undefined values
@@ -147,7 +155,7 @@ router.post('/insert', async (req, res) => {
       throw new Error("Invalid days");
     }
 
-    const dayOne = (days as unknown as any[]).find((day: any) => day.day === 1);
+    const dayOne = (days as unknown as any[]).find((day: any) => day.day === curDay);
 
     if (!dayOne) {
       throw new BadRequestError("Day 1 not found");
@@ -192,8 +200,8 @@ router.post('/insert', async (req, res) => {
 
 router.post("/delete", async (req, res) => {
   try {
-    const { place } = req.body; // 從前端取得地點資訊
-    const itineraryId = "k81RtOSyvV3EuVNtAx6YM"; // 指定要刪除活動的行程 ID
+    const { itineraryId, curDays, place } = req.body; // 從前端取得地點資訊
+    const curDay = parseInt(curDays, 10) + 1;
 
     if (!place || !place.name) {
       throw new BadRequestError("Missing place name");
@@ -217,7 +225,7 @@ router.post("/delete", async (req, res) => {
       throw new Error("Invalid days");
     }
 
-    const dayOne = (days as unknown as any[]).find((day: any) => day.day === 1);
+    const dayOne = (days as unknown as any[]).find((day: any) => day.day === curDay);
 
     if (!dayOne) {
       throw new Error('Day 1 not found');

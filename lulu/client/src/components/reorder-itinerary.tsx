@@ -10,6 +10,7 @@ const BACKEND_URL = import.meta.env.VITE_BACKEND_URL
 
 const ReorderItinerary = () => {
   const { heyUpdateData } = useMapContext(); // 從 Context 中取用 `heyUpdateData`
+  const {selectedDayIndex, setSelectedDayIndex} = useMapContext(); // 從 Context 中取用 `selectedDayIndex`
   
   const { id } = useParams()
   const { data: itinerary, isLoading } = useItinerary(id as string, heyUpdateData)
@@ -17,7 +18,7 @@ const ReorderItinerary = () => {
   const [daysActivities, setDaysActivities] = useState<
     Itinerary["days"][number]["activities"][]
   >([])
-  const [selectedDayIndex, setSelectedDayIndex] = useState("0")
+  //const [selectedDayIndex, setSelectedDayIndex] = useState("0")
   const containerRef = useRef<HTMLDivElement>(null)
   const socketRef = useRef<Socket | null>(null)
   const [roomId] = useState<string>(id as string)
@@ -96,12 +97,19 @@ const ReorderItinerary = () => {
     try {
       //console.log("currentActivities: " + JSON.stringify(currentActivities));
 
+      // 新增 id 和 days
+      const updatedActivities = {
+        itineraryId: id, // 替換為實際的 id 值
+        curDays: selectedDayIndex, // 替換為實際的 days 值
+        currentActivities, // 包含原始活動資料
+      };
+
       const response = await fetch(`${BACKEND_URL}/api/addactivity/save`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ currentActivities }), // Send the mails state
+        body: JSON.stringify({ updatedActivities }), // Send the mails state
       });
 
       if (!response.ok) {
@@ -116,7 +124,9 @@ const ReorderItinerary = () => {
 
   // 刪除行程
   const handleDeletePlace = async (name: string) => {
-    const place = {
+    const updatedPlace = {
+      itineraryId: id, // 替換為實際的 id 值
+      curDays: selectedDayIndex, // 替換為實際的 days 值
       place: { name }
     };
 
@@ -126,7 +136,7 @@ const ReorderItinerary = () => {
       headers: {
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify(place),
+      body: JSON.stringify(updatedPlace),
     });
     if (!response.ok) {
       throw new Error('Failed to delete trip');
