@@ -107,7 +107,8 @@ export const AttractionDetail = () => {
         position: 'absolute',
         top: '50px',
         left: '10px',
-        width: '16vw',
+        width: 'calc(100vw - 20px)', // Adjust width based on viewport size
+        maxWidth: '400px', // Set a max width to prevent it from getting too large
         zIndex: 1000
       }}>
         {/* "X" 按鈕 */}

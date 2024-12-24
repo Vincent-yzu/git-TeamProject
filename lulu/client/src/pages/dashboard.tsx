@@ -10,6 +10,8 @@ import { AttractionDetail } from "@/components/attraction-detail"
 import { DisplayMap } from "@/components/displaymap"
 import { MapProvider } from "@/components/MapContext" // 引入 Context
 import { useParams, useNavigate } from "react-router-dom"
+import Header from "@/components/header" // 引入 Header 組件
+import React from "react"
 
 export default function Dashboard() {
   const { data: auth } = useAuth()
@@ -23,35 +25,47 @@ export default function Dashboard() {
     navigate("/my-trip")
   }
 
-  return (
-    <SidebarProvider
-      style={
-        {
-          "--sidebar-width": "350px",
-        } as React.CSSProperties
-      }
-    >
-      <MapProvider>
-        <AppSidebar /> {/* 文字搜尋欄在裡面 */}
-        <AttractionDetail /> {/* 景點詳細資訊 */}
-        <SidebarInset>
-          <header className="sticky top-0 flex shrink-0 items-center gap-2 border-b bg-background p-4">
-            <SidebarTrigger className="-ml-1" />
-            <Separator orientation="vertical" className="mr-2 h-4" />
-          </header>
-          <div className="flex flex-1 flex-col gap-4 p-4">
-            {/* {Array.from({ length: 24 }).map((_, index) => (
-              <div
-                key={index}
-                className="aspect-video h-12 w-full rounded-lg bg-muted/50"
-              />
-            ))} */}
+  React.useEffect(() => {
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.body.style.overflow = "auto";
+    };
+  }, []);
 
-            {/* 右側 google map 大地圖 */}
-            <DisplayMap />
-          </div>
-        </SidebarInset>
-      </MapProvider>
-    </SidebarProvider>
+  return (
+    <>
+      <Header /> {/* 加入 Header 組件 */}
+      <div style={{ marginTop: "3px", backgroundColor: "#fafafa" }}> {/* 增加背景色和高度 */}
+        <SidebarProvider
+          style={
+            {
+              "--sidebar-width": "350px",
+            } as React.CSSProperties
+          }
+        >
+          <MapProvider>
+            <AppSidebar /> {/*文字搜尋欄在裡面*/}
+            <AttractionDetail /> {/* 景點詳細資訊 */}
+            <SidebarInset>
+              {/* <header className="sticky top-0 flex shrink-0 items-center gap-2 border-b bg-background p-4">
+                <SidebarTrigger className="-ml-1" />
+                <Separator orientation="vertical" className="mr-2 h-4" />
+              </header> */}
+                <div className="flex flex-1 flex-col gap-4 p-4" style={{ backgroundColor: "#fafafa", height: "calc(100vh - 3px)" }}>
+                {/* {Array.from({ length: 24 }).map((_, index) => (
+                  <div
+                  key={index}
+                  className="aspect-video h-12 w-full rounded-lg bg-muted/50"
+                  />
+                ))} */}
+
+                {/* 右側 google map 大地圖 */}
+                <DisplayMap />
+                </div>
+            </SidebarInset>
+          </MapProvider>
+        </SidebarProvider>
+      </div>
+    </>
   )
 }
