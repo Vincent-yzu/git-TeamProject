@@ -4,17 +4,21 @@ import { Reorder } from "framer-motion"
 import { useParams } from "react-router-dom"
 import { io, Socket } from "socket.io-client"
 import { useItinerary } from "@/hooks/use-itinerary"
+import { useMapContext } from "./MapContext"; // 引入 Context
 
 const BACKEND_URL = import.meta.env.VITE_BACKEND_URL
 
 const ReorderItinerary = () => {
+  const { heyUpdateData } = useMapContext(); // 從 Context 中取用 `heyUpdateData`
+  const {selectedDayIndex, setSelectedDayIndex} = useMapContext(); // 從 Context 中取用 `selectedDayIndex`
+  
   const { id } = useParams()
-  const { data: itinerary, isLoading } = useItinerary(id as string)
+  const { data: itinerary, isLoading } = useItinerary(id as string, heyUpdateData)
 
   const [daysActivities, setDaysActivities] = useState<
     Itinerary["days"][number]["activities"][]
   >([])
-  const [selectedDayIndex, setSelectedDayIndex] = useState("0")
+  //const [selectedDayIndex, setSelectedDayIndex] = useState("0")
   const containerRef = useRef<HTMLDivElement>(null)
   const socketRef = useRef<Socket | null>(null)
   const [roomId] = useState<string>(id as string)
@@ -22,9 +26,12 @@ const ReorderItinerary = () => {
   useEffect(() => {
     if (itinerary && itinerary.days && itinerary.days.length > 0) {
       // 將每一天的 activities 存入 state
-      setDaysActivities(itinerary.days.map((day) => day.activities || []))
+      // 根據 order 排序活動
+      setDaysActivities(itinerary.days.map((day) => {
+        return day.activities ? day.activities.sort((a, b) => a.order - b.order) : [];
+      }));
     }
-  }, [itinerary])
+  }, [itinerary, heyUpdateData])
 
   useEffect(() => {
     const socket = io(`${BACKEND_URL}/`, { withCredentials: true })
@@ -85,6 +92,67 @@ const ReorderItinerary = () => {
     })
   }
 
+  // Reorder 後保存
+  const saveMails = async () => {
+    try {
+      //console.log("currentActivities: " + JSON.stringify(currentActivities));
+
+      // 新增 id 和 days
+      const updatedActivities = {
+        itineraryId: id, // 替換為實際的 id 值
+        curDays: selectedDayIndex, // 替換為實際的 days 值
+        currentActivities, // 包含原始活動資料
+      };
+
+      const response = await fetch(`${BACKEND_URL}/api/addactivity/save`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ updatedActivities }), // Send the mails state
+      });
+
+      if (!response.ok) {
+        throw new Error(`Failed to save mails: ${response.statusText}`);
+      }
+      const data = await response.json();
+      console.log("Mails saved successfully:", data);
+    } catch (error) {
+      console.error("Error saving mails:", error);
+    }
+  };
+
+  // 刪除行程
+  const handleDeletePlace = async (name: string) => {
+    const updatedPlace = {
+      itineraryId: id, // 替換為實際的 id 值
+      curDays: selectedDayIndex, // 替換為實際的 days 值
+      place: { name }
+    };
+
+    // delete from DataBase
+    const response = await fetch(`${BACKEND_URL}/api/addactivity/delete`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(updatedPlace),
+    });
+    if (!response.ok) {
+      throw new Error('Failed to delete trip');
+    }
+    
+    // 從 currentActivities 移除該筆資料
+    setDaysActivities((prev) => {
+      const newDays = [...prev]
+      newDays[currentDayIndex] = newDays[currentDayIndex].filter(
+        (activity) => activity.name !== name
+      )
+      return newDays
+    })
+  };
+
+
   return (
     <div ref={containerRef} className="p-2">
       <h2 className="text-xl font-bold mb-2">Itinerary: {itinerary.location}</h2>
@@ -117,9 +185,10 @@ const ReorderItinerary = () => {
       >
         {currentActivities.map((activity) => (
           <Reorder.Item
-            key={activity.name} // 如有 id，可使用 activity.id
+            key={activity.name} // 如有 id，可使用 activity.id    // 我也想  但我不知道該去哪裡生個景點ID  XD
             value={activity}
             className="flex flex-col gap-2 rounded-lg border p-4 shadow-lg mb-2"
+            onDragEnd={() => saveMails()}  // 加入這一行，當拖動結束時觸發 saveMails
           >
             <img
               src={activity.photoUrls[0]}
@@ -130,9 +199,14 @@ const ReorderItinerary = () => {
             <p className="text-sm text-gray-600">{activity.description}</p>
             <p className="text-xs text-gray-500">📍 {activity.location}</p>
             <span className="text-xs">⏳ {activity.recommendDuration} min</span>
+            <button onClick={() => handleDeletePlace(activity.name)}>⮕ Delete!</button>
           </Reorder.Item>
         ))}
       </Reorder.Group>
+
+      <br/>
+      <button onClick={() => saveMails()}>⮕⮕⮕ 保存!!!</button>
+
     </div>
   )
 }

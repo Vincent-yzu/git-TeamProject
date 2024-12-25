@@ -13,7 +13,11 @@ export const DisplayMap = () => {
 
   const mapContainerStyle = {
     width: "100%",
-    height: "100%",
+    height: "90%",
+  };
+
+  const mapOptions = {
+    gestureHandling: "greedy", // 允許直接捲動放大縮小
   };
 
   if (!isLoaded) return <div>Loading...</div>;
@@ -30,6 +34,7 @@ export const DisplayMap = () => {
             }
           : defaultCenter
       }
+      options={mapOptions}
     >
       {selectedPlace && (
         <Marker

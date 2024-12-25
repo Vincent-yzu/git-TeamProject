@@ -1,7 +1,8 @@
 import { PlacesClient as Client } from "@googlemaps/places"
 import dotenv from "dotenv"
 import { Router } from "express"
-import { eq, and} from "drizzle-orm"
+import { eq } from "drizzle-orm"
+
 import { db } from "@/lib/db"
 import { itineraries } from "@/lib/db/schema"
 import { BadRequestError } from "@/lib/error"
@@ -13,158 +14,12 @@ import {
 import { requireAuth } from "@/middleware/require-auth"
 
 dotenv.config()
-
-const client = new Client({
-  apiKey: process.env.GOOGLE_MAPS_API_KEY,
-})
-
-import { generateItinerary } from "@/lib/blackbox"
-
 const router = Router()
-
-async function getPlaceDetails(query: string) {
-  const [textSearchResponse] = await client.searchText(
-    { textQuery: query },
-    {
-      otherArgs: {
-        headers: { "X-Goog-FieldMask": "places.name" },
-      },
-    }
-  )
-
-  const [placeResponse] = await client.getPlace(
-    { name: textSearchResponse.places?.[0]?.name },
-    {
-      otherArgs: {
-        headers: { "X-Goog-FieldMask": "photos,formattedAddress,location" },
-      },
-    }
-  )
-
-  const photoUrls = await Promise.all(
-    (placeResponse.photos || []).map(async (photo) => {
-      const [photoResponse] = await client.getPhotoMedia({
-        name: `${photo.name}/media`,
-        maxHeightPx: 500,
-        maxWidthPx: 500,
-      });
-      return photoResponse.photoUri;
-    })
-  );
-  
-
-  return {
-    photoUrls,
-    latitude: placeResponse.location?.latitude,
-    longitude: placeResponse.location?.longitude,
-  }
-}
-
-router.get("/recommended", async (req, res) => {
-  const itinerariesFromDB = await db.select().from(itineraries).where(eq(itineraries.isPublic, true))
-  const responseData = itinerariesFromDB.map((itinerary) => {
-    const {userId, allowedEditors, ...rest} = itinerary
-    return {
-      ...rest
-    }
-  }) 
-  res.json(responseData)
-})
-
-router.get("/", requireAuth, async (req, res) => {
-  const itinerariesFromDB = await db.select().from(itineraries).where(eq(itineraries.userId, req.user!.id))
-  res.json(itinerariesFromDB)
-})
-
-router.get("/:id", requireAuth, async (req, res) => {
-  const { id } = req.params;
-  if (typeof id !== "string") {
-    throw new BadRequestError("Invalid itinerary id")
-  }
-  const [itinerary] = await db.select().from(itineraries).where(and(eq(itineraries.id, id), eq(itineraries.userId, req.user!.id)))
-  res.json(itinerary)
-})
-
-
-router.post("/", requireAuth, async (req, res) => {
-
-  const parsedBody = itineraryFrontendSchema.safeParse(req.body)
-
-  if (!parsedBody.success) {
-    throw new BadRequestError("Invalid itinerary frontend data")
-  }
-
-  const { location, startDate, endDate, travelCategories, language } =
-    parsedBody.data
-
-  const total_days = Math.ceil(
-    (new Date(endDate).getTime() - new Date(startDate).getTime() + 1000 * 60 * 60 * 18) /
-      (1000 * 60 * 60 * 24)
-  )
-  const modelizedItinerary = await generateItinerary({
-    location,
-    duration: `${total_days}天 ${total_days - 1}夜`,
-    language,
-    total_days,
-    travelCategories,
-  })
-
-  // 驗證後端產生的行程格式
-  const parsedItinerary = itineraryBackendSchema.safeParse(modelizedItinerary)
-  if (!parsedItinerary.success) {
-    throw new BadRequestError("Invalided itinerary backend data")
-  }
-
-  const parsedItineraryData = parsedItinerary.data
-  const completedItinerary = {
-    ...parsedItineraryData,
-    days: await Promise.all(
-      parsedItineraryData.days.map(async (day) => {
-        // 處理每個 day 的 activities
-        const updatedActivities = await Promise.all(
-          day.activities.map(async (activity) => {
-            const data = await getPlaceDetails(activity.name);
-            return {
-              ...activity,
-              photoUrls: data.photoUrls,
-              latitude: data.latitude,
-              longitude: data.longitude,
-            };
-          })
-        );
-  
-        // 回傳更新後的 day
-        return {
-          ...day,
-          activities: updatedActivities,
-        };
-      })
-    ),
-  };
-  // @ts-ignore
-  const [itinerary] = await db.insert(itineraries).values({
-    userId: req.user!.id,
-    allowedEditors: [req.user!.id],
-    isPublic: false,
-    isAuthorized: false,
-    location: location,
-    startDate: new Date(startDate),
-    endDate: new Date(endDate),
-    travelCategories: travelCategories,
-    language: language,
-    days: completedItinerary.days,
-    description: completedItinerary.description,
-  }).returning()
-
-  res.status(201).json({ msg: "success", id: itinerary?.id })
-})
-
-
 
 router.get("/select", async (req, res) => {
   try {
     // 指定要查找的行程 ID
-    const itineraryId = "RRRuscsUmgQLVutbazZYf";
+    const itineraryId = "k81RtOSyvV3EuVNtAx6YM";
 
     // 從資料庫查找行程資料，匹配行程 ID
     const itinerary = await db
@@ -205,11 +60,18 @@ interface Mail {
 
 // Save updated mails (activities order)
 router.post("/save", async (req, res) => {
-  const { mails } = req.body; // 取得前端傳來的資料
-  const itineraryId = "RRRuscsUmgQLVutbazZYf"; // 指定要查詢的行程 ID
+  const { updatedActivities } = req.body;
+  const { itineraryId, curDays, currentActivities } = updatedActivities;
+  const curDay = parseInt(curDays, 10) + 1;
+  
+  // console.log("RRR: " + currentActivities);
+  // console.log("itineraryId: " + itineraryId);
+  // console.log("curDay: " + curDay);
 
-  // console.log("RRRRR");
-  // console.log(mails);
+  // 驗證資料是否存在
+  if (!itineraryId || !curDays || !currentActivities) {
+    res.status(400).json({ error: 'Missing required fields: id, days, or currentActivities' });
+  }
 
   try {
     // 從資料庫查詢行程並找到對應的 `days` 資料
@@ -231,19 +93,19 @@ router.post("/save", async (req, res) => {
     // console.log("days:", days);
 
     if(!days)  throw new BadRequestError("Invalided days");
-    const dayOne = ((days as unknown) as any[]).find((day: any) => day.day === 1);
+    const dayOne = ((days as unknown) as any[]).find((day: any) => day.day === curDay);
     // console.log(dayOne);
 
 
     if (!dayOne) {
-      res.status(404).json({ error: "Day 1 not found" });
+      res.status(404).json({ error: "Days not found" });
     }
 
     // 找到 day 1 裡面的 activities 並根據 name 更新 order
     dayOne!.activities = dayOne!.activities.map((activity: any) => {
-      const matchedMail = mails.find((mail: Mail) => mail.name === activity.name);
+      const matchedMail = currentActivities.find((mail: Mail) => mail.name === activity.name);
       if (matchedMail) {
-        activity.order = mails.indexOf(matchedMail); 
+        activity.order = currentActivities.indexOf(matchedMail); 
       }
       return activity;
     });
@@ -263,9 +125,10 @@ router.post("/save", async (req, res) => {
 });
 
 router.post('/insert', async (req, res) => {
-  const { name, type, order, latitude, longitude, location, photoUrls, description, recommendDuration } = req.body;
-
-  const itineraryId = "RRRuscsUmgQLVutbazZYf";
+  //const { updatedPlaceWithDetail } = req.body;
+  const { itineraryId, curDays, placeWithDetail } = req.body;
+  const { name, type, order, latitude, longitude, location, photoUrls, description, recommendDuration } = placeWithDetail;
+  const curDay = parseInt(curDays, 10) + 1;
 
   try {
     // Validate input data to prevent undefined values
@@ -292,7 +155,7 @@ router.post('/insert', async (req, res) => {
       throw new Error("Invalid days");
     }
 
-    const dayOne = (days as unknown as any[]).find((day: any) => day.day === 1);
+    const dayOne = (days as unknown as any[]).find((day: any) => day.day === curDay);
 
     if (!dayOne) {
       throw new BadRequestError("Day 1 not found");
@@ -337,8 +200,8 @@ router.post('/insert', async (req, res) => {
 
 router.post("/delete", async (req, res) => {
   try {
-    const { place } = req.body; // 從前端取得地點資訊
-    const itineraryId = "RRRuscsUmgQLVutbazZYf"; // 指定要刪除活動的行程 ID
+    const { itineraryId, curDays, place } = req.body; // 從前端取得地點資訊
+    const curDay = parseInt(curDays, 10) + 1;
 
     if (!place || !place.name) {
       throw new BadRequestError("Missing place name");
@@ -362,7 +225,7 @@ router.post("/delete", async (req, res) => {
       throw new Error("Invalid days");
     }
 
-    const dayOne = (days as unknown as any[]).find((day: any) => day.day === 1);
+    const dayOne = (days as unknown as any[]).find((day: any) => day.day === curDay);
 
     if (!dayOne) {
       throw new Error('Day 1 not found');
@@ -395,4 +258,4 @@ router.post("/delete", async (req, res) => {
 
 
 
-export { router as itineraryRouter }
+export { router as addactivityRouter }
