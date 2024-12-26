@@ -19,10 +19,11 @@ const client = new Client({
 })
 
 import { generateItinerary } from "@/lib/blackbox"
+import { nanoid } from "nanoid"
 
 const router = Router()
 
-async function getPlaceDetails(query: string) {
+export async function getPlaceDetails(query: string) {
   const [textSearchResponse] = await client.searchText(
     { textQuery: query },
     {
@@ -126,6 +127,8 @@ router.post("/", requireAuth, async (req, res) => {
             const data = await getPlaceDetails(activity.name);
             return {
               ...activity,
+              id: nanoid(),
+              note: "",
               photoUrls: data.photoUrls,
               latitude: data.latitude,
               longitude: data.longitude,

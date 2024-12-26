@@ -98,7 +98,7 @@ export const SearchBarGoogleMap = ({ placeholder }: SearchBarGoogleMapProps) => 
         onChange={handleSearchChange}
         onKeyDown={handleKeyDown}
       />
-      <ul>
+      <ul className="pt-[18px]">
         {places.slice(0, 5).map((place) => (
           // 最多顯示5筆，點擊更新選擇的地點
           <li

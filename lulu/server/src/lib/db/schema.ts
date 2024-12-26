@@ -1,5 +1,5 @@
 import type { InferInsertModel, InferSelectModel } from "drizzle-orm";
-import { pgTable, text, timestamp, boolean, date, jsonb } from "drizzle-orm/pg-core";
+import { pgTable, text, timestamp, boolean, date, jsonb, time } from "drizzle-orm/pg-core";
 import { nanoid } from "nanoid";
 import type { ItineraryBackend } from "../validation";
 import type { ItineraryFrontend } from "../validation";
@@ -44,13 +44,21 @@ export const itineraries = pgTable("itineraries", {
   location: text("location").notNull(),
   description: text("description").notNull(),
   startDate: date("start_date", { mode: "date" }).notNull(),
+  startTime: time("start_time").notNull().default("08:00"),
   endDate: date("end_date", { mode: "date" }).notNull(),
   travelCategories: jsonb("travel_categories")
     .$type<ItineraryFrontend["travelCategories"]>()
     .notNull(),
   language: text("language").$type<ItineraryFrontend["language"]>().notNull(),
 
-  days: jsonb("days").$type<ItineraryBackend>().notNull(),
+  days: jsonb("days").$type<{
+      day: number
+      activities: (ItineraryBackend["days"][number]["activities"][number] & {
+        id: string
+        note: string
+      })[]
+    }[]
+  >().notNull(),
 })
 
 export const sessions = pgTable("sessions", {
@@ -77,6 +85,25 @@ export const verifications = pgTable("verifications", {
     withTimezone: true,
     mode: "date",
   }).notNull(),
+})
+
+export const comments = pgTable("comments", {
+  id: text("id")
+    .primaryKey()
+    .$defaultFn(() => nanoid()),
+  userId: text("user_id")
+    .notNull()
+    .references(() => users.id),
+  itineraryId: text("itinerary_id")
+    .notNull()
+    .references(() => itineraries.id),
+  content: text("content").notNull(),
+  createdAt: timestamp("created_at", {
+    withTimezone: true,
+    mode: "date",
+  })
+    .notNull()
+    .defaultNow(),
 })
 
 export type User = InferSelectModel<typeof users>;

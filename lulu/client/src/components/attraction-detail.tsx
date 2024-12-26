@@ -43,7 +43,7 @@ export const AttractionDetail = () => {
       latitude: place.geometry.location.lat,
       location: place.formatted_address,
       longitude: place.geometry.location.lng,
-      photoUrls: [], 
+      photoUrls: [place.icon], 
       description: "這是景點的描述!",
       recommendDuration: 60,
     };

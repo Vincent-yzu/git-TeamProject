@@ -20,6 +20,8 @@ export type Itinerary = {
     day: number
     activities: {
       type: "activity"
+      id: string
+      note: string
       name: string
       description: string
       recommendDuration: number
