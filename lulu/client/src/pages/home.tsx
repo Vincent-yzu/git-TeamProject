@@ -7,9 +7,6 @@ import "./home.css"
 import { useItinerariesRecommended } from "@/hooks/use-itineraries"
 import Header from "@/components/header"
 
-function getRandomInt(min: number, max: number) {
-  return Math.floor(Math.random() * (max - min + 1)) + min
-}
 
 const HomePage: React.FC = () => {
   const navigate = useNavigate()
@@ -21,10 +18,6 @@ const HomePage: React.FC = () => {
 
   const handleNavigateToMyTrip = () => {
     navigate("/my-trip")
-  }
-
-  const handleNavigateToHome = () => {
-    navigate("/home")
   }
 
   return (
@@ -52,23 +45,15 @@ const HomePage: React.FC = () => {
                 {itineraries ? (
                   <div className="grid grid-cols-3 gap-6">
                     {itineraries.map((itinerary, index) => {
-                      const num1 = getRandomInt(
-                        0,
-                        itinerary.days[0].activities.length - 1
-                      )
-                      const num2 = getRandomInt(
-                        0,
-                        itinerary.days[0].activities[num1].photoUrls.length - 1
-                      )
                       return (
                         <div key={index} className="flex flex-col gap-2">
                             <img
                               src={
-                                itinerary.days?.[0]?.activities?.[num1]
-                                  ?.photoUrls?.[num2]
+                                itinerary.days?.[0]?.activities?.[0]
+                                  ?.photoUrls?.[0]
                               }
                               alt={
-                                itinerary.days?.[0]?.activities?.[num1]
+                                itinerary.days?.[0]?.activities?.[0]
                                   ?.description
                               }
                               className="w-full h-full aspect-video object-cover rounded-md"
@@ -77,14 +62,13 @@ const HomePage: React.FC = () => {
                             <h3 className="text-lg font-semibold">
                               {itinerary.location +
                                 " " +
-                                (new Date(itinerary.endDate).getTime() -
+                                ((new Date(itinerary.endDate).getTime() -
                                   new Date(itinerary.startDate).getTime()) /
-                                  (1000 * 60 * 60 * 24) +
+                                  (1000 * 60 * 60 * 24) + 1) +
                                 "天" +
                                 ((new Date(itinerary.endDate).getTime() -
                                   new Date(itinerary.startDate).getTime()) /
-                                  (1000 * 60 * 60 * 24) -
-                                  1) +
+                                  (1000 * 60 * 60 * 24)) +
                                 "夜之旅"}
                             </h3>
                         </div>

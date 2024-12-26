@@ -1,5 +1,6 @@
 import React, { useState } from "react"
 import { useNavigate } from "react-router-dom" // 引入 useNavigate
+
 import { SidebarProvider } from "@/components/ui/sidebar"
 
 import "./my-trip.css" // 引入樣式檔案
@@ -8,10 +9,6 @@ import { useAuth } from "@/hooks/use-auth"
 import { useItineraries } from "@/hooks/use-itineraries"
 import ItineraryForm from "@/components/itinerary-form"
 import { NavUser } from "@/components/nav-user"
-
-function getRandomInt(min: number, max: number) {
-  return Math.floor(Math.random() * (max - min + 1)) + min
-}
 
 const MyTripPage: React.FC = () => {
   const { data: auth } = useAuth()
@@ -55,14 +52,12 @@ const MyTripPage: React.FC = () => {
 
   const handleConfirmTrip = async () => {
     // navigate("/dashboard") // 無論如何，先跳轉至 Dashboard 頁面
-
     //   const tripData = {
     //     title: tripName, // 使用者輸入的行程名稱
     //     start_date, // 使用者選擇的開始日期
     //     end_date, // 使用者選擇的結束日期
     //     // destination // 使用者輸入的目的地
     //   }
-
     //   try {
     //     // 檢查登錄狀態
     //     const isLoggedIn = await checkLoginStatus()
@@ -71,7 +66,6 @@ const MyTripPage: React.FC = () => {
     //       navigate("/sign-in", { state: { redirectTo: "/dashboard" } }) // 跳转到登录页面并保存目标页面
     //       return
     //     }
-
     //     // 提交資訊
     //     const response = await fetch(`${BACKEND_URL}/api/add???`, {
     //       method: "POST",
@@ -80,7 +74,6 @@ const MyTripPage: React.FC = () => {
     //       },
     //       body: JSON.stringify(tripData),
     //     })
-
     //     if (response.ok) {
     //       navigate("/dashboard") // 跳轉至 Dashboard 頁面
     //     } else {
@@ -134,7 +127,10 @@ const MyTripPage: React.FC = () => {
             </div>
             <div>
               <div className="flex items-center gap-4 justify-center">
-                <button className="create-trip-button" onClick={handleOpenModal}>
+                <button
+                  className="create-trip-button"
+                  onClick={handleOpenModal}
+                >
                   建立新行程
                 </button>
 
@@ -147,22 +143,20 @@ const MyTripPage: React.FC = () => {
               {!itineraries || itineraries.length === 0 ? (
                 <>
                   <div className="placeholder-image">
-                    <img src="/img/null.png" alt="null" className="null-image" />
+                    <img
+                      src="/img/null.png"
+                      alt="null"
+                      className="null-image"
+                    />
                   </div>
-                  <p className="placeholder-text">還沒有行程，現在就開始安排！</p>
+                  <p className="placeholder-text">
+                    還沒有行程，現在就開始安排！
+                  </p>
                 </>
               ) : (
                 <>
                   <div className="grid grid-cols-3 gap-6">
                     {itineraries.map((itinerary) => {
-                      const num1 = getRandomInt(
-                        0,
-                        itinerary.days[0].activities.length - 1
-                      )
-                      const num2 = getRandomInt(
-                        0,
-                        itinerary.days[0].activities[num1].photoUrls.length - 1
-                      )
                       return (
                         <div
                           className="flex flex-col gap-2 items-center cursor-pointer"
@@ -170,11 +164,11 @@ const MyTripPage: React.FC = () => {
                         >
                           <img
                             src={
-                              itinerary.days?.[0]?.activities?.[num1]
-                                ?.photoUrls?.[num2]
+                              itinerary.days?.[0]?.activities?.[0]
+                                ?.photoUrls?.[0]
                             }
                             alt={
-                              itinerary.days?.[0]?.activities?.[num1]?.description
+                              itinerary.days?.[0]?.activities?.[0]?.description
                             }
                             className="w-full h-full aspect-video object-cover rounded-md"
                           />
@@ -182,14 +176,14 @@ const MyTripPage: React.FC = () => {
                           <h3 className="text-lg font-semibold">
                             {itinerary.location +
                               " " +
+                              ((new Date(itinerary.endDate).getTime() -
+                                new Date(itinerary.startDate).getTime()) /
+                                (1000 * 60 * 60 * 24) +
+                                1) +
+                              "天" +
                               (new Date(itinerary.endDate).getTime() -
                                 new Date(itinerary.startDate).getTime()) /
                                 (1000 * 60 * 60 * 24) +
-                              "天" +
-                              ((new Date(itinerary.endDate).getTime() -
-                                new Date(itinerary.startDate).getTime()) /
-                                (1000 * 60 * 60 * 24) -
-                                1) +
                               "夜之旅"}
                           </h3>
                         </div>

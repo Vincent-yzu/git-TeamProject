@@ -28,6 +28,7 @@ import { GoogleIcon } from "@/components/google-icon"
 import { PasswordField } from "@/components/password-field"
 import { useAuth } from "@/hooks/use-auth"
 const BACKEND_URL = import.meta.env.VITE_BACKEND_URL
+import { queryClient } from "@/lib/query-client"
 
 export default function SignUpForm() {
   const form = useForm<z.infer<typeof credentialsSchema>>({
@@ -62,7 +63,7 @@ export default function SignUpForm() {
         title: "Sign-up successful!",
         description: "You can now sign in.",
       })
-      navigate("/my-trip") // FIXME: shouldn't directly navigate to dashboard, go to home page and click the trip we had created
+      queryClient.invalidateQueries({ queryKey: ["user"] })
     },
     onError: () => {
       toast({

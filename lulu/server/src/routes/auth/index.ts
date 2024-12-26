@@ -45,9 +45,10 @@ router.post("/sign-in", async (req, res) => {
     throw new UnauthorizedError()
   }
 
-  if (!verifyPassword(result.data.password, selectedUser.hashedPassword)) {
+  if (!(await verifyPassword(result.data.password, selectedUser.hashedPassword))) {
     throw new UnauthorizedError()
   }
+
 
   const session = await createSession(selectedUser.id)
 

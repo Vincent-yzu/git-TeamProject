@@ -1,12 +1,13 @@
-import SignInPage from "@/pages/sign-in";
-import SignUpPage from "@/pages/sign-up";
-import Dashboard from "@/pages/dashboard";
-import HomePage from "@/pages/home"; // 引入 HomePage
-import MyTripPage from "@/pages/my-trip"; // 引入 MyTripPage
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Route, Routes } from "react-router-dom";
-import { Toaster } from "@/components/ui/toaster";
-const queryClient = new QueryClient();
+import Dashboard from "@/pages/dashboard"
+import HomePage from "@/pages/home" // 引入 HomePage
+import MyTripPage from "@/pages/my-trip" // 引入 MyTripPage
+import SignInPage from "@/pages/sign-in"
+import SignUpPage from "@/pages/sign-up"
+import { QueryClientProvider } from "@tanstack/react-query"
+import { BrowserRouter, Route, Routes } from "react-router-dom"
+
+import { queryClient } from "@/lib/query-client"
+import { Toaster } from "@/components/ui/toaster"
 
 function App() {
   return (
@@ -25,7 +26,7 @@ function App() {
       </QueryClientProvider>
       <Toaster />
     </>
-  );
+  )
 }
 
-export default App;
+export default App

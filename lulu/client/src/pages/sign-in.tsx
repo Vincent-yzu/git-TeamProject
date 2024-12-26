@@ -28,7 +28,7 @@ import { Input } from "@/components/ui/input"
 import { Separator } from "@/components/ui/separator"
 import { GoogleIcon } from "@/components/google-icon"
 import { PasswordField } from "@/components/password-field"
-
+import { queryClient } from "@/lib/query-client"
 const BACKEND_URL = import.meta.env.VITE_BACKEND_URL
 
 export default function SignInForm() {
@@ -63,7 +63,7 @@ export default function SignInForm() {
         title: "Sign-in successful!",
         description: "You can now explore the world.",
       })
-      navigate("/my-trip")
+      queryClient.invalidateQueries({ queryKey: ["user"] })
     },
     onError: () => {
       toast({
