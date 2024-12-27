@@ -5,10 +5,11 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 
+const BACKEND_URL = import.meta.env.VITE_BACKEND_URL
 interface User {
   id: string
-  name: string
-  photo: string
+  email: string
+  avatar: string
 }
 
 interface Message {
@@ -16,27 +17,27 @@ interface Message {
   content: string
   userId: string
   createdAt: Date
-  user: User
+  itineraryId: string
 }
 
 export function ChatBox({ itineraryId, user }: { itineraryId: string; user: User }) {
   const { data: comments } = useComments(itineraryId)
-  const [messages, setMessages] = useState<Message[]>([])
   const [newMessage, setNewMessage] = useState("")
   const [socket, setSocket] = useState<Socket | null>(null)
   const [users, setUsers] = useState<User[]>([])
 
   useEffect(() => {
     // Initialize socket connection
-    const newSocket = io(process.env.NEXT_PUBLIC_SOCKET_URL || "http://localhost:3001")
-    setSocket(newSocket)
+    const socket = io(`${BACKEND_URL}/`, { withCredentials: true })
+
+    setSocket(socket)
 
     // Join room
-    newSocket.emit("join", { itineraryId, user })
+    socket.emit("create_room", { roomId: itineraryId })
 
     // Listen for messages
-    newSocket.on("message", (message: Message) => {
-      setMessages((prev) => [...prev, message])
+    socket.on("add_comment", (comment: string) => {
+      setMessages((prev) => [...prev, comment])
     })
 
     // Listen for user join/leave
