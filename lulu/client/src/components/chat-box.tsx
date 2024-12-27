@@ -26,52 +26,36 @@ export function ChatBox({ itineraryId, user }: { itineraryId: string; user: User
   const [socket, setSocket] = useState<Socket | null>(null)
   const [users, setUsers] = useState<User[]>([])
 
+  const [messages, setMessages] = useState<Message[]>([])
+
   useEffect(() => {
-    // Initialize socket connection
-    const socket = io(`${BACKEND_URL}/`, { withCredentials: true })
+    const socket = io(`${BACKEND_URL}/`, { 
+      withCredentials: true,
+      auth: { user }
+    })
 
     setSocket(socket)
 
-    // Join room
-    socket.emit("create_room", { roomId: itineraryId })
+    // Join room and get initial data
+    socket.emit("join_room", { roomId: itineraryId, user })
 
     // Listen for messages
-    socket.on("add_comment", (comment: string) => {
-      setMessages((prev) => [...prev, comment])
+    socket.on("initial_messages", (messages: Message[]) => {
+      setMessages(messages)
     })
 
-    // Listen for user join/leave
-    newSocket.on("userJoined", (joinedUser: User) => {
-      setUsers((prev) => [...prev, joinedUser])
-      setMessages((prev) => [
-        ...prev,
-        {
-          id: Date.now().toString(),
-          content: `${joinedUser.name} joined the chat`,
-          userId: "system",
-          createdAt: new Date(),
-          user: joinedUser,
-        },
-      ])
+    socket.on("new_message", (message: Message) => {
+      setMessages((prev) => [...prev, message])
     })
 
-    newSocket.on("userLeft", (leftUser: User) => {
-      setUsers((prev) => prev.filter((u) => u.id !== leftUser.id))
-      setMessages((prev) => [
-        ...prev,
-        {
-          id: Date.now().toString(),
-          content: `${leftUser.name} left the chat`,
-          userId: "system",
-          createdAt: new Date(),
-          user: leftUser,
-        },
-      ])
+    // Listen for user list updates
+    socket.on("users_in_room", (users: User[]) => {
+      setUsers(users)
     })
 
     // Cleanup
     return () => {
-      newSocket.disconnect()
+      socket.disconnect()
     }
   }, [itineraryId, user])
 
@@ -93,14 +77,10 @@ export function ChatBox({ itineraryId, user }: { itineraryId: string; user: User
 
   const handleSendMessage = () => {
     if (newMessage.trim() && socket) {
-      const message = {
-        id: Date.now().toString(),
-        content: newMessage,
-        userId: user.id,
-        createdAt: new Date(),
-        user,
-      }
-      socket.emit("message", message)
+      socket.emit("send_message", { 
+        roomId: itineraryId, 
+        content: newMessage 
+      })
       setNewMessage("")
     }
   }
