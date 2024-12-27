@@ -1,8 +1,8 @@
-import React from "react"
+import React, { ChangeEvent } from "react"
 
 interface NotePopupProps {
   noteValue: string
-  onChange: (e: React.ChangeEvent<HTMLInputElement>) => void
+  onChange: (e: ChangeEvent<HTMLTextAreaElement>) => void
   onSave: () => void
   onCancel: () => void
 }

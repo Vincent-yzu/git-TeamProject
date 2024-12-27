@@ -37,6 +37,7 @@ const ReorderItinerary = () => {
   const [noteValue, setNoteValue] = useState<string>("")
   const [isPopupOpen, setIsPopupOpen] = useState<boolean>(false)
   const [descriptionActivityId, setDescriptionActivityId] = useState<string | null>(null)
+  const timeoutRef = useRef<NodeJS.Timeout | null>(null)
 
   const handleNoteClick = (activityId: string, note: string) => {
     setEditingNoteId(activityId)
@@ -224,6 +225,29 @@ const ReorderItinerary = () => {
     })
   }
 
+  const handleDurationChange = (activityId: string, newDuration: number) => {
+    const updatedActivities = [...daysActivities];
+    updatedActivities[currentDayIndex] = updatedActivities[currentDayIndex].map((act) =>
+      act.id === activityId ? { ...act, recommendDuration: newDuration } : act
+    );
+    setDaysActivities(updatedActivities);
+
+    // Clear the previous timeout if it exists
+    if (timeoutRef.current) {
+      clearTimeout(timeoutRef.current);
+    }
+
+    // Set a new timeout to emit the update_duration event after a delay
+    timeoutRef.current = setTimeout(() => {
+      socketRef.current?.emit("update_duration", {
+        roomId,
+        dayIndex: currentDayIndex,
+        activityId,
+        recommendDuration: newDuration,
+      });
+    }, 2000);
+  };
+
   return (
     <div ref={containerRef} className="p-2 flex flex-col h-full">
       <h2 className="text-xl font-bold mb-1">
@@ -279,7 +303,7 @@ const ReorderItinerary = () => {
         onReorder={handleReorder}
         className="flex-1 overflow-auto"
       >
-        {currentActivities.map((activity) => (
+        {currentActivities.map((activity, index) => (
           <Reorder.Item
             key={activity.id}
             value={activity}
@@ -288,7 +312,7 @@ const ReorderItinerary = () => {
           >
             {/* 左側內容 */}
             <div className="flex flex-col flex-1">
-              <p>行程 {activity.order + 1}</p>
+              <p>行程 {index + 1}</p>
               <h3 className="text-lg font-semibold leading-6">
               {activity.name}
               </h3>
@@ -354,24 +378,7 @@ const ReorderItinerary = () => {
                   <input
                   type="number"
                   value={activity.recommendDuration}
-                  onChange={(e) => {
-                    const newDuration = parseInt(e.target.value, 10)
-                    const updatedActivities = [...daysActivities]
-                    updatedActivities[currentDayIndex] = updatedActivities[
-                    currentDayIndex
-                    ].map((act) =>
-                    act.id === activity.id
-                      ? { ...act, recommendDuration: newDuration }
-                      : act
-                    )
-                    setDaysActivities(updatedActivities)
-                    socketRef.current?.emit("update_duration", {
-                    roomId,
-                    dayIndex: currentDayIndex,
-                    activityId: activity.id,
-                    recommendDuration: newDuration,
-                    })
-                  }}
+                  onChange={(e) => handleDurationChange(activity.id, parseInt(e.target.value, 10))}
                   className="w-14 px-2 py-1 bg-transparent border-b border-gray-400 focus:outline-none focus:border-blue-500 text-xs"
                   />
                   <span className="text-xs text-gray-500 ml-1">mins</span>
@@ -381,22 +388,7 @@ const ReorderItinerary = () => {
           </Reorder.Item>
         ))}
       </Reorder.Group>
-
-      {/* Buttons Container */}
-      <div className="mt-auto flex justify-end space-x-4">
-        <button
-          onClick={() => saveMails()}
-          className="px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600"
-        >
-          Save!
-        </button>
-        <button
-          onClick={() => console.log("Cancel")}
-          className="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600"
-        >
-          Cancel
-        </button>
-      </div>
+      
       {isPopupOpen && (
         <NotePopup
           noteValue={noteValue}
