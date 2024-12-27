@@ -301,7 +301,7 @@ const ReorderItinerary = () => {
         axis="y"
         values={currentActivities}
         onReorder={handleReorder}
-        className="flex-1 overflow-auto"
+        className="flex-1 overflow-auto pb-0.5"
       >
         {currentActivities.map((activity, index) => (
           <Reorder.Item
@@ -387,6 +387,7 @@ const ReorderItinerary = () => {
             </div>
           </Reorder.Item>
         ))}
+        <div style={{ height: "50px" }}></div> {/* 占位空間，避免裁切 */}
       </Reorder.Group>
       
       {isPopupOpen && (
