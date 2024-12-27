@@ -137,6 +137,7 @@ router.post("/insert", async (req, res) => {
   const { itineraryId, curDays, placeWithDetail } = req.body
   const {
     name,
+    note,
     type,
     order,
     latitude,
@@ -153,6 +154,7 @@ router.post("/insert", async (req, res) => {
     if (
       !itineraryId ||
       !name ||
+      !note ||
       !type ||
       !latitude ||
       !longitude ||
@@ -162,6 +164,7 @@ router.post("/insert", async (req, res) => {
       console.log("Missing fields:", {
         itineraryId,
         name,
+        note, 
         type,
         latitude,
         longitude,
@@ -200,13 +203,13 @@ router.post("/insert", async (req, res) => {
     // Ensure the new activity properties are valid
     const newActivity = {
       name,
+      note, 
       type,
       order: dayOne.activities.length + 1,
       latitude,
       longitude,
       location,
       id: nanoid(),
-      note: "",
       photoUrls: photoUrls || [], // Default to empty array if undefined
       description,
       recommendDuration,

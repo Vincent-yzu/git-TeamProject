@@ -185,7 +185,7 @@ const ReorderItinerary = () => {
       >
         {currentActivities.map((activity) => (
           <Reorder.Item
-            key={activity.id} // 如有 id，可使用 activity.id    // 我也想  但我不知道該去哪裡生個景點ID  XD
+            key={activity.id} // 如有 id，可使用 activity.id    // 我也想  但我不知道該去哪裡生個景點ID  XD    // 有id了 讚!
             value={activity}
             className="flex flex-col gap-2 rounded-lg border p-4 shadow-lg mb-2"
             onDragEnd={() => saveMails()}  // 加入這一行，當拖動結束時觸發 saveMails
@@ -198,7 +198,7 @@ const ReorderItinerary = () => {
             <h3 className="text-lg font-semibold">{activity.name}</h3>
             <p className="text-sm text-gray-600">{activity.description}</p>
             <p className="text-xs text-gray-500">📍 {activity.location}</p>
-            <p className="text-xs text-gray-500">💡 {`${activity.note} i am note`}</p>
+            <p className="text-xs text-gray-500">💡 {activity.note || "這裡可以輸入哦！"}</p>
             <span className="text-xs">⏳ {activity.recommendDuration} min</span>
             <button onClick={() => handleDeletePlace(activity.name)}>⮕ Delete!</button>
           </Reorder.Item>

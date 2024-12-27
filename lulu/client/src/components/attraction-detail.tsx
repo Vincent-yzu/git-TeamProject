@@ -38,6 +38,7 @@ export const AttractionDetail = () => {
   const handleAddPlace = async (place: Place) => {
     const placeWithDetail = {
       name: place.name, // 假設 place.name 是標題
+      note: "請在這裡輸入您的備註哦！",
       type: "activity", 
       order: 99,
       latitude: place.geometry.location.lat,
