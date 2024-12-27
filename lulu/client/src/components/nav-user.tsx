@@ -100,6 +100,7 @@ export function NavUser({ user }: { user: User }) {
                   method: "POST",
                 },
               })
+              await new Promise((resolve) => setTimeout(resolve, 50))
               navigate("/home")
             }}>
               <LogOut />

@@ -17,6 +17,7 @@ export type Itinerary = {
   travelCategories: string[]
   language: string
   days: {
+    startTime: string
     day: number
     activities: {
       type: "activity"
