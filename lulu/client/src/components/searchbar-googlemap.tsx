@@ -1,4 +1,5 @@
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
+import { useSearchParams } from "react-router-dom";
 import { SidebarInput } from "@/components/ui/sidebar";
 import { useMapContext } from "./MapContext"; // 引入 Context
 
@@ -31,6 +32,8 @@ export const SearchBarGoogleMap = ({ placeholder }: SearchBarGoogleMapProps) => 
   const { setAddedPlace } = useMapContext(); // 從 Context 中取用 `setAddedPlace`
   const { setZoomLevel } = useMapContext(); // 從 Context 中取用 `setZoomLevel`
   const { setCallCloseDetail } = useMapContext();
+  const [searchParams] = useSearchParams();
+  const destination = searchParams.get("destination") || "";
 
   const handleSearchChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
     const newQuery = e.target.value;
@@ -40,6 +43,12 @@ export const SearchBarGoogleMap = ({ placeholder }: SearchBarGoogleMapProps) => 
       setPlaces([]);
     }
   }, []);
+
+  // 初始文字
+  useEffect(() => {
+    setQuery(destination);
+    if (destination != "")  handleSearch(destination);
+  }, [destination]);
 
   // 清除搜尋內容
   const handleClearSearch = useCallback(() => {
@@ -51,50 +60,57 @@ export const SearchBarGoogleMap = ({ placeholder }: SearchBarGoogleMapProps) => 
       console.log('Close Detail!');
     });
   }, []);
-
-  // call google map api
+  
+  // handleKeyDown
   const handleKeyDown = useCallback(async (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === "Enter") {
       if (query.trim() === "") {
         setPlaces([]);
         return;
       }
-
-      try {
-        // 使用 text search 取得景點資料
-        const response = await fetch(`${BACKEND_URL}/api/googlesearch?query=${query}`);
-        if (!response.ok) {
-          throw new Error("Failed to fetch places");
-        }
-
-        const data = await response.json();
-        setPlaces(data);
-
-        console.log(data);
-
-        // 更新右側地圖 (使用第一筆資料)
-        if (data.length > 0) {
-          setZoomLevel(15);
-          setSelectedPlace({
-            id: 0,
-            place_id: data[0].place_id,
-            name: data[0].name,
-            formatted_address: data[0].formatted_address,
-            geometry: {
-              location: {
-                lat: data[0].geometry.location.lat,
-                lng: data[0].geometry.location.lng,
-              },
-            },
-            icon: data[0].icon,
-            description: data[0].description,
-          });
-        }
-      } catch (error) {
-        console.error("搜尋失敗:", error);
-      }
+      
+      // search
+      handleSearch(query);
     }
-  }, [query, setSelectedPlace, setZoomLevel]);
+  }, [query]);
+  
+  // call google map api
+  const handleSearch = useCallback(async (queryValue: string) => {
+    try {
+      // 使用 text search 取得景點資料
+      const response = await fetch(`${BACKEND_URL}/api/googlesearch?query=${queryValue}`);
+      if (!response.ok) {
+        throw new Error("Failed to fetch places");
+      }
+  
+      const data = await response.json();
+      setPlaces(data);
+  
+      console.log(data);
+  
+      // 更新右側地圖 (使用第一筆資料)
+      if (data.length > 0) {
+        setZoomLevel(15);
+        setSelectedPlace({
+          id: 0,
+          place_id: data[0].place_id,
+          name: data[0].name,
+          formatted_address: data[0].formatted_address,
+          geometry: {
+            location: {
+              lat: data[0].geometry.location.lat,
+              lng: data[0].geometry.location.lng,
+            },
+          },
+          icon: data[0].icon,
+          description: data[0].description,
+        });
+      }
+    } catch (error) {
+      console.error("搜尋失敗:", error);
+    }
+  }, [setPlaces, setSelectedPlace]);
+  
 
   const handlePlaceClick = useCallback(
     (place: Place) => {

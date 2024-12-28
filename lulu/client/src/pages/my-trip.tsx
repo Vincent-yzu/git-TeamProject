@@ -10,6 +10,7 @@ import { useAuth } from "@/hooks/use-auth"
 import { useItineraries } from "@/hooks/use-itineraries"
 import ItineraryForm from "@/components/itinerary-form"
 import { NavUser } from "@/components/nav-user"
+import { CreateTripModal } from "@/components/create-trip-modal"
 
 const MyTripPage: React.FC = () => {
   const { data: auth } = useAuth()
@@ -187,7 +188,7 @@ const MyTripPage: React.FC = () => {
   }, [])
 
   if (isLoading) return null
-  console.log(itineraries)
+  // console.log(itineraries)
 
   return (
     <SidebarProvider>
@@ -240,6 +241,7 @@ const MyTripPage: React.FC = () => {
                     {itineraries.map((itinerary) => {
                       return (
                         <div
+                          key={itinerary.id}  // Add the `key` prop here
                           className="flex flex-col gap-2 items-center cursor-pointer"
                           onClick={() => navigate(`/dashboard/${itinerary.id}`)}
                         >
@@ -366,69 +368,18 @@ const MyTripPage: React.FC = () => {
         )}
         {/* 彈出視窗：自建行程 */}
         {isCreateTripModalOpen && (
-          <div className="modal-overlay">
-            <div className="modal-content">
-              <h2>行程設定</h2>
-              <form>
-                <label>
-                  行程名稱：
-                  <input
-                    type="text"
-                    placeholder="新行程取個名字吧"
-                    maxLength={32}
-                    value={tripName} // 綁定行程名稱狀態
-                    onChange={(e) => setTripName(e.target.value)} // 更新行程名稱狀態
-                  />
-                </label>
-                <label>
-                  行程日期：
-                  <input
-                    type="date"
-                    placeholder="出發日"
-                    value={start_date} // 綁定開始日期狀態
-                    onChange={(e) => setStartDate(e.target.value)} // 更新開始日期狀態
-                  />
-                  <span> ➔ </span>
-                  <input
-                    type="date"
-                    placeholder="結束日"
-                    value={end_date} // 綁定結束日期狀態
-                    onChange={(e) => setEndDate(e.target.value)} // 更新結束日期狀態
-                  />
-                </label>
-                <label>
-                  目的地：
-                  <input
-                    type="text"
-                    placeholder="要去哪裡玩呢"
-                    value={destination} // 綁定目的地狀態
-                    onChange={(e) => setDestination(e.target.value)} // 更新目的地狀態
-                  />
-                </label>
-                <div
-                  style={{
-                    display: "flex",
-                    justifyContent: "flex-end",
-                    gap: "10px",
-                  }}
-                >
-                  <button
-                    className="cancel-trip-button"
-                    type="button"
-                    onClick={handleCloseCreateTripModal}
-                  >
-                    取消
-                  </button>
-                  <button
-                    className="confirm-create-trip-button"
-                    onClick={handleConfirmTrip}
-                  >
-                    確定
-                  </button>
-                </div>
-              </form>
-            </div>
-          </div>
+          <CreateTripModal
+            isOpen={isCreateTripModalOpen}
+            tripName={tripName}
+            startDate={start_date}
+            endDate={end_date}
+            destination={destination}
+            onClose={handleCloseCreateTripModal}
+            setTripName={setTripName}
+            setStartDate={setStartDate}
+            setEndDate={setEndDate}
+            setDestination={setDestination}
+          />
         )}
         {/* 彈出視窗：添加成員 */}
         {isAddMemberModalOpen && (

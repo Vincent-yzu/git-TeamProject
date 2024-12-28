@@ -80,6 +80,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
     console.log("No user")
     return null
   }
+
   return (
     <Sidebar
       collapsible="icon"

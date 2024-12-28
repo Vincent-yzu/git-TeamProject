@@ -9,12 +9,14 @@ import { AppSidebar } from "@/components/app-sidebar"
 import { AttractionDetail } from "@/components/attraction-detail"
 import { DisplayMap } from "@/components/displaymap"
 import { MapProvider } from "@/components/MapContext" // 引入 Context
-import { useParams, useNavigate } from "react-router-dom"
+import { useParams, useNavigate, useSearchParams  } from "react-router-dom"
 import Header from "@/components/header" // 引入 Header 組件
 import React from "react"
 
 export default function Dashboard() {
-  const { data: auth } = useAuth() // 把傳回來的data改名叫做auth
+  const [searchParams] = useSearchParams();
+  const destination = searchParams.get("destination") || "";
+  const { data: auth } = useAuth()
   const { id } = useParams()
   const navigate = useNavigate()
   if (!auth?.user) {
