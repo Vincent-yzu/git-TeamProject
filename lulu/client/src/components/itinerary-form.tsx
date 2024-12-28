@@ -51,6 +51,7 @@ import {
 } from "@/components/ui/select"
 
 // Schema Integration
+
 const itineraryFrontendSchema = z.object({
   location: z.string().min(1, "Location is required"),
   startDate: z.coerce.date(),
@@ -73,6 +74,18 @@ const itineraryFrontendSchema = z.object({
   language: z.enum(["英文", "中文"]),
 })
 
+function formatToUTC(originalDate: Date) {
+  // 將日期轉換為 Date 對象
+  const date = new Date(originalDate); // 假設傳入的是 '2024-12-28' 這樣的格式
+
+  // 設置時間為 UTC 的零點
+  const utcDate = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()));
+
+  // 輸出格式為 ISO 8601
+  return new Date(utcDate.toISOString()); // 格式為 '2024-12-28T00:00:00.000Z'
+}
+
+
 export default function ItineraryForm() {
   const navigate = useNavigate()
   const form = useForm<z.infer<typeof itineraryFrontendSchema>>({
@@ -88,6 +101,8 @@ export default function ItineraryForm() {
 
   const mutation = useMutation({
     mutationFn: async (data: z.infer<typeof itineraryFrontendSchema>) => {
+      data.startDate = formatToUTC(data.startDate)
+      data.endDate = formatToUTC(data.endDate)
       const response = await fetcher("/api/itinerary", {
         options: {
           method: "POST",

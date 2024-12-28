@@ -44,7 +44,6 @@ export const itineraries = pgTable("itineraries", {
   location: text("location").notNull(),
   description: text("description").notNull(),
   startDate: date("start_date", { mode: "date" }).notNull(),
-  startTime: time("start_time").notNull().default("08:00"),
   endDate: date("end_date", { mode: "date" }).notNull(),
   travelCategories: jsonb("travel_categories")
     .$type<ItineraryFrontend["travelCategories"]>()
@@ -53,6 +52,7 @@ export const itineraries = pgTable("itineraries", {
 
   days: jsonb("days").$type<{
       day: number
+      startTime: string,
       activities: (ItineraryBackend["days"][number]["activities"][number] & {
         id: string
         note: string

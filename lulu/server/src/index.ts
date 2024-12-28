@@ -21,6 +21,8 @@ import { itineraryRouter } from "@/routes/itinerary"
 
 import { db } from "./lib/db"
 import { comments } from "./lib/db/schema"
+import { eq, asc } from "drizzle-orm"
+import type { User } from "@/lib/db/schema"
 
 const app = express()
 
@@ -82,21 +84,56 @@ io.on("connection", (socket) => {
     socket.to(roomId).emit("reorder_update", reorderData)
   })
 
-  socket.on("add_comment", (data: { roomId: string; comment: string }) => {
-    const { roomId, comment } = data
-    console.log(`Add comment event in room ${roomId} by ${socket.id}:`, comment)
-    // 將更新廣播給該房間的其他使用者
-    db.insert(comments).values({
-      userId: socket.data.user.id,
-      itineraryId: roomId,
-      content: comment,
-    })
-    socket.to(roomId).emit("add_comment", comment)
+  // Track users in rooms
+  const roomUsers: { [roomId: string]: User[] } = {}
+
+  socket.on("join_room", async ({ roomId, user }: { roomId: string; user: User }) => {
+    socket.join(roomId)
+    
+    // Add user to room
+    if (!roomUsers[roomId]) {
+      roomUsers[roomId] = []
+    }
+    roomUsers[roomId].push(user)
+    
+    // Broadcast updated user list
+    io.to(roomId).emit("users_in_room", roomUsers[roomId])
+    
+    // Send existing messages
+    const existingMessages = await db
+      .select()
+      .from(comments)
+      .where(eq(comments.itineraryId, roomId))
+      .orderBy(asc(comments.createdAt))
+      
+    socket.emit("initial_messages", existingMessages)
+  })
+
+  socket.on("send_message", async ({ roomId, content }: { roomId: string; content: string }) => {
+    // Store message in database
+    const [message] = await db
+      .insert(comments)
+      .values({
+        userId: socket.data.user.id,
+        itineraryId: roomId,
+        content,
+        createdAt: new Date()
+      })
+      .returning()
+      
+    // Broadcast message to room
+    io.to(roomId).emit("new_message", message)
   })
 
   socket.on("disconnect", () => {
-    console.log("A user disconnected:", socket.id)
+    // Remove user from all rooms
+    Object.entries(roomUsers).forEach(([roomId, users]) => {
+      const updatedUsers = users.filter(u => u.id !== socket.data.user.id)
+      roomUsers[roomId] = updatedUsers
+      io.to(roomId).emit("users_in_room", updatedUsers)
+    })
   })
+
 })
 
 server.listen(PORT, () => {

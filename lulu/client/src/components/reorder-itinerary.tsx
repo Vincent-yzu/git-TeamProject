@@ -18,6 +18,7 @@ const ReorderItinerary = () => {
 
   const { heyUpdateData } = useMapContext() // 從 Context 中取用 `heyUpdateData`
   const { selectedDayIndex, setSelectedDayIndex } = useMapContext() // 從 Context 中取用 `selectedDayIndex`
+  const { setCallCloseDetail } = useMapContext();
 
   const { id } = useParams()
   const { data: itinerary, isLoading } = useItinerary(
@@ -43,12 +44,17 @@ const ReorderItinerary = () => {
     setEditingNoteId(activityId)
     setNoteValue(note)
     setIsPopupOpen(true)
+
+    // 關閉詳細資訊
+    setCallCloseDetail(() => () => {
+      console.log('Close Detail!');
+    });
   }
 
-  const handleNoteChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+  const handleNoteChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     setNoteValue(e.target.value)
   }
-
+  
   const handleNoteSave = async () => {
     if (editingNoteId) {
       await saveNote(editingNoteId)
@@ -63,12 +69,19 @@ const ReorderItinerary = () => {
 
   const saveNote = async (activityId: string) => {
     try {
-      const response = await fetch(`${BACKEND_URL}/api/updateNote`, {
+      const updatedNote = {
+        itineraryId: id, // 替換為實際的 id 值
+        curDays: selectedDayIndex, // 替換為實際的 days 值
+        place: { activityId, note: noteValue },
+      }
+  
+      // update to DataBase
+      const response = await fetch(`${BACKEND_URL}/api/addactivity/updateNote`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ activityId, note: noteValue }),
+        body: JSON.stringify(updatedNote),
       })
 
       if (!response.ok) {
@@ -89,6 +102,48 @@ const ReorderItinerary = () => {
       console.error("Error updating note:", error)
     }
   }
+
+  const handleRecommendDurationChange = async (activityId: string, newDuration: number) => {
+
+    // api
+    try {
+      const updatedNote = {
+        itineraryId: id, // 替換為實際的 id 值
+        curDays: selectedDayIndex, // 替換為實際的 days 值
+        place: { activityId, recommendDuration: newDuration },
+      }
+  
+      // update to DataBase
+      const response = await fetch(`${BACKEND_URL}/api/addactivity/updateDuration`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(updatedNote),
+      })
+
+      if (!response.ok) {
+        throw new Error(`Failed to update note: ${response.statusText}`)
+      }
+    } catch (error) {
+      console.error("Error updating note:", error)
+    }
+
+    // socket
+    const updatedActivities = [...daysActivities];
+    updatedActivities[currentDayIndex] = updatedActivities[currentDayIndex].map((act) =>
+      act.id === activityId
+        ? { ...act, recommendDuration: newDuration }
+        : act
+    );
+    setDaysActivities(updatedActivities);
+    socketRef.current?.emit("update_duration", {
+      roomId,
+      dayIndex: currentDayIndex,
+      activityId,
+      recommendDuration: newDuration,
+    });
+  };
 
   const toggleDescription = (activityId: string) => {
     setDescriptionActivityId((prevId) => (prevId === activityId ? null : activityId))
@@ -196,11 +251,11 @@ const ReorderItinerary = () => {
   }
 
   // 刪除行程
-  const handleDeletePlace = async (name: string) => {
+  const handleDeletePlace = async (activityId: string) => {
     const updatedPlace = {
       itineraryId: id, // 替換為實際的 id 值
       curDays: selectedDayIndex, // 替換為實際的 days 值
-      place: { name },
+      place: { activityId },
     }
 
     // delete from DataBase
@@ -219,7 +274,7 @@ const ReorderItinerary = () => {
     setDaysActivities((prev) => {
       const newDays = [...prev]
       newDays[currentDayIndex] = newDays[currentDayIndex].filter(
-        (activity) => activity.name !== name
+        (activity) => activity.id !== activityId
       )
       return newDays
     })
@@ -281,7 +336,7 @@ const ReorderItinerary = () => {
         <input
           type="time"
           id="start-time"
-          value={itinerary.days[currentDayIndex].startTime || ""}
+          value={itinerary.days[currentDayIndex].startTime || "08:00"}
           onChange={(e) => {
             const newStartTime = e.target.value
             const updatedDays = [...itinerary.days]
@@ -305,7 +360,7 @@ const ReorderItinerary = () => {
       >
         {currentActivities.map((activity, index) => (
           <Reorder.Item
-            key={activity.id}
+            key={activity.id} // 如有 id，可使用 activity.id    // 我也想  但我不知道該去哪裡生個景點ID  XD    // 有id了 讚!
             value={activity}
             className="flex flex-row justify-between items-stretch rounded-lg border p-3 shadow-lg mb-2"
             onDragEnd={() => saveMails()}
@@ -341,7 +396,7 @@ const ReorderItinerary = () => {
                 {descriptionActivityId === activity.id ? "Hide Description" : "Show Description"}
               </button>
               <button
-                onClick={() => handleDeletePlace(activity.name)}
+                onClick={() => handleDeletePlace(activity.id)}
                 className="px-2 py-1 rounded text-xs bg-red-500 text-white hover:bg-red-600"
               >
                 Delete!
@@ -376,10 +431,10 @@ const ReorderItinerary = () => {
                 <div className="flex items-center">
                   <span className=" text-gray-500">⏳</span>
                   <input
-                  type="number"
-                  value={activity.recommendDuration}
-                  onChange={(e) => handleDurationChange(activity.id, parseInt(e.target.value, 10))}
-                  className="w-14 px-2 py-1 bg-transparent border-b border-gray-400 focus:outline-none focus:border-blue-500 text-xs"
+                    type="number"
+                    value={activity.recommendDuration}
+                    onChange={(e) => handleRecommendDurationChange(activity.id, parseInt(e.target.value, 10))}
+                    className="w-14 px-2 py-1 bg-transparent border-b border-gray-400 focus:outline-none focus:border-blue-500 text-xs"
                   />
                   <span className="text-xs text-gray-500 ml-1">mins</span>
                 </div>
