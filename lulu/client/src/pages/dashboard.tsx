@@ -14,7 +14,7 @@ import Header from "@/components/header" // 引入 Header 組件
 import React from "react"
 
 export default function Dashboard() {
-  const { data: auth } = useAuth()
+  const { data: auth } = useAuth() // 把傳回來的data改名叫做auth
   const { id } = useParams()
   const navigate = useNavigate()
   if (!auth?.user) {
