@@ -2,6 +2,7 @@ import React, { useState } from "react"
 import { useNavigate } from "react-router-dom" // 引入 useNavigate
 
 import { SidebarProvider } from "@/components/ui/sidebar"
+import { fetcher } from "@/lib/fetcher"
 
 import "./my-trip.css" // 引入樣式檔案
 
@@ -66,10 +67,71 @@ const MyTripPage: React.FC = () => {
     setSelectedItineraryId(null)
   }
 
-  const handleAddMember = () => {
-    // Handle adding member logic here
-    console.log('Adding member with email:', email, 'to itinerary:', selectedItineraryId)
+  const handleAddMember = async () => {
+    // find userID by email
+    
+    let userID = ""
+
+    try {
+      console.log('email:', email);
+      const response = await fetcher(`/api/user/findUserID?email=${email}`, {
+        options: {
+          method: 'GET',
+          headers: { 'Content-Type': 'application/json' },
+        }
+      });
+  
+      const result = await response.json();
+      if (result.success) {
+        userID = result.userID
+        console.log('userID:', userID);
+        // add userID to itinerary
+        try {
+          const response = await fetcher(`/api/itinerary/addMember/${selectedItineraryId}/${userID}`, {
+            options: {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' }, // Optional if no body is sent
+            }
+          });
+        
+          if (response.status === 204) {
+            console.log('Member added successfully');
+          } else {
+            const result = await response.json();
+            console.error('Failed to add member:', result.message);
+          }
+        } catch (error) {
+          console.error('Error adding member:', error);
+        }
+
+      } else {
+        console.error('Failed to find userID:', result.message);
+      }
+    } catch (error) {
+      console.error('Error finding userID:', error);
+    }  
+
+    // TODO: add userID to itinerary
+
+    // try {
+    //   const response = await fetch(`/api/itineraries/${selectedItineraryId}`, {
+    //     method: 'POST',
+    //     headers: { 'Content-Type': 'application/json' },
+    //     body: JSON.stringify({ email }),
+    //   });
+  
+    //   const result = await response.json();
+    //   if (result.success) {
+    //     console.log('Member added successfully');
+    //   } else {
+    //     console.error('Failed to add member:', result.message);
+    //   }
+    // } catch (error) {
+    //   console.error('Error adding member:', error);
+    // }
+
     setAddMemberModalOpen(false)
+    
   }
 
   const handleConfirmTrip = async () => {
@@ -175,7 +237,7 @@ const MyTripPage: React.FC = () => {
                 <>
                   <div className="grid grid-cols-3 gap-6">
                     {itineraries.map((itinerary) => {
-                      return ( /* TODO: add a button on every itinerary's top right and after pressing it, a form will pop up and we can type an email to add a member to edit the itinerary */
+                      return (
                         <div
                           key={itinerary.id}  // Add the `key` prop here
                           className="flex flex-col gap-2 items-center cursor-pointer"
@@ -195,6 +257,7 @@ const MyTripPage: React.FC = () => {
                             <button
                               className="absolute top-0 right-0 m-2 bg-white p-1 rounded"
                               onClick={(e) => {
+                                // TODO: add member logic
                                 console.log("itinerary id is :", itinerary.id)
                                 e.stopPropagation()
                                 handleOpenAddMemberModal(itinerary.id)
