@@ -122,10 +122,6 @@ const MyTripPage: React.FC = () => {
           <h1 className="page-title">我的行程</h1>
           <div className="tabs container items-center mx-auto px-4 flex justify-between">
             <div>
-              <button className="tab active">個人</button>
-              <button className="tab">群組</button>
-            </div>
-            <div>
               <div className="flex items-center gap-4 justify-center">
                 <button
                   className="create-trip-button"

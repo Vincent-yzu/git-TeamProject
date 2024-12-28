@@ -30,6 +30,7 @@ export const SearchBarGoogleMap = ({ placeholder }: SearchBarGoogleMapProps) => 
   const { setSelectedPlace } = useMapContext(); // 從 Context 中取用 `setSelectedPlace`
   const { setAddedPlace } = useMapContext(); // 從 Context 中取用 `setAddedPlace`
   const { setZoomLevel } = useMapContext(); // 從 Context 中取用 `setZoomLevel`
+  const { setCallCloseDetail } = useMapContext();
 
   const handleSearchChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
     const newQuery = e.target.value;
@@ -38,6 +39,17 @@ export const SearchBarGoogleMap = ({ placeholder }: SearchBarGoogleMapProps) => 
     if (newQuery.trim() === "") {
       setPlaces([]);
     }
+  }, []);
+
+  // 清除搜尋內容
+  const handleClearSearch = useCallback(() => {
+    setQuery("");
+    setPlaces([]);
+
+    // 關閉詳細資訊
+    setCallCloseDetail(() => () => {
+      console.log('Close Detail!');
+    });
   }, []);
 
   // call google map api
@@ -93,12 +105,29 @@ export const SearchBarGoogleMap = ({ placeholder }: SearchBarGoogleMapProps) => 
 
   return (
     <div>
-      <SidebarInput
-        placeholder={placeholder || "搜尋附近"}
-        value={query}
-        onChange={handleSearchChange}
-        onKeyDown={handleKeyDown}
-      />
+      <div style={{ display: 'flex', alignItems: 'center' }}>
+        <SidebarInput
+          placeholder={placeholder || "搜尋附近"}
+          value={query}
+          onChange={handleSearchChange}
+          onKeyDown={handleKeyDown}
+        />
+        {query && (
+          <button
+            onClick={handleClearSearch}
+            style={{
+              marginLeft: '8px',
+              padding: '6px',
+              border: 'none',
+              backgroundColor: '#eee',
+              borderRadius: '50%',
+              cursor: 'pointer',
+            }}
+          >
+            X
+          </button>
+        )}
+      </div>
       <ul className="pt-[18px]">
         {places.slice(0, 5).map((place) => (
           // 最多顯示5筆，點擊更新選擇的地點

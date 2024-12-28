@@ -26,6 +26,7 @@ export const AttractionDetail = () => {
   const {selectedDayIndex} = useMapContext(); // 從 Context 中取用 `selectedDayIndex`
   const { id } = useParams()
   const [isVisible, setIsVisible] = useState(false); // 控制容器顯示/隱藏的狀態
+  const { callCloseDetail } = useMapContext();
 
   // Update visibility when selectedPlace changes
   useEffect(() => {
@@ -34,17 +35,28 @@ export const AttractionDetail = () => {
     }
   }, [selectedPlace]);
 
+  // 被呼叫關閉
+  useEffect(() => {
+    handleClose();
+  }, [callCloseDetail]);
+
+  // 處理關閉
+  const handleClose = () => {
+    setIsVisible(false);
+  };
+
   // 加入行程
   const handleAddPlace = async (place: Place) => {
     const placeWithDetail = {
       name: place.name, // 假設 place.name 是標題
+      note: "這裡可以輸入備註哦！",
       type: "activity", 
       order: 99,
       latitude: place.geometry.location.lat,
       location: place.formatted_address,
       longitude: place.geometry.location.lng,
       photoUrls: [place.icon], 
-      description: "這是景點的描述!",
+      description: "這是景點的描述！",
       recommendDuration: 60,
     };
     // 新增 id 和 days
@@ -87,11 +99,6 @@ export const AttractionDetail = () => {
     //   },
     //   icon: place.icon,
     // });
-  };
-
-  // 處理關閉容器
-  const handleClose = () => {
-    setIsVisible(false);
   };
 
   // 如果 selectedPlace 為 null 或 undefined，則返回 null
