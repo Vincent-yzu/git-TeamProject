@@ -56,7 +56,22 @@ export const MapProvider = ({ children }: { children: ReactNode }) => {
   const [callCloseDetail, setCallCloseDetail] = useState<(() => void) | null>(null); // 初始為 null
 
   return (
-    <MapContext.Provider value={{ selectedPlace, setSelectedPlace, addedPlace, setAddedPlace, zoomLevel, setZoomLevel, heyUpdateData, setHeyUpdateData, selectedDayIndex, setSelectedDayIndex, callCloseDetail, setCallCloseDetail }}>
+    <MapContext.Provider
+      value={{
+        selectedPlace,
+        setSelectedPlace,
+        addedPlace,
+        setAddedPlace,
+        zoomLevel,
+        setZoomLevel,
+        heyUpdateData,
+        setHeyUpdateData,
+        selectedDayIndex,
+        setSelectedDayIndex,
+        callCloseDetail,
+        setCallCloseDetail,
+      }}
+    >
       {children}
     </MapContext.Provider>
   );
