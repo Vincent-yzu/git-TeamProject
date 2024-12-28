@@ -255,11 +255,12 @@ router.post("/insert", async (req, res) => {
 //       days: result.days.map((day) => {
 //         return {
 //           day: day.day,
-//           activities: day.activities.map((activity) => {
+//           startTime: "08:00",
+//           activities: day.activities.map((activity, index) => {
 //             return {
 //               ...activity,
-//               id: nanoid(),
 //               note: "",
+//               order: index + 1,
 //             }
 //           }),
 //         }

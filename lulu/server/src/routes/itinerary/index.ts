@@ -102,6 +102,9 @@ router.post("/", requireAuth, async (req, res) => {
     (new Date(endDate).getTime() - new Date(startDate).getTime() + 1000 * 60 * 60 * 24) /
       (1000 * 60 * 60 * 24)
   )
+  console.log(total_days)
+  console.log(new Date(endDate))
+  console.log(new Date(startDate))
 
   const modelizedItinerary = await generateItinerary({
     location,
@@ -141,6 +144,7 @@ router.post("/", requireAuth, async (req, res) => {
         return {
           ...day,
           activities: updatedActivities,
+          startTime: "08:00",
         };
       })
     ),

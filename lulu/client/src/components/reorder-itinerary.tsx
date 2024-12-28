@@ -312,7 +312,7 @@ const ReorderItinerary = () => {
         <input
           type="time"
           id="start-time"
-          value={itinerary.days[currentDayIndex].startTime || ""}
+          value={itinerary.days[currentDayIndex].startTime || "08:00"}
           onChange={(e) => {
             const newStartTime = e.target.value
             const updatedDays = [...itinerary.days]
@@ -343,7 +343,7 @@ const ReorderItinerary = () => {
           >
             {/* 左側內容 */}
             <div className="flex flex-col flex-1">
-              <p>行程 {activity.order + 1}</p>
+              <p>行程 {activity.order}</p>
               <h3 className="text-lg font-semibold leading-6">
               {activity.name}
               </h3>

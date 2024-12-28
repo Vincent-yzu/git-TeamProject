@@ -31,6 +31,7 @@ export async function generateItinerary({
 - 在 "description" 欄位中簡述此行程的特色
 - 規劃行程時，以 ${total_days} 天 ${total_days - 1} 夜為基準，並盡可能平均分配每天的行程
 - "days" 為一個包含 day 1 至 day ${total_days} 的陣列
+- "order" 為行程的順序，從 1 開始
 - 每天約有 6-7 個行程 (type=activity)
 - 每個行程的 recommendDuration 介於 60 至 150 分鐘
 - 不可重複相同景點或地點名稱，並避免同一景點內部子設施被重複列為獨立活動
