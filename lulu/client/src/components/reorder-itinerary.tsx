@@ -1,13 +1,15 @@
 import { useEffect, useRef, useState } from "react"
-import { Itinerary } from "@/types/response"
+import { Itinerary, User } from "@/types/response"
 import { Reorder } from "framer-motion"
 import { useParams } from "react-router-dom"
 import { io, Socket } from "socket.io-client"
 
 import { useItinerary } from "@/hooks/use-itinerary"
+import { useToast } from "@/hooks/use-toast"
 
 import { useMapContext } from "./MapContext" // 引入 Context
 import NotePopup from "./NotePopup" // 引入 NotePopup
+import { useAuth } from "@/hooks/use-auth"
 
 const BACKEND_URL = import.meta.env.VITE_BACKEND_URL
 
@@ -15,7 +17,11 @@ const ReorderItinerary = () => {
   const [isDescriptionOn, setIsDescriptionOn] = useState<boolean | undefined>(
     false
   )
-
+  const {data: auth} = useAuth()
+  if (!auth?.user) {
+    return null
+  }
+  const { toast } = useToast()
   const { heyUpdateData } = useMapContext() // 從 Context 中取用 `heyUpdateData`
   const { selectedDayIndex, setSelectedDayIndex } = useMapContext() // 從 Context 中取用 `selectedDayIndex`
   const { setCallCloseDetail } = useMapContext();
@@ -168,7 +174,15 @@ const ReorderItinerary = () => {
 
     socket.on("connect", () => {
       console.log("Connected to socket server")
-      socket.emit("create_room", roomId)
+      socket.emit("join_room", {roomId})
+    })
+
+    socket.on("room_user_joined", (user: User) => {
+      if (auth?.user?.id === user.id) {
+        toast({
+          title: `${user.email.split('@')[0]} joined room`,
+        })
+      }
     })
 
     socket.on(

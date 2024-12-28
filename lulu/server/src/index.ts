@@ -4,14 +4,21 @@ import cors from "cors"
 
 import "express-async-errors"
 
-import { authRouter, commentsRouter, googlesearchRouter, userRouter } from "@/routes"
+import {
+  authRouter,
+  commentsRouter,
+  googlesearchRouter,
+  userRouter,
+} from "@/routes"
 import { requireSocketAuth } from "@/socket/require-auth"
 import cookieParser from "cookie-parser"
+import { and, asc, eq, inArray, sql } from "drizzle-orm"
 import express from "express"
 import helmet from "helmet"
 import { Server } from "socket.io"
 
-import { NotFoundError } from "@/lib/error"
+import type { User } from "@/lib/db/schema"
+import { NotFoundError, UnauthorizedError } from "@/lib/error"
 import { logger } from "@/lib/logger"
 import { csrfHandler } from "@/middleware/csrf-handler"
 import { errorHandler } from "@/middleware/error-handler"
@@ -20,9 +27,7 @@ import { addactivityRouter } from "@/routes/addactivity"
 import { itineraryRouter } from "@/routes/itinerary"
 
 import { db } from "./lib/db"
-import { comments } from "./lib/db/schema"
-import { eq, asc } from "drizzle-orm"
-import type { User } from "@/lib/db/schema"
+import { comments, itineraries } from "./lib/db/schema"
 
 const app = express()
 
@@ -67,14 +72,6 @@ const io = new Server(server, {
 requireSocketAuth(io)
 io.on("connection", (socket) => {
   console.log("A user connected:", socket.id)
-  // 客戶端請求建立/加入房間事件
-  socket.on("create_room", (roomId: string) => {
-    // add query db roomId logic
-    socket.join(roomId)
-    console.log(`User ${socket.id} created and joined room: ${roomId}`)
-    // 回傳給前端表示房間成功建立/加入
-    socket.emit("room_created", roomId)
-  })
 
   // 當客戶端在該房間中觸發重新排序時，將資訊廣播給同房的其他客戶端
   socket.on("reorder_event", (data: { roomId: string; reorderData: any }) => {
@@ -87,44 +84,60 @@ io.on("connection", (socket) => {
   // Track users in rooms
   const roomUsers: { [roomId: string]: User[] } = {}
 
-  socket.on("join_room", async ({ roomId, user }: { roomId: string; user: User }) => {
-    socket.join(roomId)
-    
-    // Add user to room
-    if (!roomUsers[roomId]) {
-      roomUsers[roomId] = []
-    }
-    roomUsers[roomId].push(user)
-    
-    // Broadcast updated user list
-    io.to(roomId).emit("users_in_room", roomUsers[roomId])
-  })
+  socket.on(
+    "join_room",
+    async ({ roomId }: { roomId: string }) => {
+      try {
+        const [itinerary] = await db
+        .select()
+        .from(itineraries)
+        .where(
+          and(
+            eq(itineraries.id, roomId),
+            sql`EXISTS (SELECT 1 FROM jsonb_array_elements_text(${itineraries.allowedEditors}) AS editor WHERE editor = ${socket.data.user.id})`
+          )
+        )
+        if (!itinerary) {
+          throw new UnauthorizedError("Unauthorized: invalid session")
+        }
+      } catch (error) {
+        throw new UnauthorizedError("Unauthorized: invalid session")
+      }
+ 
+      console.log(`User ${socket.data.user.id} joined room:`, roomId)
+      socket.join(roomId)
 
-  socket.on("send_message", async ({ roomId, content }: { roomId: string; content: string }) => {
-    // Store message in database
-    const [message] = await db
-      .insert(comments)
-      .values({
-        userId: socket.data.user.id,
-        itineraryId: roomId,
-        content,
-        createdAt: new Date()
-      })
-      .returning()
-      
-    // Broadcast message to room
-    io.to(roomId).emit("new_message", message)
-  })
+      io.to(roomId).emit("room_user_joined", socket.data.user)
+    }
+  )
+
+  socket.on(
+    "send_message",
+    async ({ roomId, content }: { roomId: string; content: string }) => {
+      // Store message in database
+      const [message] = await db
+        .insert(comments)
+        .values({
+          userId: socket.data.user.id,
+          itineraryId: roomId,
+          content,
+          createdAt: new Date(),
+        })
+        .returning()
+
+      // Broadcast message to room
+      io.to(roomId).emit("new_message", message)
+    }
+  )
 
   socket.on("disconnect", () => {
     // Remove user from all rooms
     Object.entries(roomUsers).forEach(([roomId, users]) => {
-      const updatedUsers = users.filter(u => u.id !== socket.data.user.id)
+      const updatedUsers = users.filter((u) => u.id !== socket.data.user.id)
       roomUsers[roomId] = updatedUsers
       io.to(roomId).emit("users_in_room", updatedUsers)
     })
   })
-
 })
 
 server.listen(PORT, () => {
