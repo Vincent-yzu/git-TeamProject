@@ -95,13 +95,13 @@ io.on("connection", (socket) => {
           and(
             eq(itineraries.id, roomId),
             sql`EXISTS (SELECT 1 FROM jsonb_array_elements_text(${itineraries.allowedEditors}) AS editor WHERE editor = ${socket.data.user.id})`
-          )
+          ) 
         )
         if (!itinerary) {
           throw new UnauthorizedError("Unauthorized: invalid session")
         }
       } catch (error) {
-        throw new UnauthorizedError("Unauthorized: invalid session")
+        throw new UnauthorizedError("Unauthorized: invalid sesseion")
       }
  
       console.log(`User ${socket.data.user.id} joined room:`, roomId)
@@ -110,7 +110,7 @@ io.on("connection", (socket) => {
       io.to(roomId).emit("room_user_joined", socket.data.user)
     }
   )
-
+ 
   socket.on(
     "send_message",
     async ({ roomId, content }: { roomId: string; content: string }) => {

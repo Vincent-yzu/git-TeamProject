@@ -11,6 +11,6 @@ export function useComments(itineraryId: string) {
 }
 
 async function fetchComments(itineraryId: string) {
-  const response = await fetcher(`${BACKEND_URL}/comments?itinerary_id=${itineraryId}`)
+  const response = await fetcher(`/api/comments?itinerary_id=${itineraryId}`)
   return response.json()
 }

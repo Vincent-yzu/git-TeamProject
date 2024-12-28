@@ -12,6 +12,7 @@ import { MapProvider } from "@/components/MapContext" // 引入 Context
 import { useParams, useNavigate, useSearchParams  } from "react-router-dom"
 import Header from "@/components/header" // 引入 Header 組件
 import React from "react"
+import { ChatBox } from "@/components/chat-box"
 
 export default function Dashboard() {
   const [searchParams] = useSearchParams();
@@ -62,6 +63,7 @@ export default function Dashboard() {
                 ))} */}
 
                 {/* 右側 google map 大地圖 */}
+                <ChatBox  />
                 <DisplayMap />
                 </div>
             </SidebarInset>
@@ -70,4 +72,4 @@ export default function Dashboard() {
       </div>
     </>
   )
-}
+} 

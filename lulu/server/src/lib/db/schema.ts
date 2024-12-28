@@ -54,6 +54,7 @@ export const itineraries = pgTable("itineraries", {
       day: number
       startTime: string,
       activities: (ItineraryBackend["days"][number]["activities"][number] & {
+        commutingTime: number
         id: string
         note: string
       })[]
