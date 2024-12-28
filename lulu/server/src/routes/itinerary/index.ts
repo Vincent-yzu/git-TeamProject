@@ -25,7 +25,7 @@ const router = Router()
 
 export async function getPlaceDetails(query: string) {
   const [textSearchResponse] = await client.searchText(
-    { textQuery: query },
+    { textQuery: query, maxResultCount: 1 },
     {
       otherArgs: {
         headers: { "X-Goog-FieldMask": "places.name" },
@@ -99,14 +99,15 @@ router.post("/", requireAuth, async (req, res) => {
     parsedBody.data
 
   const total_days = Math.ceil(
-    (new Date(endDate).getTime() - new Date(startDate).getTime() + 1000 * 60 * 60 * 18) /
+    (new Date(endDate).getTime() - new Date(startDate).getTime() + 1000 * 60 * 60 * 24) /
       (1000 * 60 * 60 * 24)
   )
+
   const modelizedItinerary = await generateItinerary({
     location,
     duration: `${total_days}天 ${total_days - 1}夜`,
     language,
-    total_days,
+    total_days, 
     travelCategories,
   })
 

@@ -13,6 +13,7 @@ interface Place {
   place_id: string;
   name: string;
   formatted_address: string;
+  description: string;
   geometry: {
     location: {
       lat: number;
@@ -109,6 +110,7 @@ export const SearchBarGoogleMap = ({ placeholder }: SearchBarGoogleMapProps) => 
             onMouseOut={(e) => e.currentTarget.style.backgroundColor = '#f9f9f9'}
           >
             <strong style={styles.title}>{place.name}</strong>
+            <p style={styles.address}>{place.description}</p>
             <p style={styles.address}>{place.formatted_address}</p>
           </li>
         ))}

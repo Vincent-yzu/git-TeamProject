@@ -6,6 +6,7 @@ import { InternalServerError } from "@/lib/error"
 dotenv.config()
 
 const openai = new OpenAI({
+  baseURL: "https://api.deepseek.com/v1",
   apiKey: process.env.OPENAI_API_KEY,
 })
 
@@ -61,23 +62,23 @@ JSON 格式範例：
 }
 `.trim()
 
-console.log(systemMessage)
+  console.log(systemMessage)
 
   const userMessage = `
 請生成一個 ${location} ${duration} 的旅程規劃，並以 JSON 格式輸出。
 `.trim()
 
   const completion = await openai.chat.completions.create({
-    model: "gpt-4o",
+    model: "deepseek-chat",
     messages: [
       { role: "system", content: systemMessage },
       { role: "user", content: userMessage },
     ],
+    response_format: { type: "json_object" },
   })
   const end = Date.now()
 
-  console.log((end - start)/1000)
-
+  console.log((end - start) / 1000)
 
   console.log(completion?.choices[0]?.message?.content)
   if (completion?.choices[0]?.message?.content) {

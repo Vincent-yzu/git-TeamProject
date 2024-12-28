@@ -1,16 +1,12 @@
 import { useEffect, useState } from "react"
-import { useComments } from "@/hooks/use-comments"
 import { io, Socket } from "socket.io-client"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
+import { useAuth } from "@/hooks/use-auth"
 
+import { User } from "@/types/response"
 const BACKEND_URL = import.meta.env.VITE_BACKEND_URL
-interface User {
-  id: string
-  email: string
-  avatar: string
-}
 
 interface Message {
   id: string
@@ -18,26 +14,27 @@ interface Message {
   userId: string
   createdAt: Date
   itineraryId: string
+  avatar: string
 }
 
-export function ChatBox({ itineraryId, user }: { itineraryId: string; user: User }) {
-  const { data: comments } = useComments(itineraryId)
+export function ChatBox({ itineraryId }: { itineraryId: string}) {
   const [newMessage, setNewMessage] = useState("")
   const [socket, setSocket] = useState<Socket | null>(null)
   const [users, setUsers] = useState<User[]>([])
-
+  const {data: auth} = useAuth()
   const [messages, setMessages] = useState<Message[]>([])
+
+  if (!auth?.user) return null
 
   useEffect(() => {
     const socket = io(`${BACKEND_URL}/`, { 
       withCredentials: true,
-      auth: { user }
     })
 
     setSocket(socket)
 
     // Join room and get initial data
-    socket.emit("join_room", { roomId: itineraryId, user })
+    socket.emit("join_room", { roomId: itineraryId, user: auth.user })
 
     // Listen for messages
     socket.on("initial_messages", (messages: Message[]) => {
@@ -57,23 +54,8 @@ export function ChatBox({ itineraryId, user }: { itineraryId: string; user: User
     return () => {
       socket.disconnect()
     }
-  }, [itineraryId, user])
+  }, [itineraryId, auth.user])
 
-  useEffect(() => {
-    // Initialize with existing comments
-    if (comments) {
-      setMessages(
-        comments.map((comment) => ({
-          ...comment,
-          user: users.find((u) => u.id === comment.userId) || {
-            id: comment.userId,
-            name: "Unknown",
-            photo: "",
-          },
-        }))
-      )
-    }
-  }, [comments, users])
 
   const handleSendMessage = () => {
     if (newMessage.trim() && socket) {
@@ -92,28 +74,28 @@ export function ChatBox({ itineraryId, user }: { itineraryId: string; user: User
           <div
             key={message.id}
             className={`flex ${
-              message.userId === user.id ? "justify-end" : "justify-start"
+              message.userId === auth.user.id ? "justify-end" : "justify-start"
             } mb-4`}
           >
             <div
               className={`flex ${
-                message.userId === user.id ? "flex-row-reverse" : "flex-row"
+                message.userId === auth.user.id ? "flex-row-reverse" : "flex-row"
               } items-end gap-2`}
             >
               <Avatar className="h-8 w-8">
-                <AvatarImage src={message.user.photo} />
-                <AvatarFallback>{message.user.name[0]}</AvatarFallback>
+                <AvatarImage src={message.avatar} />
+                <AvatarFallback>{message.userId}</AvatarFallback>
               </Avatar>
               <div
                 className={`p-3 rounded-lg ${
-                  message.userId === user.id
+                  message.userId === auth.user.id
                     ? "bg-primary text-primary-foreground"
                     : "bg-muted"
                 }`}
               >
                 {message.userId !== "system" && (
                   <div className="text-xs font-medium mb-1">
-                    {message.user.name}
+                    {message.userId}
                   </div>
                 )}
                 <div className="text-sm">{message.content}</div>

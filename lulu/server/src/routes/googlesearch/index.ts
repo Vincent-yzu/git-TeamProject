@@ -1,19 +1,23 @@
 import { PlacesClient as Client } from "@googlemaps/places"
-import axios from "axios"
 import dotenv from "dotenv"
 import { Router } from "express"
-
-import { BadRequestError } from "@/lib/error"
+import OpenAI from "openai"
 
 dotenv.config()
+
+const openai = new OpenAI({
+  baseURL: "https://api.deepseek.com/v1",
+  apiKey: process.env.OPENAI_API_KEY,
+})
 
 const client = new Client({
   apiKey: process.env.GOOGLE_MAPS_API_KEY,
 })
 
 async function getPlaceDetails(query: string) {
+  // const start = Date.now()
   const [textSearchResponse] = await client.searchText(
-    { textQuery: query },
+    { textQuery: query, maxResultCount: 5 },
     {
       otherArgs: {
         headers: {
@@ -23,9 +27,11 @@ async function getPlaceDetails(query: string) {
       },
     }
   )
-
+  // console.log("textSearchResponse", (Date.now() - start) / 1000)
+  // const start2 = Date.now()
   const updatedPlaces = await Promise.all(
     (textSearchResponse?.places || []).map(async (place) => {
+      const start = Date.now()
       const [photoResponse] = await client.getPhotoMedia({
         name: `${place.photos?.[0]?.name}/media`,
         maxHeightPx: 500,
@@ -45,9 +51,40 @@ async function getPlaceDetails(query: string) {
       }
     })
   )
+  // console.log("updatedPlaces", (Date.now() - start2) / 1000)
+  // console.log(updatedPlaces.length)
+
+  const systemMessage = `
+你是一個熟知景點的專家，請以 20 字以內的簡短描述介紹景點，並以 JSON 格式回應。
+
+JSON 格式範例：
+{
+  "description": "景點的簡短描述",
+}
+`.trim()
+
+  const updatedPlacesWithDescription = await Promise.all(
+    updatedPlaces.map(async (place) => {
+      const userMessage = `${place.name}`
+
+      const completion = await openai.chat.completions.create({
+        model: "deepseek-chat",
+        messages: [
+          { role: "system", content: systemMessage },
+          { role: "user", content: userMessage },
+        ],
+        response_format: { type: "json_object" },
+      })
+      console.log(completion?.choices[0]?.message?.content)
+      return {
+        ...place,
+        ...JSON.parse(completion?.choices[0]?.message?.content || "{}"),
+      }
+    })
+  )
 
   return {
-    updatedPlaces,
+    updatedPlaces: updatedPlacesWithDescription,
   }
 }
 
