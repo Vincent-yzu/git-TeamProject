@@ -72,6 +72,39 @@ router.get("/recommended", async (req, res) => {
   res.json(responseData)
 })
 
+// TODO: add a member to the itinerary
+router.get("/addMember/:id", requireAuth, async (req, res) => {
+  const { id } = req.params;
+  if (typeof id !== "string") {
+    throw new BadRequestError("Invalid itinerary id")
+  }
+
+  const itinerary = await db
+    .select()
+    .from(itineraries)
+    .where(eq(itineraries.id, id))
+    .limit(1);
+
+  if (itinerary.length === 0) {
+    throw new BadRequestError("Itinerary not found");
+  }
+
+  const [itineraryData] = itinerary;
+  const allowedEditors = itineraryData.allowedEditors;
+
+  if (!allowedEditors.includes(req.user!.id)) {
+    allowedEditors.push(req.user!.id);
+  }
+
+  const updatedItinerary = await db
+    .update(itineraries)
+    .set({ allowedEditors })
+    .where(eq(itineraries.id, id))
+    .returning();
+
+  res.json(updatedItinerary);
+})
+
 router.get("/", requireAuth, async (req, res) => {
   // const itinerariesFromDB = await db.select().from(itineraries).where(eq(itineraries.userId, req.user!.id))
   // res.json(itinerariesFromDB)
@@ -98,7 +131,6 @@ router.get("/", requireAuth, async (req, res) => {
   res.json(responseData);
 })
 
-// FIXME: 共編的人不能看到行程
 router.get("/:id", requireAuth, async (req, res) => {
   const { id } = req.params;
   if (typeof id !== "string") {

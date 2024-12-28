@@ -76,8 +76,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const { data: auth } = useAuth()
   const { setOpen } = useSidebar()
 
-  // FIXME: problem 
-  if (!auth?.user) { // 無論誰都會是 No user 怪怪的
+  if (!auth?.user) {
     console.log("No user")
     return null
   }
