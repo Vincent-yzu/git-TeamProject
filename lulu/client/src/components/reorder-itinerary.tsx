@@ -155,6 +155,45 @@ const ReorderItinerary = () => {
     });
   };
 
+  const handleCommutingTimeChange = async (activityId: string, newCommutingTime: number) => {
+    // api
+    try {
+      const updatedCommutingTime = {
+        itineraryId: id, // 替換為實際的 id 值
+        curDays: selectedDayIndex, // 替換為實際的 days 值
+        place: { activityId, commutingTime: newCommutingTime },
+      }
+  
+      // update to DataBase
+      const response = await fetch(`${BACKEND_URL}/api/addactivity/updateCommutingTime`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(updatedCommutingTime),
+      })
+  
+      if (!response.ok) {
+        throw new Error(`Failed to update commuting time: ${response.statusText}`)
+      }
+    } catch (error) {
+      console.error("Error updating commuting time:", error)
+    }
+  
+    // socket
+    const updatedActivities = [...daysActivities]
+    updatedActivities[currentDayIndex] = updatedActivities[currentDayIndex].map((act) =>
+      act.id === activityId ? { ...act, commutingTime: newCommutingTime } : act
+    )
+    setDaysActivities(updatedActivities)
+    socketRef.current?.emit("update_commuting_time", {
+      roomId,
+      dayIndex: currentDayIndex,
+      activityId,
+      commutingTime: newCommutingTime,
+    })
+  }
+
   const toggleDescription = (activityId: string) => {
     setDescriptionActivityId((prevId) => (prevId === activityId ? null : activityId))
   }
@@ -178,9 +217,9 @@ const ReorderItinerary = () => {
     }
   }
 
-  const handleTravelTimeSave = async () => {
+  const handleCommutingTimeSave = async () => {
     if (editingTravelTimeActivityId) {
-      await handleTravelTimeChange(editingTravelTimeActivityId, newTravelTime)
+      await handleCommutingTimeChange(editingTravelTimeActivityId, newTravelTime)
       setIsTravelTimePopupOpen(false)
     }
   }
@@ -454,7 +493,6 @@ const ReorderItinerary = () => {
               </h3>
               <p className="text-xs text-gray-500">📍 {activity.location}</p>
               
-              <p className="text-xs text-gray-500">12:00 -14:00 </p>
               {/* 在該景點停留的時間區間，隔式會像 12:00 - 14:00，計算的邏輯是: 第一個行程的開始時間為出發時間(startTime)，結束時間是開始時間加上在該景點停留的時間(recommendDuration)；下一個景點的開始時間是: 前一個景點的結束時間，加上前一個景點所儲存的交通時間(travelTime)，依此類推到之後的行程 */}
               {/* <div className="text-xs text-gray-500">
                 {index === 0
@@ -466,12 +504,12 @@ const ReorderItinerary = () => {
                       .substr(11, 5)}`
                   : `${new Date(
                       new Date(`1970-01-01T${currentActivities[index - 1].endTime}Z`).getTime() +
-                      currentActivities[index - 1].travelTime * 60000
+                      currentActivities[index - 1].commutingTime * 60000
                     )
                       .toISOString()
                       .substr(11, 5)} - ${new Date(
                       new Date(`1970-01-01T${currentActivities[index - 1].endTime}Z`).getTime() +
-                      currentActivities[index - 1].travelTime * 60000 +
+                      currentActivities[index - 1].commutingTime * 60000 +
                       activity.recommendDuration * 60000
                     )
                       .toISOString()
@@ -536,9 +574,9 @@ const ReorderItinerary = () => {
                     <span className=" text-gray-500">🚗</span>
                     <p
                       className="text-xs text-gray-500 cursor-pointer underline inline"
-                      onClick={() => handleTravelTimeClick(activity.id, activity.travelTime)}
+                      onClick={() => handleTravelTimeClick(activity.id, activity.commutingTime)}
                     >
-                      {formatDuration(activity.travelTime)}
+                      {formatDuration(activity.commutingTime)}
                     </p>
                   </div>
                 )}
@@ -571,7 +609,7 @@ const ReorderItinerary = () => {
         <TravelTimePopup
           travelTime={newTravelTime}
           onTravelTimeChange={setNewTravelTime}
-          onSave={handleTravelTimeSave}
+          onSave={handleCommutingTimeSave}
           onCancel={() => setIsTravelTimePopupOpen(false)}
         />
       )}
