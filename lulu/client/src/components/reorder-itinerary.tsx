@@ -334,7 +334,7 @@ const ReorderItinerary = () => {
         onReorder={handleReorder}
         className="flex-1 overflow-auto"
       >
-        {currentActivities.map((activity) => (
+        {currentActivities.map((activity, idx) => (
           <Reorder.Item
             key={activity.id} // 如有 id，可使用 activity.id    // 我也想  但我不知道該去哪裡生個景點ID  XD    // 有id了 讚!
             value={activity}
@@ -343,7 +343,7 @@ const ReorderItinerary = () => {
           >
             {/* 左側內容 */}
             <div className="flex flex-col flex-1">
-              <p>行程 {activity.order}</p>
+              <p>行程 {idx +1}</p>
               <h3 className="text-lg font-semibold leading-6">
               {activity.name}
               </h3>

@@ -98,15 +98,6 @@ io.on("connection", (socket) => {
     
     // Broadcast updated user list
     io.to(roomId).emit("users_in_room", roomUsers[roomId])
-    
-    // Send existing messages
-    const existingMessages = await db
-      .select()
-      .from(comments)
-      .where(eq(comments.itineraryId, roomId))
-      .orderBy(asc(comments.createdAt))
-      
-    socket.emit("initial_messages", existingMessages)
   })
 
   socket.on("send_message", async ({ roomId, content }: { roomId: string; content: string }) => {
