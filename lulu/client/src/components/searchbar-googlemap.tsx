@@ -47,7 +47,7 @@ export const SearchBarGoogleMap = ({ placeholder }: SearchBarGoogleMapProps) => 
   // 初始文字
   useEffect(() => {
     setQuery(destination);
-    handleSearch(destination);
+    if (destination != "")  handleSearch(destination);
   }, [destination]);
 
   // 清除搜尋內容
