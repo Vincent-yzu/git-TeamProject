@@ -1,7 +1,7 @@
 import { PlacesClient as Client } from "@googlemaps/places"
 import dotenv from "dotenv"
 import { Router } from "express"
-import { eq, and} from "drizzle-orm"
+import { eq, and, or, sql } from "drizzle-orm"
 import { db } from "@/lib/db"
 import { itineraries } from "@/lib/db/schema"
 import { BadRequestError } from "@/lib/error"
@@ -73,8 +73,29 @@ router.get("/recommended", async (req, res) => {
 })
 
 router.get("/", requireAuth, async (req, res) => {
-  const itinerariesFromDB = await db.select().from(itineraries).where(eq(itineraries.userId, req.user!.id))
-  res.json(itinerariesFromDB)
+  // const itinerariesFromDB = await db.select().from(itineraries).where(eq(itineraries.userId, req.user!.id))
+  // res.json(itinerariesFromDB)
+  if (!req.user) {
+    throw new BadRequestError("User not authenticated");
+  }
+  const userId = req.user.id;
+
+  const itinerariesFromDB = await db
+    .select()
+    .from(itineraries)
+    .where(
+      or(
+        eq(itineraries.userId, userId),
+        sql`EXISTS (SELECT 1 FROM jsonb_array_elements_text(${itineraries.allowedEditors}) AS editor WHERE editor = ${userId})`
+      )
+    );
+
+  const responseData = itinerariesFromDB.map((itinerary) => {
+    const { userId, allowedEditors, ...rest } = itinerary;
+    return rest;
+  });
+
+  res.json(responseData);
 })
 
 router.get("/:id", requireAuth, async (req, res) => {
