@@ -98,13 +98,33 @@ router.get("/", requireAuth, async (req, res) => {
   res.json(responseData);
 })
 
+// FIXME: 共編的人不能看到行程
 router.get("/:id", requireAuth, async (req, res) => {
   const { id } = req.params;
   if (typeof id !== "string") {
     throw new BadRequestError("Invalid itinerary id")
   }
-  const [itinerary] = await db.select().from(itineraries).where(and(eq(itineraries.id, id), eq(itineraries.userId, req.user!.id)))
-  res.json(itinerary)
+  // const [itinerary] = await db.select().from(itineraries).where(and(eq(itineraries.id, id), eq(itineraries.userId, req.user!.id)))
+  // res.json(itinerary)
+
+  // define userID
+  const userId = req.user!.id;
+
+  const [itinerary] = await db
+    .select()
+    .from(itineraries)
+    .where(
+      and(
+        eq(itineraries.id, id),
+        sql`EXISTS (SELECT 1 FROM jsonb_array_elements_text(${itineraries.allowedEditors}) AS editor WHERE editor = ${userId})`
+      )
+    );
+
+  if (!itinerary) {
+    throw new BadRequestError("Itinerary not found or access denied");
+  }
+
+  res.json(itinerary);
 })
 
 
