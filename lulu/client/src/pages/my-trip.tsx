@@ -21,6 +21,10 @@ const MyTripPage: React.FC = () => {
   const { data: itineraries, isLoading } = useItineraries()
   const [isModalOpen, setModalOpen] = useState(false) // 用於控制彈窗的狀態
   const [isCreateTripModalOpen, setCreateTripModalOpen] = useState(false)
+  // new 
+  const [isAddMemberModalOpen, setAddMemberModalOpen] = useState(false)
+  const [selectedItineraryId, setSelectedItineraryId] = useState<string | null>(null)
+  const [email, setEmail] = useState("")
 
   const [tripName, setTripName] = useState("") // 行程名稱
   const [start_date, setStartDate] = useState("") // 開始日期
@@ -49,6 +53,23 @@ const MyTripPage: React.FC = () => {
 
   const handleCloseCreateTripModal = () => {
     setCreateTripModalOpen(false)
+  }
+
+  // new
+  const handleOpenAddMemberModal = (itineraryId: string) => {
+    setSelectedItineraryId(itineraryId)
+    setAddMemberModalOpen(true)
+  }
+
+  const handleCloseAddMemberModal = () => {
+    setAddMemberModalOpen(false)
+    setSelectedItineraryId(null)
+  }
+
+  const handleAddMember = () => {
+    // Handle adding member logic here
+    console.log('Adding member with email:', email, 'to itinerary:', selectedItineraryId)
+    setAddMemberModalOpen(false)
   }
 
   const handleConfirmTrip = async () => {
@@ -154,23 +175,34 @@ const MyTripPage: React.FC = () => {
                 <>
                   <div className="grid grid-cols-3 gap-6">
                     {itineraries.map((itinerary) => {
-                      return (
+                      return ( /* TODO: add a button on every itinerary's top right and after pressing it, a form will pop up and we can type an email to add a member to edit the itinerary */
                         <div
                           key={itinerary.id}  // Add the `key` prop here
                           className="flex flex-col gap-2 items-center cursor-pointer"
                           onClick={() => navigate(`/dashboard/${itinerary.id}`)}
                         >
-                          <img
-                            src={
-                              itinerary.days?.[0]?.activities?.[0]
-                                ?.photoUrls?.[0]
-                            }
-                            alt={
-                              itinerary.days?.[0]?.activities?.[0]?.description
-                            }
-                            className="w-full h-full aspect-video object-cover rounded-md"
-                          />
-
+                          <div className="relative w-full">
+                            <img
+                              src={
+                                itinerary.days?.[0]?.activities?.[0]
+                                  ?.photoUrls?.[0]
+                              }
+                              alt={
+                                itinerary.days?.[0]?.activities?.[0]?.description
+                              }
+                              className="w-full h-full aspect-video object-cover rounded-md"
+                            />
+                            <button
+                              className="absolute top-0 right-0 m-2 bg-white p-1 rounded"
+                              onClick={(e) => {
+                                console.log("itinerary id is :", itinerary.id)
+                                e.stopPropagation()
+                                handleOpenAddMemberModal(itinerary.id)
+                              }}
+                            >
+                              Add Member
+                            </button>
+                          </div>
                           <h3 className="text-lg font-semibold">
                             {itinerary.location +
                               " " +
@@ -181,7 +213,7 @@ const MyTripPage: React.FC = () => {
                               "天" +
                               (new Date(itinerary.endDate).getTime() -
                                 new Date(itinerary.startDate).getTime()) /
-                                (1000 * 60 * 60 * 24) +
+                              (1000 * 60 * 60 * 24) +
                               "夜之旅"}
                           </h3>
                         </div>
@@ -283,6 +315,42 @@ const MyTripPage: React.FC = () => {
             setEndDate={setEndDate}
             setDestination={setDestination}
           />
+        )}
+        {/* 彈出視窗：添加成員 */}
+        {isAddMemberModalOpen && (
+          <div className="modal-overlay">
+            <div className="modal-content">
+              <h2>添加新成員</h2>
+              <input
+                type="email"
+                placeholder="輸入電子郵件"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                className="mb-4"
+              />
+              <div
+                style={{
+                  display: "flex",
+                  justifyContent: "flex-end",
+                  gap: "10px",
+                }}
+              >
+                <button
+                  className="cancel-button"
+                  type="button"
+                  onClick={handleCloseAddMemberModal}
+                >
+                  取消
+                </button>
+                <button
+                  className="confirm-button"
+                  onClick={handleAddMember}
+                >
+                  添加
+                </button>
+              </div>
+            </div>
+          </div>
         )}
       </div>
     </SidebarProvider>
