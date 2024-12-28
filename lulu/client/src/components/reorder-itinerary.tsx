@@ -8,6 +8,8 @@ import { useItinerary } from "@/hooks/use-itinerary"
 
 import { useMapContext } from "./MapContext" // 引入 Context
 import NotePopup from "./NotePopup" // 引入 NotePopup
+import DurationPopup from "./DurationPopup" // 引入 DurationPopup
+import TravelTimePopup from "./TravelTimePopup" // 引入 TravelTimePopup
 
 const BACKEND_URL = import.meta.env.VITE_BACKEND_URL
 
@@ -39,6 +41,14 @@ const ReorderItinerary = () => {
   const [isPopupOpen, setIsPopupOpen] = useState<boolean>(false)
   const [descriptionActivityId, setDescriptionActivityId] = useState<string | null>(null)
   const timeoutRef = useRef<NodeJS.Timeout | null>(null)
+
+  const [isDurationPopupOpen, setIsDurationPopupOpen] = useState<boolean>(false)
+  const [editingDurationActivityId, setEditingDurationActivityId] = useState<string | null>(null)
+  const [newDuration, setNewDuration] = useState<number>(0)
+
+  const [isTravelTimePopupOpen, setIsTravelTimePopupOpen] = useState<boolean>(false)
+  const [editingTravelTimeActivityId, setEditingTravelTimeActivityId] = useState<string | null>(null)
+  const [newTravelTime, setNewTravelTime] = useState<number>(0)
 
   const handleNoteClick = (activityId: string, note: string) => {
     setEditingNoteId(activityId)
@@ -147,6 +157,71 @@ const ReorderItinerary = () => {
 
   const toggleDescription = (activityId: string) => {
     setDescriptionActivityId((prevId) => (prevId === activityId ? null : activityId))
+  }
+
+  const handleDurationClick = (activityId: string, duration: number) => {
+    setEditingDurationActivityId(activityId)
+    setNewDuration(duration)
+    setIsDurationPopupOpen(true)
+  }
+
+  const handleTravelTimeClick = (activityId: string, travelTime: number) => {
+    setEditingTravelTimeActivityId(activityId)
+    setNewTravelTime(travelTime)
+    setIsTravelTimePopupOpen(true)
+  }
+
+  const handleDurationSave = async () => {
+    if (editingDurationActivityId) {
+      await handleRecommendDurationChange(editingDurationActivityId, newDuration)
+      setIsDurationPopupOpen(false)
+    }
+  }
+
+  const handleTravelTimeSave = async () => {
+    if (editingTravelTimeActivityId) {
+      await handleTravelTimeChange(editingTravelTimeActivityId, newTravelTime)
+      setIsTravelTimePopupOpen(false)
+    }
+  }
+
+  const handleTravelTimeChange = async (activityId: string, newTravelTime: number) => {
+    // api
+    try {
+      const updatedTravelTime = {
+        itineraryId: id, // 替換為實際的 id 值
+        curDays: selectedDayIndex, // 替換為實際的 days 值
+        place: { activityId, travelTime: newTravelTime },
+      }
+
+      // update to DataBase
+      const response = await fetch(`${BACKEND_URL}/api/addactivity/updateTravelTime`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(updatedTravelTime),
+      })
+
+      if (!response.ok) {
+        throw new Error(`Failed to update travel time: ${response.statusText}`)
+      }
+    } catch (error) {
+      console.error("Error updating travel time:", error)
+    }
+
+    // socket
+    const updatedActivities = [...daysActivities]
+    updatedActivities[currentDayIndex] = updatedActivities[currentDayIndex].map((act) =>
+      act.id === activityId ? { ...act, travelTime: newTravelTime } : act
+    )
+    setDaysActivities(updatedActivities)
+    socketRef.current?.emit("update_travel_time", {
+      roomId,
+      dayIndex: currentDayIndex,
+      activityId,
+      travelTime: newTravelTime,
+    })
   }
 
   useEffect(() => {
@@ -303,6 +378,12 @@ const ReorderItinerary = () => {
     }, 2000);
   };
 
+  const formatDuration = (minutes: number) => {
+    const hours = Math.floor(minutes / 60)
+    const remainingMinutes = minutes % 60
+    return `${hours > 0 ? `${hours} hr ` : ""}${remainingMinutes} mins`
+  }
+
   return (
     <div ref={containerRef} className="p-2 flex flex-col h-full">
       <h2 className="text-xl font-bold mb-1">
@@ -373,16 +454,29 @@ const ReorderItinerary = () => {
               </h3>
               <p className="text-xs text-gray-500">📍 {activity.location}</p>
               
-              {/* 這行是示範，之後要拿掉 */}
-              <p className="text-xs text-gray-500">12:00 - 14:00</p>
-              {/* 下面處理的邏輯是用前一個行程最後的時間，加上在該行程停留的時間，顯示的樣子會像上面 12:00 - 14:00 那樣 */}
-              {/* <p className="text-xs text-gray-500">
-              {activity.startTime} -{" "}
-              {new Date(
-                new Date(`1970-01-01T${activity.startTime}Z`).getTime() +
-                activity.recommendDuration * 60000
-              ).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
-              </p> */}
+              <p className="text-xs text-gray-500">12:00 -14:00 </p>
+              {/* 在該景點停留的時間區間，隔式會像 12:00 - 14:00，計算的邏輯是: 第一個行程的開始時間為出發時間(startTime)，結束時間是開始時間加上在該景點停留的時間(recommendDuration)；下一個景點的開始時間是: 前一個景點的結束時間，加上前一個景點所儲存的交通時間(travelTime)，依此類推到之後的行程 */}
+              {/* <div className="text-xs text-gray-500">
+                {index === 0
+                  ? `${itinerary.days[currentDayIndex].startTime} - ${new Date(
+                      new Date(`1970-01-01T${itinerary.days[currentDayIndex].startTime}Z`).getTime() +
+                      activity.recommendDuration * 60000
+                    )
+                      .toISOString()
+                      .substr(11, 5)}`
+                  : `${new Date(
+                      new Date(`1970-01-01T${currentActivities[index - 1].endTime}Z`).getTime() +
+                      currentActivities[index - 1].travelTime * 60000
+                    )
+                      .toISOString()
+                      .substr(11, 5)} - ${new Date(
+                      new Date(`1970-01-01T${currentActivities[index - 1].endTime}Z`).getTime() +
+                      currentActivities[index - 1].travelTime * 60000 +
+                      activity.recommendDuration * 60000
+                    )
+                      .toISOString()
+                      .substr(11, 5)}`}
+              </div> */}
 
               <div className="mt-auto flex space-x-2 pt-2">
               <button
@@ -430,14 +524,24 @@ const ReorderItinerary = () => {
                 </p>
                 <div className="flex items-center">
                   <span className=" text-gray-500">⏳</span>
-                  <input
-                    type="number"
-                    value={activity.recommendDuration}
-                    onChange={(e) => handleRecommendDurationChange(activity.id, parseInt(e.target.value, 10))}
-                    className="w-14 px-2 py-1 bg-transparent border-b border-gray-400 focus:outline-none focus:border-blue-500 text-xs"
-                  />
-                  <span className="text-xs text-gray-500 ml-1">mins</span>
+                  <p
+                    className="text-xs text-gray-500 cursor-pointer underline inline"
+                    onClick={() => handleDurationClick(activity.id, activity.recommendDuration)}
+                  >
+                    {formatDuration(activity.recommendDuration)}
+                  </p>
                 </div>
+                {index < currentActivities.length - 1 && (
+                  <div className="flex items-center">
+                    <span className=" text-gray-500">🚗</span>
+                    <p
+                      className="text-xs text-gray-500 cursor-pointer underline inline"
+                      onClick={() => handleTravelTimeClick(activity.id, activity.travelTime)}
+                    >
+                      {formatDuration(activity.travelTime)}
+                    </p>
+                  </div>
+                )}
               </div>
             </div>
           </Reorder.Item>
@@ -451,6 +555,24 @@ const ReorderItinerary = () => {
           onChange={handleNoteChange}
           onSave={handleNoteSave}
           onCancel={handleNoteCancel}
+        />
+      )}
+
+      {isDurationPopupOpen && (
+        <DurationPopup
+          duration={newDuration}
+          onDurationChange={setNewDuration}
+          onSave={handleDurationSave}
+          onCancel={() => setIsDurationPopupOpen(false)}
+        />
+      )}
+
+      {isTravelTimePopupOpen && (
+        <TravelTimePopup
+          travelTime={newTravelTime}
+          onTravelTimeChange={setNewTravelTime}
+          onSave={handleTravelTimeSave}
+          onCancel={() => setIsTravelTimePopupOpen(false)}
         />
       )}
     </div>
