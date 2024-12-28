@@ -12,6 +12,7 @@ interface Place {
       lng: number;
     };
   };
+  description: string;
   icon: string;
 }
 

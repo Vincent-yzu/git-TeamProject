@@ -156,7 +156,6 @@ router.post("/insert", async (req, res) => {
     if (
       !itineraryId ||
       !name ||
-      !note ||
       !type ||
       !latitude ||
       !longitude ||

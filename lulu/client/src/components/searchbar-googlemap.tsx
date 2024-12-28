@@ -87,6 +87,7 @@ export const SearchBarGoogleMap = ({ placeholder }: SearchBarGoogleMapProps) => 
               },
             },
             icon: data[0].icon,
+            description: data[0].description,
           });
         }
       } catch (error) {

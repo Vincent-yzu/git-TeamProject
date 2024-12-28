@@ -16,6 +16,7 @@ interface Place {
     };
   };
   icon: string;
+  description: string;
   // 根據需要添加其他欄位
 }
 
@@ -49,14 +50,14 @@ export const AttractionDetail = () => {
   const handleAddPlace = async (place: Place) => {
     const placeWithDetail = {
       name: place.name, // 假設 place.name 是標題
-      note: "這裡可以輸入備註哦！",
+      note: "",
       type: "activity", 
       order: 99,
       latitude: place.geometry.location.lat,
       location: place.formatted_address,
       longitude: place.geometry.location.lng,
       photoUrls: [place.icon], 
-      description: "這是景點的描述！",
+      description: place.description,
       recommendDuration: 60,
     };
     // 新增 id 和 days
