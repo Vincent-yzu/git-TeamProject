@@ -68,28 +68,7 @@ const MyTripPage: React.FC = () => {
   }
 
   const handleAddMember = async () => {
-    
-    /*
-    router.get("/findUserID", requireAuth, async (req, res) => {
-  const email = req.query.email as string;
-  const user = await db.select().from(users).where(eq(users.email, email)).first();
-
-  if (!user) {
-    res.status(404).json({
-      success: false,
-      message: "User not found",
-    });
-    return;
-  }
-
-  res.status(200).json({
-    success: true,
-    userID: user.id,
-  });
-});
-    */
-
-    // TODO: find userID by email
+    // find userID by email
     
     let userID = ""
 
@@ -106,6 +85,25 @@ const MyTripPage: React.FC = () => {
       if (result.success) {
         userID = result.userID
         console.log('userID:', userID);
+        // add userID to itinerary
+        try {
+          const response = await fetcher(`/api/itinerary/addMember/${selectedItineraryId}/${userID}`, {
+            options: {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' }, // Optional if no body is sent
+            }
+          });
+        
+          if (response.status === 204) {
+            console.log('Member added successfully');
+          } else {
+            const result = await response.json();
+            console.error('Failed to add member:', result.message);
+          }
+        } catch (error) {
+          console.error('Error adding member:', error);
+        }
+
       } else {
         console.error('Failed to find userID:', result.message);
       }
