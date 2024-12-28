@@ -449,4 +449,53 @@ router.post("/updateDuration", async (req, res) => {
   }
 })
 
+router.post("/creatTrip", requireAuth, async (req, res) => {
+  const { location, startDate, endDate, description } = req.body; // 從前端取得地點資訊
+  
+  const daysArray = [];
+  const start = new Date(startDate);
+  const end = new Date(endDate);
+
+  // 計算天數範圍，並建立空的行程表
+  for (let d = new Date(start); d <= end; d.setDate(d.getDate() + 1)) {
+    daysArray.push({
+      day: daysArray.length + 1,
+      startTime: "08:00",
+      activities: [],
+    });
+  }
+
+  const emptyDays = JSON.stringify(daysArray); // 儲存為 JSON 字串
+  
+  // 準備要插入的資料
+  const itineraryData = {
+    userId: req.user!.id,
+    allowedEditors: [req.user!.id],
+    isPublic: false,
+    isAuthorized: false,
+    location: location,
+    startDate: new Date(startDate),
+    endDate: new Date(endDate),
+    travelCategories: [],
+    language: "中文",
+    days: emptyDays, // 儲存空行程
+    description: description,
+  };
+
+  // 輸出內容進行檢查
+  //console.log("準備存入資料庫的內容:", itineraryData);
+
+  try {
+    // @ts-ignore
+    const [itinerary] = await db.insert(itineraries).values(itineraryData).returning();
+
+    res.status(201).json({ msg: "success", id: itinerary?.id });
+  } catch (error) {
+    console.error("資料庫插入失敗:", error);
+    res.status(500).json({ error: "Failed to insert itineraryData into database" })
+  }
+});
+
+
+
 export { router as addactivityRouter }
