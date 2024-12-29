@@ -1,0 +1,9 @@
+node_modules/
+dist/
+.DS_Store
+.vscode/
+.git/
+*.env
+*.log
+.prettierignore
+.dockerignore

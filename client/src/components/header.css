@@ -1,0 +1,57 @@
+/* 全局樣式重置 */
+  
+  /* 頁首樣式 */
+  .header {
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0 16px;
+    background-color: #fff;
+    height: 56px;
+    box-shadow: 0px 1px 4px rgba(0, 0, 0, 0.1);
+  }
+  
+  .logo-button {
+    background: none;
+    border: none;
+    padding: 0;
+    cursor: pointer;
+  }
+
+  .logo-image {
+    width: 300px;
+    height: auto;
+    display: block;
+  }
+  
+  .menu {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+  }
+  
+  .my-trip-button {
+    display: none;
+    background-color: #f7ca7c !important;
+    border: none;
+    border-radius: 8px;
+    padding: 8px 12px;
+    cursor: pointer;
+
+    @media (min-width: 768px) {
+      width: 150px;
+      display: block;
+    }
+  }
+
+  .my-trip-button:hover {
+    background-color:#dda545 !important; /* 滑鼠懸停時的背景顏色 */
+  }
+  
+  .profile-icon {
+    width: 24px;
+    height: 24px;
+    background-color: #ccc;
+    border-radius: 50%;
+  }
