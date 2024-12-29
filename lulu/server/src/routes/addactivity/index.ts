@@ -17,6 +17,7 @@ import { requireAuth } from "@/middleware/require-auth"
 dotenv.config()
 const router = Router()
 
+// 查找目前行程的景點  (目前用不到)
 router.get("/select", async (req, res) => {
   try {
     // 指定要查找的行程 ID
@@ -61,7 +62,7 @@ interface Mail {
   recommendDuration: number
 }
 
-// Save updated mails (activities order)
+// 保存景點順序
 router.post("/save", async (req, res) => {
   const { updatedActivities } = req.body
   const { itineraryId, curDays, currentActivities } = updatedActivities
@@ -134,6 +135,7 @@ router.post("/save", async (req, res) => {
   }
 })
 
+// 新增行程中的景點
 router.post("/insert", async (req, res) => {
   //const { updatedPlaceWithDetail } = req.body;
   const { itineraryId, curDays, placeWithDetail } = req.body
@@ -271,6 +273,7 @@ router.post("/insert", async (req, res) => {
 //   }
 // })
 
+// 刪除行程中的景點
 router.post("/delete", async (req, res) => {
   try {
     const { itineraryId, curDays, place } = req.body // 從前端取得地點資訊
@@ -331,13 +334,18 @@ router.post("/delete", async (req, res) => {
   }
 })
 
+// 修改景點備註
 router.post("/updateNote", async (req, res) => {
   try {
     const { itineraryId, curDays, place } = req.body // 從前端取得地點資訊
     const curDay = parseInt(curDays, 10) + 1
 
-    if (!place || !place.activityId || !place.note) {
+    if (!place || !place.activityId) {
       throw new BadRequestError("Missing updated note")
+    }
+
+    if (!place.note) {
+      place.note = ""
     }
 
     // 從資料庫查找行程
@@ -390,6 +398,7 @@ router.post("/updateNote", async (req, res) => {
   }
 })
 
+// 修改景點停留時間
 router.post("/updateDuration", async (req, res) => {
   try {
     const { itineraryId, curDays, place } = req.body // 從前端取得地點資訊
@@ -449,6 +458,7 @@ router.post("/updateDuration", async (req, res) => {
   }
 })
 
+// 建立新行程
 router.post("/creatTrip", requireAuth, async (req, res) => {
   const { location, startDate, endDate, description } = req.body; // 從前端取得地點資訊
   

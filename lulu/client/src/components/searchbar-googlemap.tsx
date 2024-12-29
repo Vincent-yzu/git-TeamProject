@@ -28,8 +28,7 @@ interface Place {
 export const SearchBarGoogleMap = ({ placeholder }: SearchBarGoogleMapProps) => {
   const [query, setQuery] = useState(""); // 儲存搜尋文字
   const [places, setPlaces] = useState<any[]>([]); // 儲存搜尋結果
-  const { setSelectedPlace } = useMapContext(); // 從 Context 中取用 `setSelectedPlace`
-  const { setAddedPlace } = useMapContext(); // 從 Context 中取用 `setAddedPlace`
+  const { selectedPlace, setSelectedPlace } = useMapContext() // 從 Context 中取用 `selectedPlace`
   const { setZoomLevel } = useMapContext(); // 從 Context 中取用 `setZoomLevel`
   const { setCallCloseDetail } = useMapContext();
   const [searchParams] = useSearchParams();

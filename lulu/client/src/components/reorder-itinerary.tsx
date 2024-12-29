@@ -11,6 +11,21 @@ import NotePopup from "./NotePopup" // 引入 NotePopup
 
 const BACKEND_URL = import.meta.env.VITE_BACKEND_URL
 
+interface Place {
+  id: number; // 0 = empty
+  place_id: string;
+  name: string;
+  formatted_address: string;
+  description: string;
+  geometry: {
+    location: {
+      lat: number;
+      lng: number;
+    };
+  };
+  icon: string;
+}
+
 const ReorderItinerary = () => {
   const [isDescriptionOn, setIsDescriptionOn] = useState<boolean | undefined>(
     false
@@ -18,7 +33,10 @@ const ReorderItinerary = () => {
 
   const { heyUpdateData } = useMapContext() // 從 Context 中取用 `heyUpdateData`
   const { selectedDayIndex, setSelectedDayIndex } = useMapContext() // 從 Context 中取用 `selectedDayIndex`
+  const { setSelectedPlace } = useMapContext() // 從 Context 中取用 `selectedPlace`
+  const { setZoomLevel } = useMapContext(); // 從 Context 中取用 `setZoomLevel`
   const { setCallCloseDetail } = useMapContext();
+  const { setCurrentActivities } = useMapContext() // 從 Context 中取用 `setCurrentActivities`
 
   const { id } = useParams()
   const { data: itinerary, isLoading } = useItinerary(
@@ -148,11 +166,10 @@ const ReorderItinerary = () => {
     setDescriptionActivityId((prevId) => (prevId === activityId ? null : activityId))
   }
 
+  // 將每一天的 activities 存入 state
   useEffect(() => {
     if (itinerary && itinerary.days && itinerary.days.length > 0) {
-      // 將每一天的 activities 存入 state
-      // 根據 order 排序活動
-      setDaysActivities(
+      setDaysActivities(  // 根據 order 排序活動
         itinerary.days.map((day) => {
           return day.activities
             ? day.activities.sort((a, b) => a.order - b.order)
@@ -202,7 +219,7 @@ const ReorderItinerary = () => {
   // 目前選擇的 day activities
   const currentDayIndex = parseInt(selectedDayIndex, 10)
   const currentActivities = daysActivities[currentDayIndex] || []
-
+  
   // 當重新排序時觸發
   const handleReorder = (newOrder: Itinerary["days"][number]["activities"]) => {
     setDaysActivities((prev) => {
@@ -279,6 +296,31 @@ const ReorderItinerary = () => {
     })
   }
 
+  const handlePlaceClick = (activity: any) => {
+    // 新增 id 和 days
+    const place: Place = {
+      id: 0,
+      place_id: activity.id,
+      name: activity.name,
+      formatted_address: activity.location,
+      description: activity.note,
+      geometry: {
+        location: {
+          lat: activity.latitude,
+          lng: activity.longitude,
+        },
+      },
+      icon: "",
+    };
+    
+    setSelectedPlace(place);
+    setZoomLevel(15); // 適當調整地圖縮放層級
+  };
+
+  const handleLoadMap = () => {
+    setCurrentActivities(currentActivities);
+  };
+
   return (
     <div ref={containerRef} className="p-2 flex flex-col h-full">
       <h2 className="text-xl font-bold mb-1">
@@ -340,6 +382,8 @@ const ReorderItinerary = () => {
             value={activity}
             className="flex flex-row justify-between items-stretch rounded-lg border p-3 shadow-lg mb-2"
             onDragEnd={() => saveMails()}
+            onClick={() => handlePlaceClick(activity)}
+            onLoad={() => handleLoadMap()}  // 初始顯示第一筆
           >
             {/* 左側內容 */}
             <div className="flex flex-col flex-1">
@@ -420,8 +464,8 @@ const ReorderItinerary = () => {
         ))}
       </Reorder.Group>
 
-      {/* Buttons Container */}
-      <div className="mt-auto flex justify-end space-x-4">
+      {/* Buttons Container  測試用的按鈕而已  XD */}
+      {/* <div className="mt-auto flex justify-end space-x-4">
         <button
           onClick={() => saveMails()}
           className="px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600"
@@ -434,7 +478,7 @@ const ReorderItinerary = () => {
         >
           Cancel
         </button>
-      </div>
+      </div> */}
       {isPopupOpen && (
         <NotePopup
           noteValue={noteValue}
