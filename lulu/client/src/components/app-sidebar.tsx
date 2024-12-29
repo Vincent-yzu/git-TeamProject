@@ -77,8 +77,10 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const { setOpen } = useSidebar()
 
   if (!auth?.user) {
+    console.log("No user")
     return null
   }
+
   return (
     <Sidebar
       collapsible="icon"

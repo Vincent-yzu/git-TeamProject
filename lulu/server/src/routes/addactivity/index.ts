@@ -259,13 +259,11 @@ router.post("/insert", async (req, res) => {
 //       ...result,
 //       days: result.days.map((day) => {
 //         return {
-//           day: day.day,
-//           startTime: "08:00",
+//           ...day,
 //           activities: day.activities.map((activity, index) => {
 //             return {
 //               ...activity,
-//               note: "",
-//               order: index + 1,
+//               commutingTime: 30,
 //             }
 //           }),
 //         }

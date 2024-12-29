@@ -2,6 +2,7 @@ import React, { useState } from "react"
 import { useNavigate } from "react-router-dom" // 引入 useNavigate
 
 import { SidebarProvider } from "@/components/ui/sidebar"
+import { fetcher } from "@/lib/fetcher"
 
 import "./my-trip.css" // 引入樣式檔案
 
@@ -21,6 +22,10 @@ const MyTripPage: React.FC = () => {
   const { data: itineraries, isLoading } = useItineraries()
   const [isModalOpen, setModalOpen] = useState(false) // 用於控制彈窗的狀態
   const [isCreateTripModalOpen, setCreateTripModalOpen] = useState(false)
+  // new 
+  const [isAddMemberModalOpen, setAddMemberModalOpen] = useState(false)
+  const [selectedItineraryId, setSelectedItineraryId] = useState<string | null>(null)
+  const [email, setEmail] = useState("")
 
   const [tripName, setTripName] = useState("") // 行程名稱
   const [start_date, setStartDate] = useState("") // 開始日期
@@ -49,6 +54,84 @@ const MyTripPage: React.FC = () => {
 
   const handleCloseCreateTripModal = () => {
     setCreateTripModalOpen(false)
+  }
+
+  // new
+  const handleOpenAddMemberModal = (itineraryId: string) => {
+    setSelectedItineraryId(itineraryId)
+    setAddMemberModalOpen(true)
+  }
+
+  const handleCloseAddMemberModal = () => {
+    setAddMemberModalOpen(false)
+    setSelectedItineraryId(null)
+  }
+
+  const handleAddMember = async () => {
+    // find userID by email
+    
+    let userID = ""
+
+    try {
+      console.log('email:', email);
+      const response = await fetcher(`/api/user/findUserID?email=${email}`, {
+        options: {
+          method: 'GET',
+          headers: { 'Content-Type': 'application/json' },
+        }
+      });
+  
+      const result = await response.json();
+      if (result.success) {
+        userID = result.userID
+        console.log('userID:', userID);
+        // add userID to itinerary
+        try {
+          const response = await fetcher(`/api/itinerary/addMember/${selectedItineraryId}/${userID}`, {
+            options: {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' }, // Optional if no body is sent
+            }
+          });
+        
+          if (response.status === 204) {
+            console.log('Member added successfully');
+          } else {
+            const result = await response.json();
+            console.error('Failed to add member:', result.message);
+          }
+        } catch (error) {
+          console.error('Error adding member:', error);
+        }
+
+      } else {
+        console.error('Failed to find userID:', result.message);
+      }
+    } catch (error) {
+      console.error('Error finding userID:', error);
+    }  
+
+    // TODO: add userID to itinerary
+
+    // try {
+    //   const response = await fetch(`/api/itineraries/${selectedItineraryId}`, {
+    //     method: 'POST',
+    //     headers: { 'Content-Type': 'application/json' },
+    //     body: JSON.stringify({ email }),
+    //   });
+  
+    //   const result = await response.json();
+    //   if (result.success) {
+    //     console.log('Member added successfully');
+    //   } else {
+    //     console.error('Failed to add member:', result.message);
+    //   }
+    // } catch (error) {
+    //   console.error('Error adding member:', error);
+    // }
+
+    setAddMemberModalOpen(false)
+    
   }
 
   const handleConfirmTrip = async () => {
@@ -160,17 +243,29 @@ const MyTripPage: React.FC = () => {
                           className="flex flex-col gap-2 items-center cursor-pointer"
                           onClick={() => navigate(`/dashboard/${itinerary.id}`)}
                         >
-                          <img
-                            src={
-                              itinerary.days?.[0]?.activities?.[0]
-                                ?.photoUrls?.[0]
-                            }
-                            alt={
-                              itinerary.days?.[0]?.activities?.[0]?.description
-                            }
-                            className="w-full h-full aspect-video object-cover rounded-md"
-                          />
-
+                          <div className="relative w-full">
+                            <img
+                              src={
+                                itinerary.days?.[0]?.activities?.[0]
+                                  ?.photoUrls?.[0]
+                              }
+                              alt={
+                                itinerary.days?.[0]?.activities?.[0]?.description
+                              }
+                              className="w-full h-full aspect-video object-cover rounded-md"
+                            />
+                            <button
+                              className="absolute top-0 right-0 m-2 bg-white p-1 rounded"
+                              onClick={(e) => {
+                                // TODO: add member logic
+                                console.log("itinerary id is :", itinerary.id)
+                                e.stopPropagation()
+                                handleOpenAddMemberModal(itinerary.id)
+                              }}
+                            >
+                              Add Member
+                            </button>
+                          </div>
                           <h3 className="text-lg font-semibold">
                             {itinerary.location +
                               " " +
@@ -181,7 +276,7 @@ const MyTripPage: React.FC = () => {
                               "天" +
                               (new Date(itinerary.endDate).getTime() -
                                 new Date(itinerary.startDate).getTime()) /
-                                (1000 * 60 * 60 * 24) +
+                              (1000 * 60 * 60 * 24) +
                               "夜之旅"}
                           </h3>
                         </div>
@@ -283,6 +378,42 @@ const MyTripPage: React.FC = () => {
             setEndDate={setEndDate}
             setDestination={setDestination}
           />
+        )}
+        {/* 彈出視窗：添加成員 */}
+        {isAddMemberModalOpen && (
+          <div className="modal-overlay">
+            <div className="modal-content">
+              <h2>添加新成員</h2>
+              <input
+                type="email"
+                placeholder="輸入電子郵件"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                className="mb-4"
+              />
+              <div
+                style={{
+                  display: "flex",
+                  justifyContent: "flex-end",
+                  gap: "10px",
+                }}
+              >
+                <button
+                  className="cancel-button"
+                  type="button"
+                  onClick={handleCloseAddMemberModal}
+                >
+                  取消
+                </button>
+                <button
+                  className="confirm-button"
+                  onClick={handleAddMember}
+                >
+                  添加
+                </button>
+              </div>
+            </div>
+          </div>
         )}
       </div>
     </SidebarProvider>

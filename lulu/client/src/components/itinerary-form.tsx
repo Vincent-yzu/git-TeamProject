@@ -4,9 +4,8 @@ import { useMutation } from "@tanstack/react-query"
 import { format } from "date-fns"
 import { Calendar as CalendarIcon } from "lucide-react"
 import { useForm } from "react-hook-form"
-import { toast } from "sonner"
 import * as z from "zod"
-
+import { useToast } from "@/hooks/use-toast"
 import { fetcher } from "@/lib/fetcher"
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
@@ -88,6 +87,7 @@ function formatToUTC(originalDate: Date) {
 
 export default function ItineraryForm() {
   const navigate = useNavigate()
+  const { toast } = useToast()
   const form = useForm<z.infer<typeof itineraryFrontendSchema>>({
     resolver: zodResolver(itineraryFrontendSchema),
     defaultValues: {
@@ -116,11 +116,17 @@ export default function ItineraryForm() {
       return response.json()
     },
     onSuccess: (data) => {
-      toast.success("Form Submitted Successfully!")
+      toast({
+        title: "Form Submitted Successfully!",
+        description: "You can now explore the world.",
+      })
       navigate(`/dashboard/${data.id}`)
     },
     onError: () => {
-      toast.error("Something went wrong. Please try again.")
+      toast({
+        title: "Something went wrong.",
+        description: "Please try again.",
+      })
     },
   })
 

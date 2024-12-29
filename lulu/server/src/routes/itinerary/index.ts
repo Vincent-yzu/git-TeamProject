@@ -1,7 +1,7 @@
 import { PlacesClient as Client } from "@googlemaps/places"
 import dotenv from "dotenv"
 import { Router } from "express"
-import { eq, and} from "drizzle-orm"
+import { eq, and, or, sql } from "drizzle-orm"
 import { db } from "@/lib/db"
 import { itineraries } from "@/lib/db/schema"
 import { BadRequestError } from "@/lib/error"
@@ -52,7 +52,7 @@ export async function getPlaceDetails(query: string) {
       return photoResponse.photoUri;
     })
   );
-  
+
 
   return {
     photoUrls,
@@ -64,17 +64,83 @@ export async function getPlaceDetails(query: string) {
 router.get("/recommended", async (req, res) => {
   const itinerariesFromDB = await db.select().from(itineraries).where(eq(itineraries.isPublic, true))
   const responseData = itinerariesFromDB.map((itinerary) => {
-    const {userId, allowedEditors, ...rest} = itinerary
+    const { userId, allowedEditors, ...rest } = itinerary
     return {
       ...rest
     }
-  }) 
+  })
   res.json(responseData)
 })
 
+// TODO: add a member to the itinerary
+router.post("/addMember/:itineraryID/:userID", requireAuth, async (req, res) => {
+  const { itineraryID, userID } = req.params;
+
+  if (typeof itineraryID !== "string") {
+    throw new BadRequestError("Invalid itinerary ID");
+  }
+  if (typeof userID !== "string") {
+    throw new BadRequestError("Invalid user ID");
+  }
+
+  // Fetch the itinerary record
+  const [itinerary] = await db
+    .select()
+    .from(itineraries)
+    .where(eq(itineraries.id, itineraryID));
+
+  if (!itinerary) {
+    throw new BadRequestError("Itinerary not found or access denied");
+  }
+
+  const allowedEditors = itinerary.allowedEditors;
+
+  if (!Array.isArray(allowedEditors)) {
+    throw new BadRequestError("Invalid allowedEditors format");
+  }
+
+  if (allowedEditors.includes(userID)) {
+    throw new BadRequestError("User already in the itinerary");
+  }
+
+  // Add userID to the allowedEditors array
+  const updatedAllowedEditors = [...allowedEditors, userID];
+
+  // Persist the updated allowedEditors array to the database
+  await db
+    .update(itineraries)
+    .set({ allowedEditors: updatedAllowedEditors })
+    .where(eq(itineraries.id, itineraryID));
+
+  // Send a success status without additional content
+  res.status(204).send(); // 204 No Content
+
+})
+
 router.get("/", requireAuth, async (req, res) => {
-  const itinerariesFromDB = await db.select().from(itineraries).where(eq(itineraries.userId, req.user!.id))
-  res.json(itinerariesFromDB)
+  // const itinerariesFromDB = await db.select().from(itineraries).where(eq(itineraries.userId, req.user!.id))
+  // res.json(itinerariesFromDB)
+  if (!req.user) {
+    throw new BadRequestError("User not authenticated");
+  }
+  const userId = req.user.id;
+
+  const itinerariesFromDB = await db
+    .select()
+    .from(itineraries)
+    .where(
+      or(
+        eq(itineraries.userId, userId),
+        sql`EXISTS (SELECT 1 FROM jsonb_array_elements_text(${itineraries.allowedEditors}) AS editor WHERE editor = ${userId})`
+      )
+    );
+
+  const responseData = itinerariesFromDB.map((itinerary) => {
+    const { userId, allowedEditors, ...rest } = itinerary;
+    return rest;
+  });
+
+  res.json(responseData);
 })
 
 router.get("/:id", requireAuth, async (req, res) => {
@@ -82,8 +148,27 @@ router.get("/:id", requireAuth, async (req, res) => {
   if (typeof id !== "string") {
     throw new BadRequestError("Invalid itinerary id")
   }
-  const [itinerary] = await db.select().from(itineraries).where(and(eq(itineraries.id, id), eq(itineraries.userId, req.user!.id)))
-  res.json(itinerary)
+  // const [itinerary] = await db.select().from(itineraries).where(and(eq(itineraries.id, id), eq(itineraries.userId, req.user!.id)))
+  // res.json(itinerary)
+
+  // define userID
+  const userId = req.user!.id;
+
+  const [itinerary] = await db
+    .select()
+    .from(itineraries)
+    .where(
+      and(
+        eq(itineraries.id, id),
+        sql`EXISTS (SELECT 1 FROM jsonb_array_elements_text(${itineraries.allowedEditors}) AS editor WHERE editor = ${userId})`
+      )
+    );
+
+  if (!itinerary) {
+    throw new BadRequestError("Itinerary not found or access denied");
+  }
+
+  res.json(itinerary);
 })
 
 
@@ -100,7 +185,7 @@ router.post("/", requireAuth, async (req, res) => {
 
   const total_days = Math.ceil(
     (new Date(endDate).getTime() - new Date(startDate).getTime() + 1000 * 60 * 60 * 24) /
-      (1000 * 60 * 60 * 24)
+    (1000 * 60 * 60 * 24)
   )
   console.log(total_days)
   console.log(new Date(endDate))
@@ -110,7 +195,7 @@ router.post("/", requireAuth, async (req, res) => {
     location,
     duration: `${total_days}天 ${total_days - 1}夜`,
     language,
-    total_days, 
+    total_days,
     travelCategories,
   })
 
@@ -139,7 +224,7 @@ router.post("/", requireAuth, async (req, res) => {
             };
           })
         );
-  
+
         // 回傳更新後的 day
         return {
           ...day,
