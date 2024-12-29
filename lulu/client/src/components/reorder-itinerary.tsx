@@ -310,7 +310,7 @@ const ReorderItinerary = () => {
           lng: activity.longitude,
         },
       },
-      icon: "",
+      icon: activity.photoUrls[0],
     };
     
     setSelectedPlace(place);
