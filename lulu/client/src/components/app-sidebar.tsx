@@ -91,7 +91,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
 
           {/* google map search */}
           {/* <SidebarInput placeholder="Type to search..." /> */}
-          <SearchBarGoogleMap placeholder="Type to search..." />
+          <SearchBarGoogleMap placeholder="搜尋特定景點?  或是模糊的政大附近景點?" />
         </SidebarHeader>
         <SidebarContent>
           <SidebarGroup className="px-0">
