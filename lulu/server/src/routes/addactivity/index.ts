@@ -150,6 +150,7 @@ router.post("/insert", async (req, res) => {
     photoUrls,
     description,
     recommendDuration,
+    commutingTime,
   } = placeWithDetail
   const curDay = parseInt(curDays, 10) + 1
 
@@ -162,7 +163,8 @@ router.post("/insert", async (req, res) => {
       !latitude ||
       !longitude ||
       !location ||
-      !recommendDuration
+      !recommendDuration ||
+      !commutingTime
     ) {
       console.log("Missing fields:", {
         itineraryId,
@@ -173,6 +175,7 @@ router.post("/insert", async (req, res) => {
         longitude,
         location,
         recommendDuration,
+        commutingTime,
       })
       throw new BadRequestError("Missing required fields")
     }
@@ -216,6 +219,7 @@ router.post("/insert", async (req, res) => {
       photoUrls: photoUrls || [], // Default to empty array if undefined
       description,
       recommendDuration,
+      commutingTime,
     }
 
     // Log the new activity for debugging purposes
@@ -444,6 +448,66 @@ router.post("/updateDuration", async (req, res) => {
     }
 
     activityToUpdate.recommendDuration = place.recommendDuration;
+
+    // 將更新後的資料寫回資料庫
+    await db
+      .update(itineraries)
+      .set({ days })
+      .where(eq(itineraries.id, itineraryId));
+
+    res.status(200).json({ message: "Activity deleted successfully" })
+  } catch (error) {
+    console.error("Error deleting activity:", error)
+    res.status(500).json({ error: "Internal Server Error" })
+  }
+})
+
+// 修改景點通勤時間
+router.post("/updateCommutingTime", async (req, res) => {
+  try {
+    const { itineraryId, curDays, place } = req.body // 從前端取得地點資訊
+    const curDay = parseInt(curDays, 10) + 1
+
+    if (!place || !place.activityId || !place.commutingTime) {
+      throw new BadRequestError("Missing updated note")
+    }
+
+    // 從資料庫查找行程
+    const itinerary = await db
+      .select()
+      .from(itineraries)
+      .where(eq(itineraries.id, itineraryId))
+      .limit(1)
+
+    if (itinerary.length === 0) {
+      throw new Error("Itinerary not found")
+    }
+
+    const firstItinerary = itinerary[0]
+    const days = firstItinerary?.days
+
+    if (!days) {
+      throw new Error("Invalid days")
+    }
+
+    const dayOne = (days as unknown as any[]).find(
+      (day: any) => day.day === curDay
+    )
+
+    if (!dayOne) {
+      throw new Error("Day 1 not found")
+    }
+
+    // 找到指定的 activity 並更新 commutingTime
+    const activityToUpdate = dayOne.activities.find(
+      (activity: any) => activity.id === place.activityId
+    );
+
+    if (!activityToUpdate) {
+      throw new Error("Activity not found");
+    }
+
+    activityToUpdate.commutingTime = place.commutingTime;
 
     // 將更新後的資料寫回資料庫
     await db

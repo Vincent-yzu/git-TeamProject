@@ -59,6 +59,7 @@ export const AttractionDetail = () => {
       photoUrls: [place.icon], 
       description: place.description,
       recommendDuration: 60,
+      commutingTime: 30,
     };
     // 新增 id 和 days
     const updatedPlaceWithDetail = {

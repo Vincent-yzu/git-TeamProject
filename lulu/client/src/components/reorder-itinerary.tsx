@@ -8,6 +8,8 @@ import { useItinerary } from "@/hooks/use-itinerary"
 
 import { useMapContext } from "./MapContext" // 引入 Context
 import NotePopup from "./NotePopup" // 引入 NotePopup
+import DurationPopup from "./DurationPopup" // 引入 DurationPopup
+import TravelTimePopup from "./TravelTimePopup" // 引入 TravelTimePopup
 
 const BACKEND_URL = import.meta.env.VITE_BACKEND_URL
 
@@ -56,6 +58,15 @@ const ReorderItinerary = () => {
   const [noteValue, setNoteValue] = useState<string>("")
   const [isPopupOpen, setIsPopupOpen] = useState<boolean>(false)
   const [descriptionActivityId, setDescriptionActivityId] = useState<string | null>(null)
+  const timeoutRef = useRef<NodeJS.Timeout | null>(null)
+
+  const [isDurationPopupOpen, setIsDurationPopupOpen] = useState<boolean>(false)
+  const [editingDurationActivityId, setEditingDurationActivityId] = useState<string | null>(null)
+  const [newDuration, setNewDuration] = useState<number>(0)
+
+  const [isTravelTimePopupOpen, setIsTravelTimePopupOpen] = useState<boolean>(false)
+  const [editingTravelTimeActivityId, setEditingTravelTimeActivityId] = useState<string | null>(null)
+  const [newTravelTime, setNewTravelTime] = useState<number>(0)
 
   const handleNoteClick = (activityId: string, note: string) => {
     setEditingNoteId(activityId)
@@ -162,11 +173,124 @@ const ReorderItinerary = () => {
     });
   };
 
+  const handleCommutingTimeChange = async (activityId: string, newCommutingTime: number) => {
+    // api
+    try {
+      const updatedCommutingTime = {
+        itineraryId: id, // 替換為實際的 id 值
+        curDays: selectedDayIndex, // 替換為實際的 days 值
+        place: { activityId, commutingTime: newCommutingTime },
+      }
+  
+      // update to DataBase
+      const response = await fetch(`${BACKEND_URL}/api/addactivity/updateCommutingTime`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(updatedCommutingTime),
+      })
+  
+      if (!response.ok) {
+        throw new Error(`Failed to update commuting time: ${response.statusText}`)
+      }
+    } catch (error) {
+      console.error("Error updating commuting time:", error)
+    }
+  
+    // socket
+    const updatedActivities = [...daysActivities]
+    updatedActivities[currentDayIndex] = updatedActivities[currentDayIndex].map((act) =>
+      act.id === activityId ? { ...act, commutingTime: newCommutingTime } : act
+    )
+    setDaysActivities(updatedActivities)
+    socketRef.current?.emit("update_commuting_time", {
+      roomId,
+      dayIndex: currentDayIndex,
+      activityId,
+      commutingTime: newCommutingTime,
+    })
+  }
+
   const toggleDescription = (activityId: string) => {
     setDescriptionActivityId((prevId) => (prevId === activityId ? null : activityId))
   }
 
-  // 將每一天的 activities 存入 state
+  const handleDurationClick = (activityId: string, duration: number) => {
+    setEditingDurationActivityId(activityId)
+    setNewDuration(duration)
+    setIsDurationPopupOpen(true)
+
+    // 關閉詳細資訊
+    setCallCloseDetail(() => () => {
+      console.log('Close Detail!');
+    });
+  }
+
+  const handleTravelTimeClick = (activityId: string, travelTime: number) => {
+    setEditingTravelTimeActivityId(activityId)
+    setNewTravelTime(travelTime)
+    setIsTravelTimePopupOpen(true)
+
+    // 關閉詳細資訊
+    setCallCloseDetail(() => () => {
+      console.log('Close Detail!');
+    });
+  }
+
+  const handleDurationSave = async () => {
+    if (editingDurationActivityId) {
+      await handleRecommendDurationChange(editingDurationActivityId, newDuration)
+      setIsDurationPopupOpen(false)
+    }
+  }
+
+  const handleCommutingTimeSave = async () => {
+    if (editingTravelTimeActivityId) {
+      await handleCommutingTimeChange(editingTravelTimeActivityId, newTravelTime)
+      setIsTravelTimePopupOpen(false)
+    }
+  }
+
+  const handleTravelTimeChange = async (activityId: string, newTravelTime: number) => {
+    // api
+    try {
+      const updatedTravelTime = {
+        itineraryId: id, // 替換為實際的 id 值
+        curDays: selectedDayIndex, // 替換為實際的 days 值
+        place: { activityId, travelTime: newTravelTime },
+      }
+
+      // update to DataBase
+      const response = await fetch(`${BACKEND_URL}/api/addactivity/updateTravelTime`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(updatedTravelTime),
+      })
+
+      if (!response.ok) {
+        throw new Error(`Failed to update travel time: ${response.statusText}`)
+      }
+    } catch (error) {
+      console.error("Error updating travel time:", error)
+    }
+
+    // socket
+    const updatedActivities = [...daysActivities]
+    updatedActivities[currentDayIndex] = updatedActivities[currentDayIndex].map((act) =>
+      act.id === activityId ? { ...act, travelTime: newTravelTime } : act
+    )
+    setDaysActivities(updatedActivities)
+    socketRef.current?.emit("update_travel_time", {
+      roomId,
+      dayIndex: currentDayIndex,
+      activityId,
+      travelTime: newTravelTime,
+    })
+  }
+
   useEffect(() => {
     if (itinerary && itinerary.days && itinerary.days.length > 0) {
       setDaysActivities(  // 根據 order 排序活動
@@ -268,6 +392,12 @@ const ReorderItinerary = () => {
 
   // 刪除行程
   const handleDeletePlace = async (activityId: string) => {
+    
+    // 關閉詳細資訊
+    setCallCloseDetail(() => () => {
+      console.log('Close Detail!');
+    });
+
     const updatedPlace = {
       itineraryId: id, // 替換為實際的 id 值
       curDays: selectedDayIndex, // 替換為實際的 days 值
@@ -294,6 +424,35 @@ const ReorderItinerary = () => {
       )
       return newDays
     })
+  }
+
+  const handleDurationChange = (activityId: string, newDuration: number) => {
+    const updatedActivities = [...daysActivities];
+    updatedActivities[currentDayIndex] = updatedActivities[currentDayIndex].map((act) =>
+      act.id === activityId ? { ...act, recommendDuration: newDuration } : act
+    );
+    setDaysActivities(updatedActivities);
+
+    // Clear the previous timeout if it exists
+    if (timeoutRef.current) {
+      clearTimeout(timeoutRef.current);
+    }
+
+    // Set a new timeout to emit the update_duration event after a delay
+    timeoutRef.current = setTimeout(() => {
+      socketRef.current?.emit("update_duration", {
+        roomId,
+        dayIndex: currentDayIndex,
+        activityId,
+        recommendDuration: newDuration,
+      });
+    }, 2000);
+  };
+
+  const formatDuration = (minutes: number) => {
+    const hours = Math.floor(minutes / 60)
+    const remainingMinutes = minutes % 60
+    return `${hours > 0 ? `${hours} hr ` : ""}${remainingMinutes} mins`
   }
 
   const handlePlaceClick = (activity: any) => {
@@ -374,9 +533,9 @@ const ReorderItinerary = () => {
         axis="y"
         values={currentActivities}
         onReorder={handleReorder}
-        className="flex-1 overflow-auto"
+        className="flex-1 overflow-auto pb-0.5"
       >
-        {currentActivities.map((activity) => (
+        {currentActivities.map((activity, index) => (
           <Reorder.Item
             key={activity.id} // 如有 id，可使用 activity.id    // 我也想  但我不知道該去哪裡生個景點ID  XD    // 有id了 讚!
             value={activity}
@@ -387,22 +546,34 @@ const ReorderItinerary = () => {
           >
             {/* 左側內容 */}
             <div className="flex flex-col flex-1">
-              <p>行程 {activity.order}</p>
+              <p>行程 {index + 1}</p>
               <h3 className="text-lg font-semibold leading-6">
               {activity.name}
               </h3>
               <p className="text-xs text-gray-500">📍 {activity.location}</p>
               
-              {/* 這行是示範，之後要拿掉 */}
-              <p className="text-xs text-gray-500">12:00 - 14:00</p>
-              {/* 下面處理的邏輯是用前一個行程最後的時間，加上在該行程停留的時間，顯示的樣子會像上面 12:00 - 14:00 那樣 */}
-              {/* <p className="text-xs text-gray-500">
-              {activity.startTime} -{" "}
-              {new Date(
-                new Date(`1970-01-01T${activity.startTime}Z`).getTime() +
-                activity.recommendDuration * 60000
-              ).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
-              </p> */}
+              {/* 在該景點停留的時間區間，隔式會像 12:00 - 14:00，計算的邏輯是: 第一個行程的開始時間為出發時間(startTime)，結束時間是開始時間加上在該景點停留的時間(recommendDuration)；下一個景點的開始時間是: 前一個景點的結束時間，加上前一個景點所儲存的交通時間(travelTime)，依此類推到之後的行程 */}
+              {/* <div className="text-xs text-gray-500">
+                {index === 0
+                  ? `${itinerary.days[currentDayIndex].startTime} - ${new Date(
+                      new Date(`1970-01-01T${itinerary.days[currentDayIndex].startTime}Z`).getTime() +
+                      activity.recommendDuration * 60000
+                    )
+                      .toISOString()
+                      .substr(11, 5)}`
+                  : `${new Date(
+                      new Date(`1970-01-01T${currentActivities[index - 1].endTime}Z`).getTime() +
+                      currentActivities[index - 1].commutingTime * 60000
+                    )
+                      .toISOString()
+                      .substr(11, 5)} - ${new Date(
+                      new Date(`1970-01-01T${currentActivities[index - 1].endTime}Z`).getTime() +
+                      currentActivities[index - 1].commutingTime * 60000 +
+                      activity.recommendDuration * 60000
+                    )
+                      .toISOString()
+                      .substr(11, 5)}`}
+              </div> */}
 
               <div className="mt-auto flex space-x-2 pt-2">
               <button
@@ -450,41 +621,55 @@ const ReorderItinerary = () => {
                 </p>
                 <div className="flex items-center">
                   <span className=" text-gray-500">⏳</span>
-                  <input
-                    type="number"
-                    value={activity.recommendDuration}
-                    onChange={(e) => handleRecommendDurationChange(activity.id, parseInt(e.target.value, 10))}
-                    className="w-14 px-2 py-1 bg-transparent border-b border-gray-400 focus:outline-none focus:border-blue-500 text-xs"
-                  />
-                  <span className="text-xs text-gray-500 ml-1">mins</span>
+                  <p
+                    className="text-xs text-gray-500 cursor-pointer underline inline"
+                    onClick={() => handleDurationClick(activity.id, activity.recommendDuration)}
+                  >
+                    {formatDuration(activity.recommendDuration)}
+                  </p>
                 </div>
+                {index < currentActivities.length - 1 && (
+                  <div className="flex items-center">
+                    <span className=" text-gray-500">🚗</span>
+                    <p
+                      className="text-xs text-gray-500 cursor-pointer underline inline"
+                      onClick={() => handleTravelTimeClick(activity.id, activity.commutingTime)}
+                    >
+                      {formatDuration(activity.commutingTime)}
+                    </p>
+                  </div>
+                )}
               </div>
             </div>
           </Reorder.Item>
         ))}
+        <div style={{ height: "50px" }}></div> {/* 占位空間，避免裁切 */}
       </Reorder.Group>
-
-      {/* Buttons Container  測試用的按鈕而已  XD */}
-      {/* <div className="mt-auto flex justify-end space-x-4">
-        <button
-          onClick={() => saveMails()}
-          className="px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600"
-        >
-          Save!
-        </button>
-        <button
-          onClick={() => console.log("Cancel")}
-          className="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600"
-        >
-          Cancel
-        </button>
-      </div> */}
+      
       {isPopupOpen && (
         <NotePopup
           noteValue={noteValue}
           onChange={handleNoteChange}
           onSave={handleNoteSave}
           onCancel={handleNoteCancel}
+        />
+      )}
+
+      {isDurationPopupOpen && (
+        <DurationPopup
+          duration={newDuration}
+          onDurationChange={setNewDuration}
+          onSave={handleDurationSave}
+          onCancel={() => setIsDurationPopupOpen(false)}
+        />
+      )}
+
+      {isTravelTimePopupOpen && (
+        <TravelTimePopup
+          travelTime={newTravelTime}
+          onTravelTimeChange={setNewTravelTime}
+          onSave={handleCommutingTimeSave}
+          onCancel={() => setIsTravelTimePopupOpen(false)}
         />
       )}
     </div>

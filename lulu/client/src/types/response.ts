@@ -26,6 +26,7 @@ export type Itinerary = {
       name: string
       description: string
       recommendDuration: number
+      commutingTime: number
       order: number
       location: string
       photoUrls: string[]
