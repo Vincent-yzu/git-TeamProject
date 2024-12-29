@@ -30,6 +30,30 @@ interface Place {
   icon: string;
 }
 
+const calculateTimeRange = (startTime: string, duration: number) => {
+  const [startHours, startMinutes] = startTime.split(":").map(Number);
+  const startDate = new Date();
+  startDate.setHours(startHours, startMinutes, 0, 0);
+
+  const endDate = new Date(startDate.getTime() + duration * 60000);
+  const endHours = endDate.getHours().toString().padStart(2, "0");
+  const endMinutes = endDate.getMinutes().toString().padStart(2, "0");
+
+  return `${startTime} - ${endHours}:${endMinutes}`;
+};
+
+const calculateNextStartTime = (startTime: string, previousDurations: number) => {
+  const [startHours, startMinutes] = startTime.split(":").map(Number);
+  const startDate = new Date();
+  startDate.setHours(startHours, startMinutes, 0, 0);
+
+  const nextStartDate = new Date(startDate.getTime() + previousDurations * 60000);
+  const nextStartHours = nextStartDate.getHours().toString().padStart(2, "0");
+  const nextStartMinutes = nextStartDate.getMinutes().toString().padStart(2, "0");
+
+  return `${nextStartHours}:${nextStartMinutes}`;
+};
+
 const ReorderItinerary = () => {
   const [isDescriptionOn, setIsDescriptionOn] = useState<boolean | undefined>(
     false
@@ -52,9 +76,7 @@ const ReorderItinerary = () => {
     heyUpdateData
   )
 
-  const [daysActivities, setDaysActivities] = useState<
-    Itinerary["days"][number]["activities"][]
-  >([])
+  const [daysActivities, setDaysActivities] = useState<Itinerary["days"][number]["activities"][]>([])
   //const [selectedDayIndex, setSelectedDayIndex] = useState("0")
   const containerRef = useRef<HTMLDivElement>(null)
   const socketRef = useRef<Socket | null>(null)
@@ -550,16 +572,29 @@ const ReorderItinerary = () => {
           id="start-time"
           value={itinerary.days[currentDayIndex].startTime || "08:00"}
           onChange={(e) => {
-            const newStartTime = e.target.value
-            const updatedDays = [...itinerary.days]
-            updatedDays[currentDayIndex].startTime = newStartTime
-            setDaysActivities(updatedDays.map((day) => day.activities))
-            handleStartTime(newStartTime)
+            const newStartTime = e.target.value;
+            const updatedDays = [...itinerary.days];
+            updatedDays[currentDayIndex].startTime = newStartTime;
+            setDaysActivities(updatedDays.map((day) => day.activities));
+
+            // Update the start time of the first activity
+            if (currentActivities.length > 0) {
+              const firstActivity = currentActivities[0];
+              const updatedActivities = [...currentActivities];
+              updatedActivities[0] = { ...firstActivity};
+              setDaysActivities((prev) => {
+                const newDays = [...prev];
+                newDays[currentDayIndex] = updatedActivities;
+                return newDays;
+              });
+            }
+
+            handleStartTime(newStartTime);
             socketRef.current?.emit("update_start_time", {
               roomId,
               dayIndex: currentDayIndex,
               startTime: newStartTime,
-            })
+            });
           }}
           className="px-2 py-1 bg-transparent border-b border-gray-400 focus:outline-none focus:border-blue-500"
         />
@@ -571,114 +606,101 @@ const ReorderItinerary = () => {
         onReorder={handleReorder}
         className="flex-1 overflow-auto pb-0.5"
       >
-        {currentActivities.map((activity, idx) => (
-          <Reorder.Item
-            key={activity.id} // 如有 id，可使用 activity.id    // 我也想  但我不知道該去哪裡生個景點ID  XD    // 有id了 讚!
-            value={activity}
-            className="flex flex-row justify-between items-stretch rounded-lg border p-3 shadow-lg mb-2"
-            onDragEnd={() => saveMails()}
-            onClick={() => handlePlaceClick(activity)}
-            onLoad={() => handleLoadMap()}  // 初始顯示第一筆
-          >
-            {/* 左側內容 */}
-            <div className="flex flex-col flex-1">
-              <p>行程 {idx +1}</p>
-              <h3 className="text-lg font-semibold leading-6">
-              {activity.name}
-              </h3>
-              <p className="text-xs text-gray-500">📍 {activity.location}</p>
-              
-              {/* 在該景點停留的時間區間，隔式會像 12:00 - 14:00，計算的邏輯是: 第一個行程的開始時間為出發時間(startTime)，結束時間是開始時間加上在該景點停留的時間(recommendDuration)；下一個景點的開始時間是: 前一個景點的結束時間，加上前一個景點所儲存的交通時間(travelTime)，依此類推到之後的行程 */}
-              {/* <div className="text-xs text-gray-500">
-                {index === 0
-                  ? `${itinerary.days[currentDayIndex].startTime} - ${new Date(
-                      new Date(`1970-01-01T${itinerary.days[currentDayIndex].startTime}Z`).getTime() +
-                      activity.recommendDuration * 60000
-                    )
-                      .toISOString()
-                      .substr(11, 5)}`
-                  : `${new Date(
-                      new Date(`1970-01-01T${currentActivities[index - 1].endTime}Z`).getTime() +
-                      currentActivities[index - 1].commutingTime * 60000
-                    )
-                      .toISOString()
-                      .substr(11, 5)} - ${new Date(
-                      new Date(`1970-01-01T${currentActivities[index - 1].endTime}Z`).getTime() +
-                      currentActivities[index - 1].commutingTime * 60000 +
-                      activity.recommendDuration * 60000
-                    )
-                      .toISOString()
-                      .substr(11, 5)}`}
-              </div> */}
+        {currentActivities.map((activity, idx) => {
+          const previousDurations = currentActivities.slice(0, idx).reduce((acc, act) => acc + act.recommendDuration + act.commutingTime, 0);
+          const activityStartTime = calculateNextStartTime(itinerary.days[currentDayIndex].startTime, previousDurations);
 
-              <div className="mt-auto flex space-x-2 pt-2">
-              <button
-                onClick={() => toggleDescription(activity.id)}
-                className={`px-2 py-1 rounded text-xs ${
-                descriptionActivityId === activity.id
-                  ? "bg-slate-500 text-white hover:bg-slate-600"
-                  : "bg-cyan-700 text-white hover:bg-cyan-800"
-                }`}
-              >
-                {descriptionActivityId === activity.id ? "Hide Description" : "Show Description"}
-              </button>
-              <button
-                onClick={() => handleDeletePlace(activity.id)}
-                className="px-2 py-1 rounded text-xs bg-red-500 text-white hover:bg-red-600"
-              >
-                Delete!
-              </button>
-              </div>
-            </div>
+          const timeRange = calculateTimeRange(activityStartTime, activity.recommendDuration);
 
-            {/* 右側內容 */}
-            <div className="flex flex-col items-start justify-between w-40 ml-4">
-              {/* 圖片或文字敘述 */}
-              {descriptionActivityId === activity.id ? (
-                <div className="text-sm text-gray-600">
-                  {activity.description}
-                </div>
-              ) : (
-                <img
-                  src={activity.photoUrls[0]}
-                  alt={activity.name}
-                  className="w-full h-20 object-cover rounded-md"
-                />
-              )}
+          return (
+            <Reorder.Item
+              key={activity.id} // 如有 id，可使用 activity.id    // 我也想  但我不知道該去哪裡生個景點ID  XD    // 有id了 讚!
+              value={activity}
+              className="flex flex-row justify-between items-stretch rounded-lg border p-3 shadow-lg mb-2"
+              onDragEnd={() => saveMails()}
+              onClick={() => handlePlaceClick(activity)}
+              onLoad={() => handleLoadMap()}  // 初始顯示第一筆
+            >
+              {/* 左側內容 */}
+              <div className="flex flex-col flex-1">
+                <p>行程 {idx +1}</p>
+                <h3 className="text-lg font-semibold leading-6">
+                {activity.name}
+                </h3>
+                <p className="text-xs text-gray-500">📍 {activity.location}</p>
+                <p className="text-xs text-gray-500">{timeRange}</p>
+                
+                
 
-              {/* 固定顯示的資訊 */}
-              <div className="mt-2">
-                <span className=" text-gray-500">💡</span>
-                <p
-                  className="text-xs text-gray-500 cursor-pointer underline inline"
-                  onClick={() => handleNoteClick(activity.id, activity.note)}
+                <div className="mt-auto flex space-x-2 pt-2">
+                <button
+                  onClick={() => toggleDescription(activity.id)}
+                  className={`px-2 py-1 rounded text-xs ${
+                  descriptionActivityId === activity.id
+                    ? "bg-slate-500 text-white hover:bg-slate-600"
+                    : "bg-cyan-700 text-white hover:bg-cyan-800"
+                  }`}
                 >
-                  {activity.note ? activity.note.slice(0, 8) + "..." : <span className="underline">Edit Note</span>}
-                </p>
-                <div className="flex items-center">
-                  <span className=" text-gray-500">⏳</span>
+                  {descriptionActivityId === activity.id ? "Hide Description" : "Show Description"}
+                </button>
+                <button
+                  onClick={() => handleDeletePlace(activity.id)}
+                  className="px-2 py-1 rounded text-xs bg-red-500 text-white hover:bg-red-600"
+                >
+                  Delete!
+                </button>
+                </div>
+              </div>
+
+              {/* 右側內容 */}
+              <div className="flex flex-col items-start justify-between w-40 ml-4">
+                {/* 圖片或文字敘述 */}
+                {descriptionActivityId === activity.id ? (
+                  <div className="text-sm text-gray-600">
+                    {activity.description}
+                  </div>
+                ) : (
+                  <img
+                    src={activity.photoUrls[0]}
+                    alt={activity.name}
+                    className="w-full h-20 object-cover rounded-md"
+                  />
+                )}
+
+                {/* 固定顯示的資訊 */}
+                <div className="mt-2">
+                  <span className=" text-gray-500">💡</span>
                   <p
                     className="text-xs text-gray-500 cursor-pointer underline inline"
-                    onClick={() => handleDurationClick(activity.id, activity.recommendDuration)}
+                    onClick={() => handleNoteClick(activity.id, activity.note)}
                   >
-                    {formatDuration(activity.recommendDuration)}
+                    {activity.note ? activity.note.slice(0, 8) + "..." : <span className="underline">Edit Note</span>}
                   </p>
-                </div>
-                {idx < currentActivities.length - 1 && (
                   <div className="flex items-center">
-                    <span className=" text-gray-500">🚗</span>
+                    <span className=" text-gray-500">⏳</span>
                     <p
                       className="text-xs text-gray-500 cursor-pointer underline inline"
-                      onClick={() => handleTravelTimeClick(activity.id, activity.commutingTime)}
+                      onClick={() => handleDurationClick(activity.id, activity.recommendDuration)}
                     >
-                      {formatDuration(activity.commutingTime)}
+                      {formatDuration(activity.recommendDuration)}
                     </p>
                   </div>
-                )}
+                  {idx < currentActivities.length - 1 && (
+                    <div className="flex items-center">
+                      <span className=" text-gray-500">🚗</span>
+                      <p
+                        className="text-xs text-gray-500 cursor-pointer underline inline"
+                        onClick={() => handleTravelTimeClick(activity.id, activity.commutingTime)}
+                      >
+                        {formatDuration(activity.commutingTime)}
+                      </p>
+                    </div>
+                  )}
+                </div>
               </div>
-            </div>
-          </Reorder.Item>
-        ))}
+            </Reorder.Item>
+          );
+        })}
         <div style={{ height: "50px" }}></div> {/* 占位空間，避免裁切 */}
       </Reorder.Group>
       
