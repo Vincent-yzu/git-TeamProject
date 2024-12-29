@@ -135,7 +135,7 @@ export const DisplayMap = () => {
           lng: activity.longitude,
         },
       },
-      icon: "",
+      icon: activity.photoUrls[0],
     };
     setSelectedPlace(place);
     setZoomLevel(15); // 適當調整地圖縮放層級
