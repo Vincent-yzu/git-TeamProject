@@ -453,9 +453,9 @@ router.post("/updateDuration", async (req, res) => {
       .set({ days })
       .where(eq(itineraries.id, itineraryId));
 
-    res.status(200).json({ message: "Activity deleted successfully" })
+    res.status(200).json({ message: "Activity update Duration successfully" })
   } catch (error) {
-    console.error("Error deleting activity:", error)
+    console.error("Error update Duration activity:", error)
     res.status(500).json({ error: "Internal Server Error" })
   }
 })
@@ -513,9 +513,60 @@ router.post("/updateCommutingTime", async (req, res) => {
       .set({ days })
       .where(eq(itineraries.id, itineraryId));
 
-    res.status(200).json({ message: "Activity deleted successfully" })
+    res.status(200).json({ message: "Activity update CommutingTime successfully" })
   } catch (error) {
-    console.error("Error deleting activity:", error)
+    console.error("Error update CommutingTime activity:", error)
+    res.status(500).json({ error: "Internal Server Error" })
+  }
+})
+
+// 修改每日出發時間
+router.post("/updateStartTime", async (req, res) => {
+  try {
+    const { itineraryId, curDays, startTime } = req.body // 從前端取得地點資訊
+    const curDay = parseInt(curDays, 10) + 1
+
+    if (!startTime) {
+      throw new BadRequestError("Missing startTime")
+    }
+
+    // 從資料庫查找行程
+    const itinerary = await db
+      .select()
+      .from(itineraries)
+      .where(eq(itineraries.id, itineraryId))
+      .limit(1)
+
+    if (itinerary.length === 0) {
+      throw new Error("Itinerary not found")
+    }
+
+    const firstItinerary = itinerary[0]
+    const days = firstItinerary?.days
+
+    if (!days) {
+      throw new Error("Invalid days")
+    }
+
+    const dayOne = (days as unknown as any[]).find(
+      (day: any) => day.day === curDay
+    )
+
+    if (!dayOne) {
+      throw new Error("Day 1 not found")
+    }
+
+    dayOne.startTime = startTime;
+
+    // 將更新後的資料寫回資料庫
+    await db
+      .update(itineraries)
+      .set({ days })
+      .where(eq(itineraries.id, itineraryId));
+
+    res.status(200).json({ message: "Activity update StartTime successfully" })
+  } catch (error) {
+    console.error("Error update StartTime activity:", error)
     res.status(500).json({ error: "Internal Server Error" })
   }
 })

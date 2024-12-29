@@ -440,6 +440,27 @@ const ReorderItinerary = () => {
     })
   }
 
+  // 修改每日初始時間
+  const handleStartTime = async (newStartTime: string) => {
+    const updatedTime = {
+      itineraryId: id, // 替換為實際的 id 值
+      curDays: selectedDayIndex, // 替換為實際的 days 值
+      startTime: newStartTime,
+    }
+
+    // delete from DataBase
+    const response = await fetch(`${BACKEND_URL}/api/addactivity/updateStartTime`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(updatedTime),
+    })
+    if (!response.ok) {
+      throw new Error("Failed to update StartTime")
+    }
+  }
+
   const handleDurationChange = (activityId: string, newDuration: number) => {
     const updatedActivities = [...daysActivities];
     updatedActivities[currentDayIndex] = updatedActivities[currentDayIndex].map((act) =>
@@ -533,6 +554,7 @@ const ReorderItinerary = () => {
             const updatedDays = [...itinerary.days]
             updatedDays[currentDayIndex].startTime = newStartTime
             setDaysActivities(updatedDays.map((day) => day.activities))
+            handleStartTime(newStartTime)
             socketRef.current?.emit("update_start_time", {
               roomId,
               dayIndex: currentDayIndex,
