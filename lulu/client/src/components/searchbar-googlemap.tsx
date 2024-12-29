@@ -22,6 +22,9 @@ interface Place {
     };
   };
   icon: string;
+  note: string;
+  recommendDuration: number;
+  commutingTime: number;
   // 根據需要添加其他欄位
 }
 
@@ -103,6 +106,9 @@ export const SearchBarGoogleMap = ({ placeholder }: SearchBarGoogleMapProps) => 
           },
           icon: data[0].icon,
           description: data[0].description,
+          note: "預設的神奇空值",
+          recommendDuration: 20241225,
+          commutingTime: 20241225,
         });
       }
     } catch (error) {
@@ -113,7 +119,23 @@ export const SearchBarGoogleMap = ({ placeholder }: SearchBarGoogleMapProps) => 
 
   const handlePlaceClick = useCallback(
     (place: Place) => {
-      setSelectedPlace(place);
+      setSelectedPlace({
+        id: 0,
+        place_id: place.place_id,
+        name: place.name,
+        formatted_address: place.formatted_address,
+        geometry: {
+          location: {
+            lat: place.geometry.location.lat,
+            lng: place.geometry.location.lng,
+          },
+        },
+        icon: place.icon,
+        description: place.description,
+        note: "預設的神奇空值",
+        recommendDuration: 20241225,
+        commutingTime: 20241225,
+      });
       setZoomLevel(15); // 適當調整地圖縮放層級
     },
     [setSelectedPlace, setZoomLevel]

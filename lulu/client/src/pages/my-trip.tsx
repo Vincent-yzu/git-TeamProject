@@ -11,6 +11,7 @@ import { useItineraries } from "@/hooks/use-itineraries"
 import ItineraryForm from "@/components/itinerary-form"
 import { NavUser } from "@/components/nav-user"
 import { CreateTripModal } from "@/components/create-trip-modal"
+import { DeleteTripModal } from "@/components/delete-trip"
 
 const MyTripPage: React.FC = () => {
   const { data: auth } = useAuth()
@@ -22,6 +23,7 @@ const MyTripPage: React.FC = () => {
   const { data: itineraries, isLoading } = useItineraries()
   const [isModalOpen, setModalOpen] = useState(false) // 用於控制彈窗的狀態
   const [isCreateTripModalOpen, setCreateTripModalOpen] = useState(false)
+  const [isDeleteOpen, setIsDeleteOpen] = useState(false);
   // new 
   const [isAddMemberModalOpen, setAddMemberModalOpen] = useState(false)
   const [selectedItineraryId, setSelectedItineraryId] = useState<string | null>(null)
@@ -54,6 +56,15 @@ const MyTripPage: React.FC = () => {
 
   const handleCloseCreateTripModal = () => {
     setCreateTripModalOpen(false)
+  }
+
+  const handleDeleteOpenModal = (itineraryId: string) => {
+    setSelectedItineraryId(itineraryId)
+    setIsDeleteOpen(true);
+  }
+  const handleDeleteCloseModal = () => {
+    setIsDeleteOpen(false);
+    setSelectedItineraryId(null)
   }
 
   // new
@@ -254,8 +265,17 @@ const MyTripPage: React.FC = () => {
                               }
                               className="w-full h-full aspect-video object-cover rounded-md"
                             />
-                            <button
+                            <button 
                               className="absolute top-0 right-0 m-2 bg-white p-1 rounded"
+                              onClick={(e) => {
+                                e.stopPropagation()
+                                handleDeleteOpenModal(itinerary.id)
+                              }}
+                            >
+                               X 
+                            </button>
+                            <button
+                              className="absolute top-0 right-6 m-2 bg-white p-1 rounded"
                               onClick={(e) => {
                                 // TODO: add member logic
                                 console.log("itinerary id is :", itinerary.id)
@@ -263,7 +283,7 @@ const MyTripPage: React.FC = () => {
                                 handleOpenAddMemberModal(itinerary.id)
                               }}
                             >
-                              Add Member
+                              添加成員
                             </button>
                           </div>
                           <h3 className="text-lg font-semibold">
@@ -363,6 +383,15 @@ const MyTripPage: React.FC = () => {
               </button>
             </div>
           </div>
+        )}
+
+        {/* 彈出視窗：刪除行程 */}
+        {isDeleteOpen && (
+          <DeleteTripModal
+            isOpen = {isDeleteOpen}
+            itineraryId = {selectedItineraryId!}
+            onClose={handleDeleteCloseModal}
+          />
         )}
         {/* 彈出視窗：自建行程 */}
         {isCreateTripModalOpen && (

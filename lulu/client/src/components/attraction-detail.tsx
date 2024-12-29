@@ -109,12 +109,18 @@ export const AttractionDetail = () => {
   // 如果容器不可見，則返回 null，不顯示該區域
   if (!isVisible) return null;
 
+  const formatDuration = (minutes: number) => {
+    const hours = Math.floor(minutes / 60)
+    const remainingMinutes = minutes % 60
+    return `${hours > 0 ? `${hours} hr ` : ""}${remainingMinutes} mins`
+  }
+
   return (
     <div style={{ position: 'relative' }}>
       <div style={{
         ...styles.container,
         position: 'absolute',
-        top: '50px',
+        top: '0px',
         left: '10px',
         width: 'calc(100vw - 20px)', // Adjust width based on viewport size
         maxWidth: '400px', // Set a max width to prevent it from getting too large
@@ -137,12 +143,38 @@ export const AttractionDetail = () => {
         </button>
 
         <h2 style={styles.title}>{selectedPlace.name}</h2>
-        <img src={selectedPlace.icon} alt={`${selectedPlace.name} icon`} style={styles.icon} />
+        <img src={selectedPlace.icon} alt={`${selectedPlace.name} icon`} className="w-full h-full object-cover rounded-md" />
+        <p style={styles.address}>
+          <strong>Description:</strong>
+          <br />
+          {selectedPlace.description}
+        </p>
         <p style={styles.address}>
           <strong>Address:</strong>
           <br />
           {selectedPlace.formatted_address}
         </p>
+        {selectedPlace.recommendDuration !== 20241225 && (
+          <p style={styles.address}>
+            <strong>⏳ 停留時間:</strong>
+            <br />
+            {selectedPlace.recommendDuration > 0 ? formatDuration(selectedPlace.recommendDuration) : "停留時間不可以小於0喔！ 😊"}
+          </p>
+        )}
+        {/* {selectedPlace.commutingTime !== 20241225 && (
+          <p style={styles.address}>
+            <strong>🚗 通勤時間:</strong>
+            <br />
+            {selectedPlace.commutingTime > 0 ? formatDuration(selectedPlace.commutingTime) : "通勤時間不可以小於0喔！ 😊"}
+          </p>
+        )} */}
+        {selectedPlace.note !== "預設的神奇空值" && (
+          <p style={styles.address}>
+            <strong>💡 個人筆記:</strong>
+            <br />
+            {selectedPlace.note ? selectedPlace.note : "您可以在此處撰寫備註，方便記錄您的想法或重要資訊哦！ 😊"}
+          </p>
+        )}
         <div style={styles.coordinates}>
           <strong>Coordinates:</strong>
           <br />

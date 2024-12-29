@@ -128,7 +128,7 @@ export const DisplayMap = () => {
       place_id: activity.id,
       name: activity.name,
       formatted_address: activity.location,
-      description: activity.note,
+      description: activity.description,
       geometry: {
         location: {
           lat: activity.latitude,
@@ -136,6 +136,9 @@ export const DisplayMap = () => {
         },
       },
       icon: activity.photoUrls[0],
+      note: activity.note,
+      recommendDuration: 20241225,
+      commutingTime: 20241225,
     };
     setSelectedPlace(place);
     setZoomLevel(15); // 適當調整地圖縮放層級

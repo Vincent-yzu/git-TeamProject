@@ -14,6 +14,9 @@ interface Place {
   };
   description: string;
   icon: string;
+  note: string;
+  recommendDuration: number;
+  commutingTime: number;
 }
 
 interface activitiesArray {
@@ -23,6 +26,7 @@ interface activitiesArray {
   name: string;
   description: string;
   recommendDuration: number;
+  commutingTime: number;
   order: number;
   location: string;
   photoUrls: string[];

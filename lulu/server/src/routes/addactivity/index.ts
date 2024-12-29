@@ -619,6 +619,76 @@ router.post("/creatTrip", requireAuth, async (req, res) => {
   }
 });
 
+// 刪除行程中的使用者編輯權限
+router.post("/deleteEditor", requireAuth, async (req, res) => {
+  try {
+    const { itineraryId } = req.body; // 從前端取得行程 ID
+
+    if (!itineraryId) {
+      throw new BadRequestError("Missing itinerary id");
+    }
+
+    const userId = req.user?.id; // 從請求中取得使用者 ID
+
+    if (!userId) {
+      throw new Error("Unauthorized user");
+    }
+
+    // 從資料庫查找行程
+    const itinerary = await db
+      .select()
+      .from(itineraries)
+      .where(eq(itineraries.id, itineraryId))
+      .limit(1);
+
+    if (itinerary.length === 0) {
+      throw new Error("Itinerary not found");
+    }
+
+    const firstItinerary = itinerary[0];
+    const allowedEditors = firstItinerary!.allowedEditors;
+    const itineraryOwner = firstItinerary!.userId;
+
+    if (!Array.isArray(allowedEditors)) {
+      throw new Error("Invalid allowedEditors format");
+    }
+
+    if (!allowedEditors.includes(userId)) {
+      throw new Error("User is not in the allowedEditors list");
+    }
+
+    // 移除 allowedEditors 中的該使用者 ID
+    const updatedEditors = allowedEditors.filter((editor) => editor !== userId);
+
+    // 如果 userId 等於行程擁有者，嘗試替換 ownerId
+    let updatedOwnerId: string | null | undefined = itineraryOwner;
+    if (itineraryOwner === userId) {
+      if (updatedEditors.length > 0) {
+
+        // 將 userId 替換為 allowedEditors 中的第一個使用者 ID
+        updatedOwnerId = updatedEditors[0];
+
+        // 更新資料庫中的 allowedEditors
+        await db
+        .update(itineraries)
+        .set({ allowedEditors: updatedEditors })
+        .where(eq(itineraries.id, itineraryId));
+        res.status(200).json({ message: "Editor removed successfully" });
+
+      } else {
+        // 如果沒有其他編輯者，刪除資料庫中的這筆資料
+        await db
+          .delete(itineraries)
+          .where(eq(itineraries.id, itineraryId));
+        res.status(200).json({ message: "Itinerary deleted successfully" });
+      }
+    }
+
+  } catch (error) {
+    console.error("Error removing editor:", error);
+    res.status(500).json({ error: "Internal Server Error" });
+  }
+});
 
 
 export { router as addactivityRouter }

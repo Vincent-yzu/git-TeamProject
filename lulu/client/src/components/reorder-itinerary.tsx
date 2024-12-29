@@ -28,6 +28,9 @@ interface Place {
     };
   };
   icon: string;
+  note: string;
+  recommendDuration: number;
+  commutingTime: number;
 }
 
 const calculateTimeRange = (startTime: string, duration: number) => {
@@ -242,6 +245,7 @@ const ReorderItinerary = () => {
 
   const toggleDescription = (activityId: string) => {
     setDescriptionActivityId((prevId) => (prevId === activityId ? null : activityId))
+
   }
 
   const handleDurationClick = (activityId: string, duration: number) => {
@@ -519,7 +523,7 @@ const ReorderItinerary = () => {
       place_id: activity.id,
       name: activity.name,
       formatted_address: activity.location,
-      description: activity.note,
+      description: activity.description,
       geometry: {
         location: {
           lat: activity.latitude,
@@ -527,6 +531,9 @@ const ReorderItinerary = () => {
         },
       },
       icon: activity.photoUrls[0],
+      note: activity.note,
+      recommendDuration: activity.recommendDuration,
+      commutingTime: activity.commutingTime,
     };
     
     setSelectedPlace(place);
@@ -633,8 +640,9 @@ const ReorderItinerary = () => {
                 
 
                 <div className="mt-auto flex space-x-2 pt-2">
+                {/* 切換的功能來不及補上 */}
                 <button
-                  onClick={() => toggleDescription(activity.id)}
+                  onClick={() => handlePlaceClick(activity)}
                   className={`px-2 py-1 rounded text-xs ${
                   descriptionActivityId === activity.id
                     ? "bg-slate-500 text-white hover:bg-slate-600"
@@ -643,6 +651,16 @@ const ReorderItinerary = () => {
                 >
                   {descriptionActivityId === activity.id ? "Hide Description" : "Show Description"}
                 </button>
+                {/* <button
+                  onClick={() => toggleDescription(activity.id)}
+                  className={`px-2 py-1 rounded text-xs ${
+                  descriptionActivityId === activity.id
+                    ? "bg-slate-500 text-white hover:bg-slate-600"
+                    : "bg-cyan-700 text-white hover:bg-cyan-800"
+                  }`}
+                >
+                  {descriptionActivityId === activity.id ? "Hide Description" : "Show Description"}
+                </button> */}
                 <button
                   onClick={() => handleDeletePlace(activity.id)}
                   className="px-2 py-1 rounded text-xs bg-red-500 text-white hover:bg-red-600"
