@@ -1,20 +1,26 @@
 import { useEffect, useRef, useState } from "react"
+import { User } from "@/types/response"
+// ------- 新增 dayjs 相關 ------
+import dayjs from "dayjs"
+import relativeTime from "dayjs/plugin/relativeTime"
+import { useParams } from "react-router-dom"
 import { io, Socket } from "socket.io-client"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { Input } from "@/components/ui/input"
-import { Button } from "@/components/ui/button"
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
-import { ScrollArea } from "@/components/ui/scroll-area"
 
 import { useAuth } from "@/hooks/use-auth"
 import { useCollaborateUser } from "@/hooks/use-collaborate-user"
 import { useComments } from "@/hooks/use-comments"
-import { useParams } from "react-router-dom"
-import { User } from "@/types/response"
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import { Button } from "@/components/ui/button"
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog"
+import { Input } from "@/components/ui/input"
+import { ScrollArea } from "@/components/ui/scroll-area"
 
-// ------- 新增 dayjs 相關 ------
-import dayjs from "dayjs"
-import relativeTime from "dayjs/plugin/relativeTime"
 dayjs.extend(relativeTime)
 
 const BACKEND_URL = import.meta.env.VITE_BACKEND_URL
@@ -71,7 +77,10 @@ export function ChatBox() {
     if (!auth?.user) return
 
     if (!socketRef.current) {
-      const newSocket = io(`${BACKEND_URL}`, { withCredentials: true, path: '/api/socket.io' })
+      const newSocket = io(`${BACKEND_URL}`, {
+        withCredentials: true,
+        path: "/api/socket.io",
+      })
 
       newSocket.on("connect", () => {
         console.log("Socket connected:", newSocket.id)
@@ -104,13 +113,14 @@ export function ChatBox() {
     setNewMessage("")
   }
 
-
   // 把後端抓回來的 comments 轉成與 socket 訊息相同的格式
   const commentMessages = (comments || []).map(toMessage)
   // 合併訊息
   const combinedMessages = [...commentMessages, ...messages]
   // 依照 createdAt 時間排序
-  combinedMessages.sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime())
+  combinedMessages.sort(
+    (a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
+  )
 
   // 當訊息列表更新時，讓 ScrollArea 捲到底
   useEffect(() => {
@@ -123,11 +133,15 @@ export function ChatBox() {
 
   if (!auth?.user) return null
 
-
   return (
     <Dialog>
       <DialogTrigger asChild>
-        <Button variant="outline" className="p-6 inline-flex absolute bottom-32 right-32 z-50">Open Chat</Button>
+        <Button
+          variant="outline"
+          className="p-6 inline-flex absolute bottom-32 right-32 z-50"
+        >
+          Open Chat
+        </Button>
       </DialogTrigger>
 
       <DialogContent className="sm:max-w-xl flex flex-col">
@@ -201,7 +215,7 @@ export function ChatBox() {
               value={newMessage}
               onChange={(e) => setNewMessage(e.target.value)}
               onKeyDown={(e) => {
-                if (e.key === "Enter") {
+                if (e.key === "Enter" && !e.nativeEvent.isComposing) {
                   handleSendMessage()
                   scrollToBottom()
                 }
