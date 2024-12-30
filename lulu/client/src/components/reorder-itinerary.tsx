@@ -58,9 +58,6 @@ const calculateNextStartTime = (startTime: string, previousDurations: number) =>
 };
 
 const ReorderItinerary = () => {
-  const [isDescriptionOn, setIsDescriptionOn] = useState<boolean | undefined>(
-    false
-  )
   const {data: auth} = useAuth()
   if (!auth?.user) {
     return null
@@ -71,7 +68,7 @@ const ReorderItinerary = () => {
   const { setSelectedPlace } = useMapContext() // 從 Context 中取用 `selectedPlace`
   const { setZoomLevel } = useMapContext(); // 從 Context 中取用 `setZoomLevel`
   const { setCallCloseDetail } = useMapContext();
-  const { setCurrentActivities } = useMapContext() // 從 Context 中取用 `setCurrentActivities`
+  const { currentActivities: contextCurrentActivities, setCurrentActivities } = useMapContext() // 從 Context 中取用 `setCurrentActivities`
 
   const { id } = useParams()
   const { data: itinerary, isLoading } = useItinerary(
@@ -87,9 +84,8 @@ const ReorderItinerary = () => {
 
   const [editingNoteId, setEditingNoteId] = useState<string | null>(null)
   const [noteValue, setNoteValue] = useState<string>("")
-  const [isPopupOpen, setIsPopupOpen] = useState<boolean>(false)
-  const [descriptionActivityId, setDescriptionActivityId] = useState<string | null>(null)
-  const timeoutRef = useRef<NodeJS.Timeout | null>(null)
+  const [isNotePopupOpen, setIsNotePopupOpen] = useState<boolean>(false);
+  const [descriptionActivityId] = useState<string | null>(null)
 
   const [isDurationPopupOpen, setIsDurationPopupOpen] = useState<boolean>(false)
   const [editingDurationActivityId, setEditingDurationActivityId] = useState<string | null>(null)
@@ -102,7 +98,7 @@ const ReorderItinerary = () => {
   const handleNoteClick = (activityId: string, note: string) => {
     setEditingNoteId(activityId)
     setNoteValue(note)
-    setIsPopupOpen(true)
+    setIsNotePopupOpen(true)
 
     // 關閉詳細資訊
     setCallCloseDetail(() => () => {
@@ -114,17 +110,17 @@ const ReorderItinerary = () => {
     setNoteValue(e.target.value)
   }
   
-  // const handleNoteSave = async () => {
-  //   if (editingNoteId) {
-  //     await saveNote(editingNoteId)
-  //     setIsPopupOpen(false)
-  //     updateActivityInDays(editingNoteId, { note: noteValue });
-  //     setIsPopupOpen(false); // Close the popup
-  //   }
-  // }
+  const handleNoteSave = async () => {
+    if (editingNoteId) {
+      await saveNote(editingNoteId)
+      setIsNotePopupOpen(false)
+      // updateActivityInDays(editingNoteId, { note: noteValue });
+      // setIsPopupOpen(false); // Close the popup
+    }
+  }
 
   const handleNoteCancel = () => {
-    setIsPopupOpen(false)
+    setIsNotePopupOpen(false)
     setEditingNoteId(null)
   }
 
@@ -245,10 +241,10 @@ const ReorderItinerary = () => {
     })
   }
 
-  const toggleDescription = (activityId: string) => {
-    setDescriptionActivityId((prevId) => (prevId === activityId ? null : activityId))
+  // const toggleDescription = (activityId: string) => {
+  //   setDescriptionActivityId((prevId) => (prevId === activityId ? null : activityId))
 
-  }
+  // }
 
   const handleDurationClick = (activityId: string, duration: number) => {
     setEditingDurationActivityId(activityId)
@@ -289,44 +285,33 @@ const ReorderItinerary = () => {
     }
   }
 
-  const handleTravelTimeChange = async (activityId: string, newTravelTime: number) => {
-    // api
-    try {
-      const updatedTravelTime = {
-        itineraryId: id, // 替換為實際的 id 值
-        curDays: selectedDayIndex, // 替換為實際的 days 值
-        place: { activityId, travelTime: newTravelTime },
-      }
+  useEffect(() => {
+    const durations = contextCurrentActivities?.map((act) => {
+      return act.recommendDuration;
+    });
 
-      // update to DataBase
-      const response = await fetch(`${BACKEND_URL}/api/addactivity/updateTravelTime`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(updatedTravelTime),
-      })
+    if(!durations) return;
 
-      if (!response.ok) {
-        throw new Error(`Failed to update travel time: ${response.statusText}`)
-      }
-    } catch (error) {
-      console.error("Error updating travel time:", error)
-    }
+    daysActivities[currentDayIndex]?.forEach((act, idx) => {
+      act.recommendDuration = durations[idx];
+    });
 
-    // socket
-    const updatedActivities = [...daysActivities]
-    updatedActivities[currentDayIndex] = updatedActivities[currentDayIndex].map((act) =>
-      act.id === activityId ? { ...act, travelTime: newTravelTime } : act
-    )
-    setDaysActivities(updatedActivities)
-    socketRef.current?.emit("update_travel_time", {
-      roomId,
-      dayIndex: currentDayIndex,
-      activityId,
-      travelTime: newTravelTime,
-    })
-  }
+    setDaysActivities(JSON.parse(JSON.stringify(daysActivities)));
+  }, [contextCurrentActivities]);
+
+  useEffect(() => {
+    const notes = contextCurrentActivities?.map((act) => {
+      return act.note;
+    });
+
+    if(!notes) return;
+
+    daysActivities[currentDayIndex]?.forEach((act, idx) => {
+      act.note = notes[idx];
+    });
+
+    setDaysActivities(JSON.parse(JSON.stringify(daysActivities)));
+  }, [contextCurrentActivities]);
 
   useEffect(() => {
     if (itinerary && itinerary.days && itinerary.days.length > 0) {
@@ -492,33 +477,10 @@ const ReorderItinerary = () => {
     }
   }
 
-  const handleDurationChange = (activityId: string, newDuration: number) => {
-    const updatedActivities = [...daysActivities];
-    updatedActivities[currentDayIndex] = updatedActivities[currentDayIndex].map((act) =>
-      act.id === activityId ? { ...act, recommendDuration: newDuration } : act
-    );
-    setDaysActivities(updatedActivities);
-
-    // Clear the previous timeout if it exists
-    if (timeoutRef.current) {
-      clearTimeout(timeoutRef.current);
-    }
-
-    // Set a new timeout to emit the update_duration event after a delay
-    timeoutRef.current = setTimeout(() => {
-      socketRef.current?.emit("update_duration", {
-        roomId,
-        dayIndex: currentDayIndex,
-        activityId,
-        recommendDuration: newDuration,
-      });
-    }, 2000);
-  };
-
   const formatDuration = (minutes: number) => {
     const hours = Math.floor(minutes / 60)
     const remainingMinutes = minutes % 60
-    return `${hours > 0 ? `${hours} hr ` : ""}${remainingMinutes} mins`
+    return `${hours > 0 ? `${hours} 小時 ` : ""}${remainingMinutes} 分鐘`
   }
 
   const handlePlaceClick = (activity: any) => {
@@ -669,29 +631,19 @@ const ReorderItinerary = () => {
                 {/* 切換的功能來不及補上 */}
                 <button
                   onClick={() => handlePlaceClick(activity)}
-                  className={`px-2 py-1 rounded text-xs ${
+                  className={`px-2 py-1 rounded text-sm w-20 h-10 ${
                   descriptionActivityId === activity.id
-                    ? "bg-slate-500 text-white hover:bg-slate-600"
-                    : "bg-cyan-700 text-white hover:bg-cyan-800"
+                  ? "bg-slate-500 text-white hover:bg-slate-600"
+                  : "bg-cyan-700 text-white hover:bg-cyan-800"
                   }`}
                 >
-                  {descriptionActivityId === activity.id ? "Hide Description" : "Show Description"}
+                  {descriptionActivityId === activity.id ? "Hide Description" : "詳細資訊"}
                 </button>
-                {/* <button
-                  onClick={() => toggleDescription(activity.id)}
-                  className={`px-2 py-1 rounded text-xs ${
-                  descriptionActivityId === activity.id
-                    ? "bg-slate-500 text-white hover:bg-slate-600"
-                    : "bg-cyan-700 text-white hover:bg-cyan-800"
-                  }`}
-                >
-                  {descriptionActivityId === activity.id ? "Hide Description" : "Show Description"}
-                </button> */}
                 <button
                   onClick={() => handleDeletePlace(activity.id)}
-                  className="px-2 py-1 rounded text-xs bg-red-500 text-white hover:bg-red-600"
+                  className="px-2 py-1 rounded text-sm bg-red-500 text-white hover:bg-red-600 w-20 h-10"
                 >
-                  Delete!
+                  刪除
                 </button>
                 </div>
               </div>
@@ -718,7 +670,7 @@ const ReorderItinerary = () => {
                     className="text-xs text-gray-500 cursor-pointer underline inline"
                     onClick={() => handleNoteClick(activity.id, activity.note)}
                   >
-                    {activity.note ? activity.note.slice(0, 8) + "..." : <span className="underline">Edit Note</span>}
+                    {activity.note ? activity.note.slice(0, 8) + "..." : <span className="underline">編輯個人筆記</span>}
                   </p>
                   <div className="flex items-center">
                     <span className=" text-gray-500">⏳</span>
@@ -772,6 +724,17 @@ const ReorderItinerary = () => {
           onSave={handleCommutingTimeSave}
           onCancel={() => setIsTravelTimePopupOpen(false)}
         />
+      )}
+
+      {isNotePopupOpen && (
+        <div style={{ position: "fixed", inset: 0, zIndex: 2000 }}>
+          <NotePopup
+            noteValue={noteValue}
+            onChange={handleNoteChange}
+            onSave={handleNoteSave}
+            onCancel={handleNoteCancel}
+          />
+        </div>
       )}
     </div>
   )

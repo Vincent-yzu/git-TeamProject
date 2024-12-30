@@ -31,9 +31,9 @@ const DurationPopup: React.FC<DurationPopupProps> = ({
   return (
     <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
       <div className="bg-white p-4 rounded shadow-lg">
-        <h3 className="text-lg font-semibold mb-2">Edit Duration</h3>
+        <h3 className="text-lg font-semibold mb-2">編輯停留時間</h3>
         <div className="mb-2">
-          <label className="block text-sm font-medium text-gray-700">Duration</label>
+          <label className="block text-sm font-medium text-gray-700">停留時長</label>
           <div className="flex space-x-2">
             <select
               value={hours}
@@ -42,7 +42,7 @@ const DurationPopup: React.FC<DurationPopupProps> = ({
             >
               {[...Array(24).keys()].map((hour) => (
                 <option key={hour} value={hour}>
-                  {hour} hours
+                  {hour} 小時
                 </option>
               ))}
             </select>
@@ -53,7 +53,7 @@ const DurationPopup: React.FC<DurationPopupProps> = ({
             >
               {[...Array(60).keys()].map((minute) => (
                 <option key={minute} value={minute}>
-                  {minute} minutes
+                  {minute} 分鐘
                 </option>
               ))}
             </select>
@@ -64,13 +64,13 @@ const DurationPopup: React.FC<DurationPopupProps> = ({
             onClick={onCancel}
             className="px-4 py-2 bg-gray-300 text-gray-700 rounded hover:bg-gray-400"
           >
-            Cancel
+            取消
           </button>
           <button
             onClick={onSave}
             className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
           >
-            Save
+            儲存
           </button>
         </div>
       </div>

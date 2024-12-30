@@ -25,17 +25,18 @@ interface Place {
 }
 
 export const AttractionDetail = () => {
-  const { selectedPlace, setSelectedPlace } = useMapContext(); // 從 Context 中取用 `selectedPlace`
-  const { heyUpdateData, setHeyUpdateData } = useMapContext(); // 從 Context 中取用 `heyUpdateData`
-  const { selectedDayIndex } = useMapContext(); // 從 Context 中取用 `selectedDayIndex`
+  const { selectedPlace, setSelectedPlace } = useMapContext();
+  const { heyUpdateData, setHeyUpdateData } = useMapContext();
+  const { selectedDayIndex } = useMapContext(); 
   const { id } = useParams();
-  const [isVisible, setIsVisible] = useState(false); // 控制容器顯示/隱藏的狀態
+  const [isVisible, setIsVisible] = useState(false);
   const { callCloseDetail } = useMapContext();
   const [isDurationPopupOpen, setIsDurationPopupOpen] = useState<boolean>(false);
   const [newDuration, setNewDuration] = useState<number>(0);
   const [isNotePopupOpen, setIsNotePopupOpen] = useState<boolean>(false);
   const [noteValue, setNoteValue] = useState<string>("");
   const socketRef = useMapContext(); // 引入 socketRef
+  const {currentActivities, setCurrentActivities} = useMapContext();
 
   // Update visibility when selectedPlace changes
   useEffect(() => {
@@ -148,6 +149,12 @@ export const AttractionDetail = () => {
         recommendDuration: newDuration,
       });
 
+      currentActivities?.find((activity) => {
+        if (activity.id === selectedPlace.place_id) {
+          activity.recommendDuration = newDuration;
+        }
+      });
+      setCurrentActivities(JSON.parse(JSON.stringify(currentActivities)));
       setIsDurationPopupOpen(false);
     }
   };
@@ -197,8 +204,13 @@ export const AttractionDetail = () => {
         note: noteValue,
       });
 
+      currentActivities?.find((activity) => {
+        if (activity.id === selectedPlace.place_id) {
+          activity.note = noteValue;
+        }
+      });
+      setCurrentActivities(JSON.parse(JSON.stringify(currentActivities)));
       setIsNotePopupOpen(false);
-      setIsNotePopupOpen(false); // Close the popup
     }
   };
 
@@ -215,7 +227,7 @@ export const AttractionDetail = () => {
   const formatDuration = (minutes: number) => {
     const hours = Math.floor(minutes / 60)
     const remainingMinutes = minutes % 60
-    return `${hours > 0 ? `${hours} hr ` : ""}${remainingMinutes} mins`
+    return `${hours > 0 ? `${hours} 小時 ` : ""}${remainingMinutes} 分鐘`
   }
 
   return (
