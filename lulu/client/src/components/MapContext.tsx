@@ -12,7 +12,22 @@ interface Place {
       lng: number;
     };
   };
+  description: string;
   icon: string;
+}
+
+interface activitiesArray {
+  type: "activity";
+  id: string;
+  note: string;
+  name: string;
+  description: string;
+  recommendDuration: number;
+  order: number;
+  location: string;
+  photoUrls: string[];
+  latitude: number;
+  longitude: number;
 }
 
 // 定義變數類型
@@ -29,6 +44,22 @@ interface MapContextType {
   // 新增 zoomLevel
   zoomLevel: number;  
   setZoomLevel: React.Dispatch<React.SetStateAction<number>>;
+
+  // 新增 heyUpdateData
+  heyUpdateData: number;  
+  setHeyUpdateData: React.Dispatch<React.SetStateAction<number>>;
+
+  // 新增 selectedDayIndex
+  selectedDayIndex: string;  
+  setSelectedDayIndex: React.Dispatch<React.SetStateAction<string>>;
+
+  // 新增 selectedDayIndex
+  callCloseDetail: (() => void) | null;   // 回調函數
+  setCallCloseDetail: React.Dispatch<React.SetStateAction<(() => void) | null>>;  // 設定回調函數的函數
+
+  // 新增 selectedDayIndex
+  currentActivities: activitiesArray[] | null;  
+  setCurrentActivities: React.Dispatch<React.SetStateAction<activitiesArray[] | null>>;
 }
 
 // 創建 Context、Provider
@@ -38,9 +69,30 @@ export const MapProvider = ({ children }: { children: ReactNode }) => {
   const [selectedPlace, setSelectedPlace] = useState<Place | null>(null);
   const [addedPlace, setAddedPlace] = useState<Place | null>(null);
   const [zoomLevel, setZoomLevel] = useState<number>(9);
+  const [heyUpdateData, setHeyUpdateData] = useState<number>(0);
+  const [selectedDayIndex, setSelectedDayIndex] = useState("0")
+  const [callCloseDetail, setCallCloseDetail] = useState<(() => void) | null>(null); // 初始為 null
+  const [currentActivities, setCurrentActivities] = useState<activitiesArray[] | null>(null);
 
   return (
-    <MapContext.Provider value={{ selectedPlace, setSelectedPlace, addedPlace, setAddedPlace, zoomLevel, setZoomLevel }}>
+    <MapContext.Provider
+      value={{
+        selectedPlace,
+        setSelectedPlace,
+        addedPlace,
+        setAddedPlace,
+        zoomLevel,
+        setZoomLevel,
+        heyUpdateData,
+        setHeyUpdateData,
+        selectedDayIndex,
+        setSelectedDayIndex,
+        callCloseDetail,
+        setCallCloseDetail,
+        currentActivities, 
+        setCurrentActivities,
+      }}
+    >
       {children}
     </MapContext.Provider>
   );

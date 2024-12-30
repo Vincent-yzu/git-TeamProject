@@ -2,8 +2,8 @@
 
   export const itineraryFrontendSchema = z.object({
     location: z.string().min(1),
-    startDate: z.string().datetime(),
-    endDate: z.string().datetime(),
+    startDate: z.coerce.date(),
+    endDate: z.coerce.date(),
     travelCategories: z.array(
       z.enum([
         "Relaxation & Wellness",
@@ -17,8 +17,8 @@
         "Adventure & Sports",
         "Family & Group Activities",
       ])
-    ),
-    language: z.enum(["en", "zh-TW"]),
+    ).default([]),
+    language: z.enum(["英文", "中文"]),
   })
 
   export const itineraryBackendSchema = z.object({

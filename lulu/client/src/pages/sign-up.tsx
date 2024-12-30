@@ -2,8 +2,19 @@ import { zodResolver } from "@hookform/resolvers/zod"
 import { useMutation } from "@tanstack/react-query"
 import { useForm } from "react-hook-form"
 import { Link, useNavigate } from "react-router-dom"
-import { credentialsSchema } from "validation"
+
 import * as z from "zod"
+const credentialsSchema = z.object({
+  email: z.string().email(),
+  password: z
+    .string()
+    .min(8, { message: "密碼至少需要 8 個字元。" })
+    .max(32, { message: "密碼最多 32 個字元。" })
+    .regex(/[A-Z]/, { message: "密碼需包含至少一個大寫字母。" })
+    .regex(/[a-z]/, { message: "密碼需包含至少一個小寫字母。" })
+    .regex(/\d/, { message: "密碼需包含至少一個數字。" })
+    .regex(/[@$!%*?&#]/, { message: "密碼需包含至少一個特殊符號。" }),
+});
 import { fetcher } from "@/lib/fetcher"
 import { useToast } from "@/hooks/use-toast"
 import { Button } from "@/components/ui/button"
@@ -26,8 +37,9 @@ import { Input } from "@/components/ui/input"
 import { Separator } from "@/components/ui/separator"
 import { GoogleIcon } from "@/components/google-icon"
 import { PasswordField } from "@/components/password-field"
-
+import { useAuth } from "@/hooks/use-auth"
 const BACKEND_URL = import.meta.env.VITE_BACKEND_URL
+import { queryClient } from "@/lib/query-client"
 
 export default function SignUpForm() {
   const form = useForm<z.infer<typeof credentialsSchema>>({
@@ -37,7 +49,11 @@ export default function SignUpForm() {
       password: "",
     },
   })
+  const { data: auth } = useAuth()
   const navigate = useNavigate()
+  if (auth?.user) {
+    navigate("/my-trip")
+  }
 
   const { toast } = useToast()
 
@@ -58,7 +74,7 @@ export default function SignUpForm() {
         title: "Sign-up successful!",
         description: "You can now sign in.",
       })
-      navigate("/dashboard") // FIXME: shouldn't directly navigate to dashboard, go to home page and click the trip we had created
+      queryClient.invalidateQueries({ queryKey: ["user"] })
     },
     onError: () => {
       toast({

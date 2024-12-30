@@ -6,7 +6,17 @@ import {
 import { generateCodeVerifier, generateState } from "arctic"
 import { and, eq, gt } from "drizzle-orm"
 import { Router } from "express"
-import { credentialsSchema } from "validation"
+const credentialsSchema = z.object({
+  email: z.string().email(),
+  password: z
+    .string()
+    .min(8, { message: "密碼至少需要 8 個字元。" })
+    .max(32, { message: "密碼最多 32 個字元。" })
+    .regex(/[A-Z]/, { message: "密碼需包含至少一個大寫字母。" })
+    .regex(/[a-z]/, { message: "密碼需包含至少一個小寫字母。" })
+    .regex(/\d/, { message: "密碼需包含至少一個數字。" })
+    .regex(/[@$!%*?&#]/, { message: "密碼需包含至少一個特殊符號。" }),
+});
 import { z } from "zod"
 
 import { env } from "@/config/env"
@@ -45,9 +55,10 @@ router.post("/sign-in", async (req, res) => {
     throw new UnauthorizedError()
   }
 
-  if (!verifyPassword(result.data.password, selectedUser.hashedPassword)) {
+  if (!(await verifyPassword(result.data.password, selectedUser.hashedPassword))) {
     throw new UnauthorizedError()
   }
+
 
   const session = await createSession(selectedUser.id)
 
@@ -142,6 +153,13 @@ router.get("/verification", async (req, res) => {
     ...cookieConfig,
     maxAge: SESSION_EXPIRES_IN_MS,
   })
+
+  res.status(200).send()
+})
+
+router.post("/sign-out", requireAuth, async (req, res) => {
+  await invalidateSession(req.session!.id)
+  res.clearCookie("session", cookieConfig)
 
   res.status(200).send()
 })

@@ -1,147 +1,597 @@
-import { Router } from "express"
-import { requireAuth } from "@/middleware/require-auth"
-import { itineraryBackendSchema, itineraryFrontendSchema, type ItineraryBackend } from "@/lib/validation"
-import { BadRequestError } from "@/lib/error"
-import { getModelizedItinerary } from "@/lib/perplexity"
 import { PlacesClient as Client } from "@googlemaps/places"
 import dotenv from "dotenv"
+import { eq } from "drizzle-orm"
+import { Router } from "express"
+import { nanoid } from "nanoid"
+
 import { db } from "@/lib/db"
 import { itineraries } from "@/lib/db/schema"
+import { BadRequestError } from "@/lib/error"
+import {
+  itineraryBackendSchema,
+  itineraryFrontendSchema,
+  type ItineraryBackend,
+} from "@/lib/validation"
+import { requireAuth } from "@/middleware/require-auth"
 
 dotenv.config()
-
-const client = new Client({
-  apiKey: process.env.GOOGLE_MAPS_API_KEY,
-})
-
 const router = Router()
 
-/**
- * 取得地點詳細資訊
- */
-async function getPlaceDetails(placeName: string): Promise<{
-  location: { latitude: number; longitude: number }
-  formattedAddress?: string
-  photos?: { name: string | null | undefined }[]
-}> {
-  const response = await client.getPlace(
-    { name: placeName },
-    {
-      otherArgs: {
-        headers: { "X-Goog-FieldMask": "photos,formattedAddress,location" },
-      },
-    }
-  )
-
-  const placeData = response[0]
-
-  return {
-    location: {
-      latitude: placeData.location?.latitude ?? 0,
-      longitude: placeData.location?.longitude ?? 0,
-    },
-    formattedAddress: placeData.formattedAddress ?? "",
-    photos: placeData.photos 
-      ? await Promise.all(
-          placeData.photos.map(async (photo) => ({
-            // @ts-expect-error
-            name: await getPhoto(photo.name),
-          }))
-        )
-      : [],
-  }
-}
-
-async function getPhoto(photoName: string) {
-  const response = await client.getPhotoMedia({
-    name: `${photoName}/media`,
-    maxHeightPx: 1000,
-    maxWidthPx: 1000,
-  });
-
-  return response[0]?.photoUri
-}
-
-/**
- * 以查詢字串進行文字搜尋並更新行程資料
- */
-async function textSearch(query: string): Promise<{
-  location: { latitude: number; longitude: number }
-  formattedAddress?: string
-  photos?: { name: string | null | undefined }[]
-} | null> {
+// 查找目前行程的景點  (目前用不到)
+router.get("/select", async (req, res) => {
   try {
-    const response = await client.searchText(
-      { textQuery: query },
-      {
-        otherArgs: {
-          headers: { "X-Goog-FieldMask": "places.name" },
-        },
+    // 指定要查找的行程 ID
+    const itineraryId = "k81RtOSyvV3EuVNtAx6YM"
+
+    // 從資料庫查找行程資料，匹配行程 ID
+    const itinerary = await db
+      .select()
+      .from(itineraries)
+      .where(eq(itineraries.id, itineraryId))
+      .limit(1) // 確保只取得第一筆結果
+
+    // 如果找不到資料，回傳 404 錯誤
+    if (itinerary.length === 0) {
+      res.status(404).json({ error: "Itinerary not found" })
+    }
+
+    // 抓取行程中的 `days` 資料
+    const days = itinerary?.[0]?.days
+
+    // 回傳成功的回應
+    res.status(200).json({ days })
+  } catch (error) {
+    console.error("Error fetching itinerary:", error)
+
+    // 處理其他潛在錯誤，回傳 500 錯誤
+    res.status(500).json({ error: "Internal Server Error" })
+  }
+})
+
+interface Mail {
+  id: string
+  name: string
+  note: string
+  type: string
+  order: number
+  latitude: number
+  longitude: number
+  location: string
+  photoUrls: string[]
+  description: string
+  recommendDuration: number
+}
+
+// 保存景點順序
+router.post("/save", async (req, res) => {
+  const { updatedActivities } = req.body
+  const { itineraryId, curDays, currentActivities } = updatedActivities
+  const curDay = parseInt(curDays, 10) + 1
+
+  // console.log("RRR: " + currentActivities);
+  // console.log("itineraryId: " + itineraryId);
+  // console.log("curDay: " + curDay);
+
+  // 驗證資料是否存在
+  if (!itineraryId || !curDays || !currentActivities) {
+    res
+      .status(400)
+      .json({
+        error: "Missing required fields: id, days, or currentActivities",
+      })
+  }
+
+  try {
+    // 從資料庫查詢行程並找到對應的 `days` 資料
+    const itinerary = await db
+      .select()
+      .from(itineraries)
+      .where(eq(itineraries.id, itineraryId))
+      .limit(1)
+
+    if (itinerary.length === 0) {
+      res.status(404).json({ error: "Itinerary not found" })
+    }
+
+    //console.log(itinerary?.[0]?.days);
+    const firstItinerary = itinerary?.[0] // 提取陣列中的第一個物件
+    const days = firstItinerary?.days // 確保第一個物件存在並提取 days
+
+    // console.log("itinerary:", itinerary);
+    // console.log("days:", days);
+
+    if (!days) throw new BadRequestError("Invalided days")
+    const dayOne = (days as unknown as any[]).find(
+      (day: any) => day.day === curDay
+    )
+    // console.log(dayOne);
+
+    if (!dayOne) {
+      res.status(404).json({ error: "Days not found" })
+    }
+
+    // 找到 day 1 裡面的 activities 並根據 name 更新 order
+    dayOne!.activities = dayOne!.activities.map((activity: any) => {
+      const matchedMail = currentActivities.find(
+        (mail: Mail) => mail.id === activity.id
+      )
+      if (matchedMail) {
+        activity.order = currentActivities.indexOf(matchedMail)
       }
+      return activity
+    })
+
+    // 將更新後的 `days` 資料寫回資料庫
+    await db
+      .update(itineraries)
+      .set({ days })
+      .where(eq(itineraries.id, itineraryId))
+
+    // 回應成功訊息
+    res.status(200).json({ message: "Activities updated successfully" })
+  } catch (error) {
+    console.error("Error updating itinerary:", error)
+    res.status(500).json({ error: "Internal Server Error" })
+  }
+})
+
+// 新增行程中的景點
+router.post("/insert", async (req, res) => {
+  //const { updatedPlaceWithDetail } = req.body;
+  const { itineraryId, curDays, placeWithDetail } = req.body
+  const {
+    name,
+    note,
+    type,
+    order,
+    latitude,
+    longitude,
+    location,
+    photoUrls,
+    description,
+    recommendDuration,
+    commutingTime,
+  } = placeWithDetail
+  const curDay = parseInt(curDays, 10) + 1
+
+  try {
+    // Validate input data to prevent undefined values
+    if (
+      !itineraryId ||
+      !name ||
+      !type ||
+      !latitude ||
+      !longitude ||
+      !location ||
+      !recommendDuration ||
+      !commutingTime
+    ) {
+      console.log("Missing fields:", {
+        itineraryId,
+        name,
+        note, 
+        type,
+        latitude,
+        longitude,
+        location,
+        recommendDuration,
+        commutingTime,
+      })
+      throw new BadRequestError("Missing required fields")
+    }
+
+    // Retrieve the itinerary and corresponding days
+    const itinerary = await db
+      .select()
+      .from(itineraries)
+      .where(eq(itineraries.id, itineraryId))
+      .limit(1)
+
+    if (itinerary.length === 0) {
+      throw new BadRequestError("Itinerary not found")
+    }
+
+    const firstItinerary = itinerary[0]
+    const days = firstItinerary?.days
+
+    if (!days) {
+      throw new Error("Invalid days")
+    }
+
+    const dayOne = (days as unknown as any[]).find(
+      (day: any) => day.day === curDay
     )
 
-    const placeName = response[0]?.places?.[0]?.name
-    if (!placeName) return null
+    if (!dayOne) {
+      throw new BadRequestError("Day 1 not found")
+    }
 
-    const placeDetails = await getPlaceDetails(placeName)
-    return placeDetails
+    // Ensure the new activity properties are valid
+    const newActivity = {
+      name,
+      note, 
+      type,
+      order: dayOne.activities.length + 1,
+      latitude,
+      longitude,
+      location,
+      id: nanoid(),
+      photoUrls: photoUrls || [], // Default to empty array if undefined
+      description,
+      recommendDuration,
+      commutingTime,
+    }
 
-  } catch (error: any) {
-    console.error(`Error during text search: ${error.message}`)
-    return null
+    // Log the new activity for debugging purposes
+    console.log("New activity:", newActivity)
+
+    dayOne.activities.push(newActivity)
+
+    // Ensure that days is not undefined or null before updating the database
+    if (!Array.isArray(days) || days.length === 0) {
+      throw new Error("Days array is invalid")
+    }
+
+    // Update the days field in the database
+    await db
+      .update(itineraries)
+      .set({ days })
+      .where(eq(itineraries.id, itineraryId))
+
+    res
+      .status(201)
+      .json({ message: "Activity added successfully", activity: newActivity })
+  } catch (error) {
+    console.error("Error adding activity:", error)
+    res
+      .status(500)
+      .json({
+        message: "Failed to add activity",
+        error: (error as Error).message,
+      })
   }
-}
+})
 
-router.get("/", requireAuth, async (req, res) => {
-  // 模擬使用者輸入
-  req.body = {
-    location: "Tokyo, Japan",
-    startDate: "2024-04-01T10:00:00Z",
-    endDate: "2024-04-05T18:00:00Z",
-    travelCategories: ["Family & Group Activities", "History & Culture"],
-    language: "zh-TW",
+// router.get("/add-id", async (req, res) => {
+//   const results = await db.select().from(itineraries)
+//   const newDays = results.map((result) => {
+//     return {
+//       ...result,
+//       days: result.days.map((day) => {
+//         return {
+//           ...day,
+//           activities: day.activities.map((activity, index) => {
+//             return {
+//               ...activity,
+//               commutingTime: 30,
+//             }
+//           }),
+//         }
+//       }),
+//     }
+//   })
+//   for (const updatedDays of newDays) {
+//     await db.update(itineraries).set({ days: updatedDays.days }).where(eq(itineraries.id, updatedDays.id))
+//   }
+// })
+
+// 刪除行程中的景點
+router.post("/delete", async (req, res) => {
+  try {
+    const { itineraryId, curDays, place } = req.body // 從前端取得地點資訊
+    const curDay = parseInt(curDays, 10) + 1
+
+    if (!place || !place.activityId) {
+      throw new BadRequestError("Missing place id")
+    }
+
+    // 從資料庫查找行程
+    const itinerary = await db
+      .select()
+      .from(itineraries)
+      .where(eq(itineraries.id, itineraryId))
+      .limit(1)
+
+    if (itinerary.length === 0) {
+      throw new Error("Itinerary not found")
+    }
+
+    const firstItinerary = itinerary[0]
+    const days = firstItinerary?.days
+
+    if (!days) {
+      throw new Error("Invalid days")
+    }
+
+    const dayOne = (days as unknown as any[]).find(
+      (day: any) => day.day === curDay
+    )
+
+    if (!dayOne) {
+      throw new Error("Day 1 not found")
+    }
+
+    // 從活動列表中刪除匹配名稱的活動
+    const updatedActivities = dayOne.activities.filter(
+      (activity: any) => activity.id !== place.activityId
+    )
+
+    if (updatedActivities.length === dayOne.activities.length) {
+      throw new Error("Activity not found")
+    }
+
+    // 更新 dayOne 的活動列表
+    dayOne.activities = updatedActivities
+
+    // 將更新後的資料寫回資料庫
+    await db
+      .update(itineraries)
+      .set({ days })
+      .where(eq(itineraries.id, itineraryId))
+
+    res.status(200).json({ message: "Activity deleted successfully" })
+  } catch (error) {
+    console.error("Error deleting activity:", error)
+    res.status(500).json({ error: "Internal Server Error" })
+  }
+})
+
+// 修改景點備註
+router.post("/updateNote", async (req, res) => {
+  try {
+    const { itineraryId, curDays, place } = req.body // 從前端取得地點資訊
+    const curDay = parseInt(curDays, 10) + 1
+
+    if (!place || !place.activityId) {
+      throw new BadRequestError("Missing updated note")
+    }
+
+    if (!place.note) {
+      place.note = ""
+    }
+
+    // 從資料庫查找行程
+    const itinerary = await db
+      .select()
+      .from(itineraries)
+      .where(eq(itineraries.id, itineraryId))
+      .limit(1)
+
+    if (itinerary.length === 0) {
+      throw new Error("Itinerary not found")
+    }
+
+    const firstItinerary = itinerary[0]
+    const days = firstItinerary?.days
+
+    if (!days) {
+      throw new Error("Invalid days")
+    }
+
+    const dayOne = (days as unknown as any[]).find(
+      (day: any) => day.day === curDay
+    )
+
+    if (!dayOne) {
+      throw new Error("Day 1 not found")
+    }
+
+    // 找到指定的 activity 並更新 note
+    const activityToUpdate = dayOne.activities.find(
+      (activity: any) => activity.id === place.activityId
+    );
+
+    if (!activityToUpdate) {
+      throw new Error("Activity not found");
+    }
+
+    activityToUpdate.note = place.note;
+
+    // 將更新後的資料寫回資料庫
+    await db
+      .update(itineraries)
+      .set({ days })
+      .where(eq(itineraries.id, itineraryId));
+
+    res.status(200).json({ message: "Activity deleted successfully" })
+  } catch (error) {
+    console.error("Error deleting activity:", error)
+    res.status(500).json({ error: "Internal Server Error" })
+  }
+})
+
+// 修改景點停留時間
+router.post("/updateDuration", async (req, res) => {
+  try {
+    const { itineraryId, curDays, place } = req.body // 從前端取得地點資訊
+    const curDay = parseInt(curDays, 10) + 1
+
+    if (!place || !place.activityId || !place.recommendDuration) {
+      throw new BadRequestError("Missing updated note")
+    }
+
+    // 從資料庫查找行程
+    const itinerary = await db
+      .select()
+      .from(itineraries)
+      .where(eq(itineraries.id, itineraryId))
+      .limit(1)
+
+    if (itinerary.length === 0) {
+      throw new Error("Itinerary not found")
+    }
+
+    const firstItinerary = itinerary[0]
+    const days = firstItinerary?.days
+
+    if (!days) {
+      throw new Error("Invalid days")
+    }
+
+    const dayOne = (days as unknown as any[]).find(
+      (day: any) => day.day === curDay
+    )
+
+    if (!dayOne) {
+      throw new Error("Day 1 not found")
+    }
+
+    // 找到指定的 activity 並更新 recommendDuration
+    const activityToUpdate = dayOne.activities.find(
+      (activity: any) => activity.id === place.activityId
+    );
+
+    if (!activityToUpdate) {
+      throw new Error("Activity not found");
+    }
+
+    activityToUpdate.recommendDuration = place.recommendDuration;
+
+    // 將更新後的資料寫回資料庫
+    await db
+      .update(itineraries)
+      .set({ days })
+      .where(eq(itineraries.id, itineraryId));
+
+    res.status(200).json({ message: "Activity update Duration successfully" })
+  } catch (error) {
+    console.error("Error update Duration activity:", error)
+    res.status(500).json({ error: "Internal Server Error" })
+  }
+})
+
+// 修改景點通勤時間
+router.post("/updateCommutingTime", async (req, res) => {
+  try {
+    const { itineraryId, curDays, place } = req.body // 從前端取得地點資訊
+    const curDay = parseInt(curDays, 10) + 1
+
+    if (!place || !place.activityId || !place.commutingTime) {
+      throw new BadRequestError("Missing updated note")
+    }
+
+    // 從資料庫查找行程
+    const itinerary = await db
+      .select()
+      .from(itineraries)
+      .where(eq(itineraries.id, itineraryId))
+      .limit(1)
+
+    if (itinerary.length === 0) {
+      throw new Error("Itinerary not found")
+    }
+
+    const firstItinerary = itinerary[0]
+    const days = firstItinerary?.days
+
+    if (!days) {
+      throw new Error("Invalid days")
+    }
+
+    const dayOne = (days as unknown as any[]).find(
+      (day: any) => day.day === curDay
+    )
+
+    if (!dayOne) {
+      throw new Error("Day 1 not found")
+    }
+
+    // 找到指定的 activity 並更新 commutingTime
+    const activityToUpdate = dayOne.activities.find(
+      (activity: any) => activity.id === place.activityId
+    );
+
+    if (!activityToUpdate) {
+      throw new Error("Activity not found");
+    }
+
+    activityToUpdate.commutingTime = place.commutingTime;
+
+    // 將更新後的資料寫回資料庫
+    await db
+      .update(itineraries)
+      .set({ days })
+      .where(eq(itineraries.id, itineraryId));
+
+    res.status(200).json({ message: "Activity update CommutingTime successfully" })
+  } catch (error) {
+    console.error("Error update CommutingTime activity:", error)
+    res.status(500).json({ error: "Internal Server Error" })
+  }
+})
+
+// 修改每日出發時間
+router.post("/updateStartTime", async (req, res) => {
+  try {
+    const { itineraryId, curDays, startTime } = req.body // 從前端取得地點資訊
+    const curDay = parseInt(curDays, 10) + 1
+
+    if (!startTime) {
+      throw new BadRequestError("Missing startTime")
+    }
+
+    // 從資料庫查找行程
+    const itinerary = await db
+      .select()
+      .from(itineraries)
+      .where(eq(itineraries.id, itineraryId))
+      .limit(1)
+
+    if (itinerary.length === 0) {
+      throw new Error("Itinerary not found")
+    }
+
+    const firstItinerary = itinerary[0]
+    const days = firstItinerary?.days
+
+    if (!days) {
+      throw new Error("Invalid days")
+    }
+
+    const dayOne = (days as unknown as any[]).find(
+      (day: any) => day.day === curDay
+    )
+
+    if (!dayOne) {
+      throw new Error("Day 1 not found")
+    }
+
+    dayOne.startTime = startTime;
+
+    // 將更新後的資料寫回資料庫
+    await db
+      .update(itineraries)
+      .set({ days })
+      .where(eq(itineraries.id, itineraryId));
+
+    res.status(200).json({ message: "Activity update StartTime successfully" })
+  } catch (error) {
+    console.error("Error update StartTime activity:", error)
+    res.status(500).json({ error: "Internal Server Error" })
+  }
+})
+
+// 建立新行程
+router.post("/creatTrip", requireAuth, async (req, res) => {
+  const { location, startDate, endDate, description } = req.body; // 從前端取得地點資訊
+  
+  const daysArray = [];
+  const start = new Date(startDate);
+  const end = new Date(endDate);
+
+  // 計算天數範圍，並建立空的行程表
+  for (let d = new Date(start); d <= end; d.setDate(d.getDate() + 1)) {
+    daysArray.push({
+      day: daysArray.length + 1,
+      startTime: "08:00",
+      activities: [],
+    });
   }
 
-  // 驗證前端傳入的資料
-  const parsedBody = itineraryFrontendSchema.safeParse(req.body)
-  if (!parsedBody.success) {
-    throw new BadRequestError("Invalid itinerary data")
-  }
-
-  const { location, startDate, endDate, travelCategories, language } = parsedBody.data
-
-  // 呼叫 getModelizedItinerary 取得 AI 產生的行程規劃
-  const modelizedItinerary = await getModelizedItinerary({ location, startDate, endDate, travelCategories, language })
-
-  // 驗證後端產生的行程格式
-  const parsedItinerary = itineraryBackendSchema.safeParse(modelizedItinerary)
-  if (!parsedItinerary.success) {
-    throw new BadRequestError("Invalided itinerary data")
-  }
-
-  const parsedItineraryData = parsedItinerary.data
-
-  await Promise.all(
-    parsedItineraryData.days.map(async (day, dayIndex) => {
-      await Promise.all(
-        day.activities.map(async (activity, activityIndex) => {
-          const data = await textSearch(activity.name)
-          // @ts-expect-error
-          day.activities[activityIndex]["photoUrl"] = data?.photos
-          // @ts-expect-error
-          day.activities[activityIndex]["latitude"] = data?.location.latitude
-          // @ts-expect-error
-          day.activities[activityIndex]["longitude"] = data?.location.longitude
-
-          console.log(data)
-        })
-      )
-    })
-  )
-  // console.log(JSON.stringify(parsedItineraryData, null, 2))
-
-  // @ts-expect-error
-  await db.insert(itineraries).values({
+  const emptyDays = JSON.stringify(daysArray); // 儲存為 JSON 字串
+  
+  // 準備要插入的資料
+  const itineraryData = {
     userId: req.user!.id,
     allowedEditors: [req.user!.id],
     isPublic: false,
@@ -149,13 +599,26 @@ router.get("/", requireAuth, async (req, res) => {
     location: location,
     startDate: new Date(startDate),
     endDate: new Date(endDate),
-    travelCategories: travelCategories,
-    language: language,
-    days: parsedItineraryData.days,
-    description: parsedItineraryData.description,
-  })
+    travelCategories: [],
+    language: "中文",
+    days: emptyDays, // 儲存空行程
+    description: description,
+  };
 
-  res.status(201).json({ msg: "success" })
-})
+  // 輸出內容進行檢查
+  //console.log("準備存入資料庫的內容:", itineraryData);
+
+  try {
+    // @ts-ignore
+    const [itinerary] = await db.insert(itineraries).values(itineraryData).returning();
+
+    res.status(201).json({ msg: "success", id: itinerary?.id });
+  } catch (error) {
+    console.error("資料庫插入失敗:", error);
+    res.status(500).json({ error: "Failed to insert itineraryData into database" })
+  }
+});
+
+
 
 export { router as addactivityRouter }
