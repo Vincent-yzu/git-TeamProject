@@ -6,8 +6,8 @@ interface DurationPopupProps {
   onSave: () => void
   onCancel: () => void
 }
-
 const DurationPopup: React.FC<DurationPopupProps> = ({
+
   duration,
   onDurationChange,
   onSave,

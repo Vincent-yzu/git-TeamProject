@@ -34,50 +34,49 @@ const HomePage: React.FC = () => {
                 >
                   開始規劃
                 </button>
-                <button className="explore-ideas-button">探索靈感</button>
               </div>
             </div>
           </div>
           <section className="recommendation-section">
             <h2>推薦行程</h2>
-            <div className="recommendations">
+            <div className="recommendations w-full h-full">
               <>
-                {itineraries ? (
-                  <div className="grid grid-cols-3 gap-6">
-                    {itineraries.map((itinerary, index) => {
-                      return (
-                        <div key={index} className="flex flex-col gap-2">
-                            <img
-                              src={
-                                itinerary.days?.[0]?.activities?.[0]
-                                  ?.photoUrls?.[0]
-                              }
-                              alt={
-                                itinerary.days?.[0]?.activities?.[0]
-                                  ?.description
-                              }
-                              className="w-full h-full aspect-video object-cover rounded-md"
-                            />
+              {itineraries ? (
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 w-full h-full">
+                {itineraries.map((itinerary, index) => {
+                  return (
+                  <div key={index} className="flex flex-col gap-2 w-full h-full">
+                    <img
+                      src={
+                      itinerary.days?.[0]?.activities?.[0]
+                        ?.photoUrls?.[0]
+                      }
+                      alt={
+                      itinerary.days?.[0]?.activities?.[0]
+                        ?.description
+                      }
+                      className="w-full h-full aspect-video object-cover rounded-md"
+                    />
 
-                            <h3 className="text-lg font-semibold">
-                              {itinerary.location +
-                                " " +
-                                ((new Date(itinerary.endDate).getTime() -
-                                  new Date(itinerary.startDate).getTime()) /
-                                  (1000 * 60 * 60 * 24) + 1) +
-                                "天" +
-                                ((new Date(itinerary.endDate).getTime() -
-                                  new Date(itinerary.startDate).getTime()) /
-                                  (1000 * 60 * 60 * 24)) +
-                                "夜之旅"}
-                            </h3>
-                        </div>
-                      )
-                    })}
+                    <h3 className="text-lg font-semibold">
+                      {itinerary.location +
+                      " " +
+                      ((new Date(itinerary.endDate).getTime() -
+                        new Date(itinerary.startDate).getTime()) /
+                        (1000 * 60 * 60 * 24) + 1) +
+                      "天" +
+                      ((new Date(itinerary.endDate).getTime() -
+                        new Date(itinerary.startDate).getTime()) /
+                        (1000 * 60 * 60 * 24)) +
+                      "夜之旅"}
+                    </h3>
                   </div>
-                ) : (
-                  <></>
-                )}
+                  )
+                })}
+                </div>
+              ) : (
+                <></>
+              )}
               </>
             </div>
           </section>

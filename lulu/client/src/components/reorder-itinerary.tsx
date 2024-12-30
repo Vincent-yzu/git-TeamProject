@@ -114,12 +114,14 @@ const ReorderItinerary = () => {
     setNoteValue(e.target.value)
   }
   
-  const handleNoteSave = async () => {
-    if (editingNoteId) {
-      await saveNote(editingNoteId)
-      setIsPopupOpen(false)
-    }
-  }
+  // const handleNoteSave = async () => {
+  //   if (editingNoteId) {
+  //     await saveNote(editingNoteId)
+  //     setIsPopupOpen(false)
+  //     updateActivityInDays(editingNoteId, { note: noteValue });
+  //     setIsPopupOpen(false); // Close the popup
+  //   }
+  // }
 
   const handleNoteCancel = () => {
     setIsPopupOpen(false)
@@ -151,8 +153,8 @@ const ReorderItinerary = () => {
       setDaysActivities((prev) => {
         const newDays = [...prev]
         newDays[currentDayIndex] = newDays[currentDayIndex].map((activity) =>
-          activity.id === activityId ? { ...activity, note: noteValue } : activity
-        )
+          activity.id.toString() === activityId.toString() ? { ...activity, note: noteValue } : activity
+        ) as Itinerary["days"][number]["activities"]
         return newDays
       })
 
@@ -274,6 +276,8 @@ const ReorderItinerary = () => {
     if (editingDurationActivityId) {
       await handleRecommendDurationChange(editingDurationActivityId, newDuration)
       setIsDurationPopupOpen(false)
+      // updateActivityInDays(editingDurationActivityId, { recommendDuration: newDuration });
+      setIsDurationPopupOpen(false); // Close the popup
     }
   }
 
@@ -281,6 +285,7 @@ const ReorderItinerary = () => {
     if (editingTravelTimeActivityId) {
       await handleCommutingTimeChange(editingTravelTimeActivityId, newTravelTime)
       setIsTravelTimePopupOpen(false)
+      setIsTravelTimePopupOpen(false); // Close the popup
     }
   }
 
@@ -544,30 +549,51 @@ const ReorderItinerary = () => {
     setCurrentActivities(currentActivities);
   };
 
+  // const updateActivityInDays = (activityId: string, updatedFields: Partial<Place>) => {
+  //   setDaysActivities((prev) => {
+  //     const newDays = [...prev];
+  //     newDays[currentDayIndex] = newDays[currentDayIndex].map((activity) =>
+  //       activity.id === activityId ? { ...activity, ...updatedFields } : activity
+  //     );
+  //     return newDays;
+  //   });
+  // }
+
   return (
     <div ref={containerRef} className="p-2 flex flex-col h-full">
-      <h2 className="text-xl font-bold mb-1">
-        Itinerary: {itinerary.location}
-      </h2>
-      <p className="text-sm font-semibold text-gray-600 mb-1">
-        {itinerary.description}
-      </p>
+      <div className="bg-gray-200 p-4">
+        <h2 className="text-xl font-bold mb-2">
+          {itinerary.description}
+        </h2>
+        <p className="text-base font-semibold text-gray-600">
+          地點: {itinerary.location}
+        </p>
+      </div>
 
-      <div className="flex space-x-2 mb-1">
+      <div className="flex space-x-2 mb-2 overflow-x-auto scrollbar-hide whitespace-nowrap bg-gray-100 p-2">
         {itinerary.days.map((_, index) => (
           <button
-            key={index}
-            onClick={() => setSelectedDayIndex(index.toString())}
-            className={`px-3 py-1 rounded ${
-              selectedDayIndex === index.toString()
-                ? "bg-blue-500 text-white"
-                : "bg-gray-200 text-gray-700 hover:bg-gray-300"
-            }`}
+        key={index}
+        onClick={() => setSelectedDayIndex(index.toString())}
+        className={`px-3 py-1 rounded ${
+          selectedDayIndex === index.toString()
+            ? "bg-blue-500 text-white"
+            : "bg-gray-200 text-gray-700 hover:bg-gray-300"
+        }`}
           >
-            Day {index + 1}
+        Day {index + 1}
           </button>
         ))}
       </div>
+      <style>{`
+        .overflow-x-auto {
+          -ms-overflow-style: none; /* IE and Edge */
+          scrollbar-width: none; /* Firefox */
+        }
+        .overflow-x-auto::-webkit-scrollbar {
+          display: none; /* Chrome, Safari, and Edge */
+        }
+      `}</style>
 
       {/* 顯示出發時間 */}
       <div className="flex items-center mb-2">
@@ -721,22 +747,21 @@ const ReorderItinerary = () => {
         })}
         <div style={{ height: "50px" }}></div> {/* 占位空間，避免裁切 */}
       </Reorder.Group>
-      
-      {isPopupOpen && (
-        <NotePopup
-          noteValue={noteValue}
-          onChange={handleNoteChange}
-          onSave={handleNoteSave}
-          onCancel={handleNoteCancel}
-        />
-      )}
-
       {isDurationPopupOpen && (
         <DurationPopup
           duration={newDuration}
           onDurationChange={setNewDuration}
           onSave={handleDurationSave}
           onCancel={() => setIsDurationPopupOpen(false)}
+        />
+      )}
+
+      {isTravelTimePopupOpen && (
+        <TravelTimePopup
+          travelTime={newTravelTime}
+          onTravelTimeChange={setNewTravelTime}
+          onSave={handleCommutingTimeSave}
+          onCancel={() => setIsTravelTimePopupOpen(false)}
         />
       )}
 

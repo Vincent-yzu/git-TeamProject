@@ -64,6 +64,8 @@ interface MapContextType {
   // 新增 selectedDayIndex
   currentActivities: activitiesArray[] | null;  
   setCurrentActivities: React.Dispatch<React.SetStateAction<activitiesArray[] | null>>;
+
+  current: any;
 }
 
 // 創建 Context、Provider
@@ -95,6 +97,7 @@ export const MapProvider = ({ children }: { children: ReactNode }) => {
         setCallCloseDetail,
         currentActivities, 
         setCurrentActivities,
+        current: null, // Add the current property
       }}
     >
       {children}
