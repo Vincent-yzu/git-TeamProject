@@ -44,7 +44,7 @@ app.use("/api", googlesearchRouter) // for google map api (備註: 暫時繞過�
 app.use("/api/addactivity", addactivityRouter) // add activity (備註: 暫時繞過認證 (待修改!!))
 app.use("/api/itinerary", itineraryRouter) // itinerary (備註: 暫時繞過認證 (待修改!!))
 
-app.use(csrfHandler)
+// app.use(csrfHandler)
 
 // app.use("/api/googlesearch", googlesearchRouter)  // for google map api
 app.use("/api/auth", authRouter)
