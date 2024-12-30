@@ -2,6 +2,7 @@ FROM node:22-alpine
 
 WORKDIR /app
 RUN npm install -g pnpm
+RUN npm install -g serve
 
 COPY package.json .
 RUN pnpm install
@@ -16,6 +17,5 @@ ENV VITE_GOOGLE_API_KEY=$VITE_GOOGLE_API_KEY
 RUN pnpm build
 
 # Use a lightweight server to serve the production build
-RUN npm install -g serve
 
 CMD ["serve", "-s", "dist"]
