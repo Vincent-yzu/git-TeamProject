@@ -34,6 +34,20 @@ interface activitiesArray {
   longitude: number;
 }
 
+interface activitiesArray {
+  type: "activity";
+  id: string;
+  note: string;
+  name: string;
+  description: string;
+  recommendDuration: number;
+  order: number;
+  location: string;
+  photoUrls: string[];
+  latitude: number;
+  longitude: number;
+}
+
 // 定義變數類型
 interface MapContextType {
 

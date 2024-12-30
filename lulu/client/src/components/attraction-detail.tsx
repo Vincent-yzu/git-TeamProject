@@ -1,6 +1,8 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useContext, useRef } from "react";
 import { useMapContext } from "./MapContext"; // 引入 Context
 import { useParams } from "react-router-dom"
+// 假設您有一個自訂的 socket context 或在任何地方能取得 socketRef
+import { io, Socket } from "socket.io-client";
 
 const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
 
@@ -22,12 +24,12 @@ interface Place {
 
 export const AttractionDetail = () => {
   const { selectedPlace } = useMapContext(); // 從 Context 中取用 `selectedPlace`
-  const { setAddedPlace } = useMapContext(); // 從 Context 中取用 `setSelectedPlace`
   const { heyUpdateData, setHeyUpdateData } = useMapContext(); // 從 Context 中取用 `heyUpdateData`
   const {selectedDayIndex} = useMapContext(); // 從 Context 中取用 `selectedDayIndex`
   const { id } = useParams()
   const [isVisible, setIsVisible] = useState(false); // 控制容器顯示/隱藏的狀態
   const { callCloseDetail } = useMapContext();
+  const socketRef = useRef<Socket | null>(null)
 
   // Update visibility when selectedPlace changes
   useEffect(() => {
@@ -41,6 +43,12 @@ export const AttractionDetail = () => {
     handleClose();
   }, [callCloseDetail]);
 
+  // socket
+  useEffect(() => {
+    const socket = io(`${BACKEND_URL}`, { withCredentials: true, path: '/api/socket.io' })
+    socketRef.current = socket
+  }, [id])
+
   // 處理關閉
   const handleClose = () => {
     setIsVisible(false);
@@ -49,7 +57,7 @@ export const AttractionDetail = () => {
   // 加入行程
   const handleAddPlace = async (place: Place) => {
     const placeWithDetail = {
-      name: place.name, // 假設 place.name 是標題
+      name: place.name,
       note: "",
       type: "activity", 
       order: 99,
@@ -63,8 +71,8 @@ export const AttractionDetail = () => {
     };
     // 新增 id 和 days
     const updatedPlaceWithDetail = {
-      itineraryId: id, // 替換為實際的 id 值
-      curDays: selectedDayIndex, // 替換為實際的 days 值
+      itineraryId: id,
+      curDays: selectedDayIndex,
       placeWithDetail, // 包含原始活動資料
     };
 
@@ -83,24 +91,15 @@ export const AttractionDetail = () => {
     // 解析回應資料
     const data = await response.json();
 
-    // 打印回應資料來檢查結構
-    // console.log("Received data:", data.activity.id);
-
-    // add to Left interface
+    // 視情況更新 UI
     setHeyUpdateData(heyUpdateData + 1);
-    // setAddedPlace({
-    //   id: data.activity.id,
-    //   place_id: place.place_id,
-    //   name: place.name,
-    //   formatted_address: place.formatted_address,
-    //   geometry: {
-    //     location: {
-    //       lat: place.geometry.location.lat,
-    //       lng: place.geometry.location.lng,
-    //     },
-    //   },
-    //   icon: place.icon,
-    // });
+    
+    // ==========> Socket emit (add_trip) <============
+    socketRef.current?.emit("add_trip", {
+      roomId: id,              // 行程 ID
+      dayIndex: selectedDayIndex,  
+      newActivity: data.activity,
+    });
   };
 
   // 如果 selectedPlace 為 null 或 undefined，則返回 null
@@ -109,6 +108,7 @@ export const AttractionDetail = () => {
   // 如果容器不可見，則返回 null，不顯示該區域
   if (!isVisible) return null;
 
+  // 計算 & 顯示時間
   const formatDuration = (minutes: number) => {
     const hours = Math.floor(minutes / 60)
     const remainingMinutes = minutes % 60

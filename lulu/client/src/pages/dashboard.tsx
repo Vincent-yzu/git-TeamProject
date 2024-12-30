@@ -63,8 +63,8 @@ export default function Dashboard() {
                 ))} */}
 
                 {/* 右側 google map 大地圖 */}
-                <ChatBox  />
                 <DisplayMap />
+                <ChatBox  />
                 </div>
             </SidebarInset>
           </MapProvider>
