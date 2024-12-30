@@ -143,7 +143,12 @@ export default function SignUpForm() {
                 <span className="text-sm text-muted-foreground">Or</span>
                 <Separator className="flex-1" />
               </div>
-              <Link to={`${BACKEND_URL}/api/auth/google/sign-up`}>
+              <button
+                type="button"
+                onClick={() => {
+                  window.location.href = `${BACKEND_URL}/api/auth/google/sign-in`
+                }}
+              >
                 <Button
                   variant="outline"
                   className="w-full rounded-full"
@@ -152,7 +157,7 @@ export default function SignUpForm() {
                   <GoogleIcon />
                   Sign up with Google
                 </Button>
-              </Link>
+              </button>
             </form>
           </Form>
           <div className="mt-4 text-center text-sm">
