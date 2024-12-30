@@ -85,33 +85,129 @@ io.on("connection", (socket) => {
   // Track users in rooms
   const roomUsers: { [roomId: string]: User[] } = {}
 
-  socket.on(
-    "join_room",
-    async ({ roomId }: { roomId: string }) => {
-      try {
-        const [itinerary] = await db
+  socket.on("join_room", async ({ roomId }: { roomId: string }) => {
+    try {
+      const [itinerary] = await db
         .select()
         .from(itineraries)
         .where(
           and(
             eq(itineraries.id, roomId),
             sql`EXISTS (SELECT 1 FROM jsonb_array_elements_text(${itineraries.allowedEditors}) AS editor WHERE editor = ${socket.data.user.id})`
-          ) 
+          )
         )
-        if (!itinerary) {
-          throw new UnauthorizedError("Unauthorized: invalid session")
-        }
-      } catch (error) {
-        throw new UnauthorizedError("Unauthorized: invalid sesseion")
+      if (!itinerary) {
+        throw new UnauthorizedError("Unauthorized: invalid session")
       }
- 
-      console.log(`User ${socket.data.user.id} joined room:`, roomId)
-      socket.join(roomId)
-
-      io.to(roomId).emit("room_user_joined", socket.data.user)
+    } catch (error) {
+      throw new UnauthorizedError("Unauthorized: invalid sesseion")
     }
-  )
- 
+
+    console.log(`User ${socket.data.user.id} joined room:`, roomId)
+    socket.join(roomId)
+
+    io.to(roomId).emit("room_user_joined", socket.data.user)
+  })
+
+  // ========= 新增: add_trip =========
+  socket.on("add_trip", async (data) => {
+    const { roomId, dayIndex, newActivity } = data
+    console.log(`Add trip in room ${roomId} by ${socket.id}:`, newActivity)
+
+    try {
+      // 1) 寫入 DB (示範)
+      // const createdRecord = await db.insert(...).values({...}).returning()
+      // 2) 廣播給同房
+      socket.to(roomId).emit("trip_added", {
+        dayIndex,
+        newActivity: newActivity, // or createdRecord
+      })
+    } catch (error) {
+      console.error("Error adding trip:", error)
+    }
+  })
+
+  // ========= 新增: delete_trip =========
+  socket.on("delete_trip", async (data) => {
+    const { roomId, dayIndex, activityId } = data
+    console.log(`Delete trip in room ${roomId} by ${socket.id}:`, activityId)
+    try {
+      // 1) 刪除 DB
+      // await db.delete(...).where(...)
+      // 2) 廣播給同房
+      socket.to(roomId).emit("trip_deleted", { dayIndex, activityId })
+    } catch (error) {
+      console.error("Error deleting trip:", error)
+    }
+  })
+
+  // ========= 新增: edit_note =========
+  socket.on("edit_note", async (data) => {
+    const { roomId, dayIndex, activityId, note } = data
+    console.log(`Edit note in room ${roomId} by ${socket.id}:`, data)
+    try {
+      // 1) Update DB
+      // await db.update(...).set({ note }).where(...)
+      // 2) 廣播
+      socket.to(roomId).emit("note_edited", { dayIndex, activityId, note })
+    } catch (error) {
+      console.error("Error editing note:", error)
+    }
+  })
+
+  // ========= 新增: update_start_time =========
+  socket.on("update_start_time", async (data) => {
+    const { roomId, dayIndex, startTime } = data
+    console.log(`Update start_time in room ${roomId} by ${socket.id}:`, data)
+    try {
+      // 1) Update DB
+      // await db.update(...).set({ startTime }).where(...)
+      // 2) 廣播
+      socket.to(roomId).emit("start_time_updated", { dayIndex, startTime })
+    } catch (error) {
+      console.error("Error updating start_time:", error)
+    }
+  })
+
+  // ========= 新增: update_duration (建議停留時間) =========
+  socket.on("update_duration", async (data) => {
+    const { roomId, dayIndex, activityId, recommendDuration } = data
+    console.log(`Update duration in room ${roomId} by ${socket.id}:`, data)
+    try {
+      // 1) Update DB
+      // await db.update(...).set({ recommendDuration }).where(...)
+      // 2) 廣播
+      socket.to(roomId).emit("duration_updated", {
+        dayIndex,
+        activityId,
+        recommendDuration,
+      })
+    } catch (error) {
+      console.error("Error updating duration:", error)
+    }
+  })
+
+  // ========= 新增: update_commuting_time (交通時間) =========
+  socket.on("update_commuting_time", async (data) => {
+    const { roomId, dayIndex, activityId, commutingTime } = data
+    console.log(
+      `Update commuting_time in room ${roomId} by ${socket.id}:`,
+      data
+    )
+    try {
+      // 1) Update DB
+      // await db.update(...).set({ commutingTime }).where(...)
+      // 2) 廣播
+      socket.to(roomId).emit("commuting_time_updated", {
+        dayIndex,
+        activityId,
+        commutingTime,
+      })
+    } catch (error) {
+      console.error("Error updating commuting_time:", error)
+    }
+  })
+
   socket.on(
     "send_message",
     async ({ roomId, content }: { roomId: string; content: string }) => {

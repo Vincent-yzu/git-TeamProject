@@ -1,6 +1,8 @@
-import React, { useState, useEffect } from "react";
-import { useMapContext } from "./MapContext"; // 引入 Context
-import { useParams } from "react-router-dom"
+import React, { useState, useEffect, useContext, useRef } from "react";
+import { useMapContext } from "./MapContext"; 
+import { useParams } from "react-router-dom";
+// 假設您有一個自訂的 socket context 或在任何地方能取得 socketRef
+import { io, Socket } from "socket.io-client";
 
 const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
 
@@ -9,104 +11,86 @@ interface Place {
   place_id: string;
   name: string;
   formatted_address: string;
-  geometry: {
-    location: {
-      lat: number;
-      lng: number;
-    };
-  };
+  geometry: { location: { lat: number; lng: number; } };
   icon: string;
   description: string;
-  // 根據需要添加其他欄位
 }
 
 export const AttractionDetail = () => {
-  const { selectedPlace } = useMapContext(); // 從 Context 中取用 `selectedPlace`
-  const { setAddedPlace } = useMapContext(); // 從 Context 中取用 `setSelectedPlace`
-  const { heyUpdateData, setHeyUpdateData } = useMapContext(); // 從 Context 中取用 `heyUpdateData`
-  const {selectedDayIndex} = useMapContext(); // 從 Context 中取用 `selectedDayIndex`
-  const { id } = useParams()
-  const [isVisible, setIsVisible] = useState(false); // 控制容器顯示/隱藏的狀態
+  const { selectedPlace } = useMapContext();
+  const { heyUpdateData, setHeyUpdateData } = useMapContext();
+  const { selectedDayIndex } = useMapContext();
+  const { id } = useParams();
+  const socketRef = useRef<Socket | null>(null)
+
+  const [isVisible, setIsVisible] = useState(false);
   const { callCloseDetail } = useMapContext();
 
-  // Update visibility when selectedPlace changes
   useEffect(() => {
     if (selectedPlace) {
       setIsVisible(true);
     }
   }, [selectedPlace]);
 
-  // 被呼叫關閉
   useEffect(() => {
     handleClose();
   }, [callCloseDetail]);
 
-  // 處理關閉
+  useEffect(() => {
+    const socket = io(`${BACKEND_URL}`, { withCredentials: true, path: '/api/socket.io' })
+    socketRef.current = socket
+  }, [id])
+
   const handleClose = () => {
     setIsVisible(false);
   };
 
-  // 加入行程
   const handleAddPlace = async (place: Place) => {
     const placeWithDetail = {
-      name: place.name, // 假設 place.name 是標題
+      name: place.name,
       note: "",
-      type: "activity", 
+      type: "activity",
       order: 99,
       latitude: place.geometry.location.lat,
       location: place.formatted_address,
       longitude: place.geometry.location.lng,
-      photoUrls: [place.icon], 
+      photoUrls: [place.icon],
       description: place.description,
       recommendDuration: 60,
       commutingTime: 30,
     };
-    // 新增 id 和 days
+
     const updatedPlaceWithDetail = {
-      itineraryId: id, // 替換為實際的 id 值
-      curDays: selectedDayIndex, // 替換為實際的 days 值
-      placeWithDetail, // 包含原始活動資料
+      itineraryId: id,
+      curDays: selectedDayIndex,
+      placeWithDetail,
     };
 
-    // add to DataBase
+    // 呼叫後端 API 進行資料庫插入
     const response = await fetch(`${BACKEND_URL}/api/addactivity/insert`, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
+      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(updatedPlaceWithDetail),
     });
     if (!response.ok) {
       throw new Error('Failed to add trip');
     }
 
-    // 解析回應資料
+    // 解析後端回傳資料
     const data = await response.json();
 
-    // 打印回應資料來檢查結構
-    // console.log("Received data:", data.activity.id);
-
-    // add to Left interface
+    // 視情況更新 UI
     setHeyUpdateData(heyUpdateData + 1);
-    // setAddedPlace({
-    //   id: data.activity.id,
-    //   place_id: place.place_id,
-    //   name: place.name,
-    //   formatted_address: place.formatted_address,
-    //   geometry: {
-    //     location: {
-    //       lat: place.geometry.location.lat,
-    //       lng: place.geometry.location.lng,
-    //     },
-    //   },
-    //   icon: place.icon,
-    // });
+
+    // ==========> Socket emit (add_trip) <============
+    socketRef.current?.emit("add_trip", {
+      roomId: id,              // 行程 ID
+      dayIndex: selectedDayIndex,  
+      newActivity: data.activity,
+    });
   };
 
-  // 如果 selectedPlace 為 null 或 undefined，則返回 null
   if (!selectedPlace) return null;
-
-  // 如果容器不可見，則返回 null，不顯示該區域
   if (!isVisible) return null;
 
   return (
@@ -116,11 +100,10 @@ export const AttractionDetail = () => {
         position: 'absolute',
         top: '50px',
         left: '10px',
-        width: 'calc(100vw - 20px)', // Adjust width based on viewport size
-        maxWidth: '400px', // Set a max width to prevent it from getting too large
+        width: 'calc(100vw - 20px)',
+        maxWidth: '400px',
         zIndex: 1000
       }}>
-        {/* "X" 按鈕 */}
         <button
           onClick={handleClose}
           style={{
@@ -137,7 +120,11 @@ export const AttractionDetail = () => {
         </button>
 
         <h2 style={styles.title}>{selectedPlace.name}</h2>
-        <img src={selectedPlace.icon} alt={`${selectedPlace.name} icon`} style={styles.icon} />
+        <img
+          src={selectedPlace.icon}
+          alt={`${selectedPlace.name} icon`}
+          style={styles.icon}
+        />
         <p style={styles.address}>
           <strong>Address:</strong>
           <br />
@@ -146,8 +133,8 @@ export const AttractionDetail = () => {
         <div style={styles.coordinates}>
           <strong>Coordinates:</strong>
           <br />
-          <span>Lat: {selectedPlace.geometry.location.lat}</span>,
-          <span>Lng: {selectedPlace.geometry.location.lng}</span>
+          Lat: {selectedPlace.geometry.location.lat},
+          Lng: {selectedPlace.geometry.location.lng}
         </div>
         <br />
         <button
