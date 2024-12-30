@@ -666,12 +666,20 @@ router.post("/deleteEditor", requireAuth, async (req, res) => {
       if (updatedEditors.length > 0) {
 
         // 將 userId 替換為 allowedEditors 中的第一個使用者 ID
-        updatedOwnerId = updatedEditors[0];
+        if (Array.isArray(updatedEditors) && updatedEditors.length > 0) {
+          updatedOwnerId = updatedEditors[0];
+          console.log('Updated owner ID successfully:', updatedOwnerId);
+        } else {
+            console.error('Updated owner ID failed: ', updatedOwnerId);
+        }
 
         // 更新資料庫中的 allowedEditors
         await db
         .update(itineraries)
-        .set({ allowedEditors: updatedEditors })
+        .set({
+            userId: updatedOwnerId,
+            allowedEditors: updatedEditors,
+        })
         .where(eq(itineraries.id, itineraryId));
         res.status(200).json({ message: "Editor removed successfully" });
 

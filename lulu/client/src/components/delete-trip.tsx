@@ -40,13 +40,13 @@ export const DeleteTripModal: FC<DeleteTripModalProps> = ({
         throw new Error(`Failed to delete trip: ${response.statusText}`);
       }
 
-      alert("行程刪除成功！");
+      alert("退出行程成功！");
       onClose(); // 關閉彈窗
       //navigate("/my-trip"); // 返回儀表板
       window.location.reload();  // 重新整理
     } catch (error) {
       console.error("Error deleting trip:", error);
-      alert("刪除行程時出現問題，請稍後再試！");
+      alert("退出行程時出現問題，請稍後再試！");
     }
   };
 
@@ -60,8 +60,8 @@ export const DeleteTripModal: FC<DeleteTripModalProps> = ({
         >
           X
         </button>
-        <h2>確認刪除</h2>
-        <p>是否確定刪除此行程？此操作無法復原。</p>
+        <h2>退出確認</h2>
+        <p>是否確定退出此行程？此操作無法復原。</p>
         <div
           style={{
             display: "flex",
