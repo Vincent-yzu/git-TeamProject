@@ -174,7 +174,7 @@ function ChatBox() {
         <div className="relative">
           <Button
             variant="outline"
-            className="p-6 inline-flex absolute bottom-32 right-32 z-50"
+            className="p-6 inline-flex absolute bottom-16 right-32 z-50"
             onClick={handleOpenChatButton}
           >
             Open Chat
@@ -183,7 +183,7 @@ function ChatBox() {
           {/* 如果 hasNewMessage === true，就顯示小紅點 */}
           {hasNewMessage && (
             <span
-              className="bg-red-500 rounded-full w-4 h-4 absolute bottom-40 right-32 translate-x-2 -translate-y-2 z-50"
+              className="bg-red-500 rounded-full w-4 h-4 absolute bottom-24 right-32 translate-x-2 -translate-y-2 z-50"
             />
           )}
         </div>
