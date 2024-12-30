@@ -618,7 +618,7 @@ const ReorderItinerary = () => {
             >
               {/* 左側內容 */}
               <div className="flex flex-col flex-1">
-                <p>行程 {idx +1}</p>
+                <p>景點 {idx +1}</p>
                 <h3 className="text-lg font-semibold leading-6">
                 {activity.name}
                 </h3>
