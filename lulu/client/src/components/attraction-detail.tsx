@@ -37,7 +37,6 @@ export const AttractionDetail = () => {
   const [newDuration, setNewDuration] = useState<number>(0);
   const [isNotePopupOpen, setIsNotePopupOpen] = useState<boolean>(false);
   const [noteValue, setNoteValue] = useState<string>("");
-  const socketRef = useMapContext(); // 引入 socketRef
   const {currentActivities, setCurrentActivities} = useMapContext();
   const socketRef = useRef<Socket | null>(null)
 
