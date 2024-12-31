@@ -1,5 +1,6 @@
 import React, { FC } from "react";
-import { useNavigate } from "react-router-dom"; // 引入 useNavigate
+import { useNavigate } from "react-router-dom";
+import { useMutation } from "@tanstack/react-query"; 
 import { useAuth } from "@/hooks/use-auth";
 import { fetcher } from "@/lib/fetcher";
 
@@ -17,37 +18,45 @@ export const DeleteTripModal: FC<DeleteTripModalProps> = ({
   const { data: auth } = useAuth();
   const navigate = useNavigate();
 
-  // 檢查是否開啟彈窗
+  // 如果彈窗沒開啟就不渲染
   if (!isOpen) return null;
 
-  // 呼叫後端刪除 API
-  const deleteTrip = async () => {
-    if (!auth?.user) {
-      navigate("/sign-in");
-      return;
-    }
-
-    try {
+  // 使用 useMutation 來做「退出行程」的操作
+  const deleteTripMutation = useMutation({
+    // 定義要呼叫的函式
+    mutationFn: async (id: string) => {
       const response = await fetcher("/api/addactivity/deleteEditor", {
         options: {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ itineraryId }),
+          body: JSON.stringify({ itineraryId: id }),
         },
       });
 
       if (!response.ok) {
         throw new Error(`Failed to delete trip: ${response.statusText}`);
       }
-
+    },
+    // 成功後要做的事
+    onSuccess: () => {
       alert("退出行程成功！");
-      onClose(); // 關閉彈窗
-      //navigate("/my-trip"); // 返回儀表板
-      window.location.reload();  // 重新整理
-    } catch (error) {
+      onClose();           // 關閉彈窗
+      window.location.reload();  // 重新整理頁面
+    },
+    // 失敗時要做的事
+    onError: (error) => {
       console.error("Error deleting trip:", error);
       alert("退出行程時出現問題，請稍後再試！");
+    },
+  });
+
+  // 點擊確定退出時，判斷是否有登入，若有則執行 mutation
+  const handleDeleteTrip = () => {
+    if (!auth?.user) {
+      navigate("/sign-in");
+      return;
     }
+    deleteTripMutation.mutate(itineraryId);
   };
 
   return (
@@ -69,17 +78,13 @@ export const DeleteTripModal: FC<DeleteTripModalProps> = ({
             gap: "10px",
           }}
         >
-          <button
-            className="cancel-button"
-            type="button"
-            onClick={onClose}
-          >
+          <button className="cancel-button" type="button" onClick={onClose}>
             取消
           </button>
           <button
             className="confirm-delete-button"
             type="button"
-            onClick={deleteTrip} // 確定刪除
+            onClick={handleDeleteTrip}
           >
             確定
           </button>

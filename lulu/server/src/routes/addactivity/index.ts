@@ -620,81 +620,88 @@ router.post("/creatTrip", requireAuth, async (req, res) => {
 });
 
 // 刪除行程中的使用者編輯權限
+// @ts-ignore
 router.post("/deleteEditor", requireAuth, async (req, res) => {
   try {
-    const { itineraryId } = req.body; // 從前端取得行程 ID
-
+    const { itineraryId } = req.body;
     if (!itineraryId) {
-      throw new BadRequestError("Missing itinerary id");
+      // 400 Bad Request
+      return res.status(400).json({ error: "Missing itineraryId" });
     }
 
-    const userId = req.user?.id; // 從請求中取得使用者 ID
-
+    // 取出使用者 ID
+    const userId = req.user?.id;
     if (!userId) {
-      throw new Error("Unauthorized user");
+      // 401 Unauthorized
+      return res.status(401).json({ error: "Unauthorized user" });
     }
 
-    // 從資料庫查找行程
-    const itinerary = await db
+    // 查詢行程
+    const itineraryRecords = await db
       .select()
       .from(itineraries)
       .where(eq(itineraries.id, itineraryId))
       .limit(1);
 
-    if (itinerary.length === 0) {
-      throw new Error("Itinerary not found");
+    if (itineraryRecords.length === 0) {
+      // 404 Not Found
+      return res.status(404).json({ error: "Itinerary not found" });
     }
 
-    const firstItinerary = itinerary[0];
-    const allowedEditors = firstItinerary!.allowedEditors;
-    const itineraryOwner = firstItinerary!.userId;
+    const itinerary = itineraryRecords[0];
+    // @ts-ignore
+    const { allowedEditors, userId: itineraryOwner } = itinerary;
 
+    // 檢查 allowedEditors 格式是否正確
     if (!Array.isArray(allowedEditors)) {
-      throw new Error("Invalid allowedEditors format");
+      return res.status(500).json({ error: "Invalid allowedEditors format" });
     }
 
+    // 檢查該使用者是否在 allowedEditors 內
     if (!allowedEditors.includes(userId)) {
-      throw new Error("User is not in the allowedEditors list");
+      // 403 Forbidden
+      return res.status(403).json({ error: "User is not in the allowedEditors list" });
     }
 
-    // 移除 allowedEditors 中的該使用者 ID
+    // 先把使用者從 allowedEditors 中移除
     const updatedEditors = allowedEditors.filter((editor) => editor !== userId);
 
-    // 如果 userId 等於行程擁有者，嘗試替換 ownerId
-    let updatedOwnerId: string | null | undefined = itineraryOwner;
+    // 如果使用者是行程擁有者
     if (itineraryOwner === userId) {
-      if (updatedEditors.length > 0) {
-
-        // 將 userId 替換為 allowedEditors 中的第一個使用者 ID
-        if (Array.isArray(updatedEditors) && updatedEditors.length > 0) {
-          updatedOwnerId = updatedEditors[0];
-          console.log('Updated owner ID successfully:', updatedOwnerId);
-        } else {
-            console.error('Updated owner ID failed: ', updatedOwnerId);
-        }
-
-        // 更新資料庫中的 allowedEditors
-        await db
-        .update(itineraries)
-        .set({
-            userId: updatedOwnerId,
-            allowedEditors: updatedEditors,
-        })
-        .where(eq(itineraries.id, itineraryId));
-        res.status(200).json({ message: "Editor removed successfully" });
-
+      // 如果更新後沒有其他編輯者，直接刪除整筆行程
+      if (updatedEditors.length === 0) {
+        await db.delete(itineraries).where(eq(itineraries.id, itineraryId));
+        return res.status(200).json({ message: "Itinerary deleted successfully" });
       } else {
-        // 如果沒有其他編輯者，刪除資料庫中的這筆資料
-        await db
-          .delete(itineraries)
-          .where(eq(itineraries.id, itineraryId));
-        res.status(200).json({ message: "Itinerary deleted successfully" });
-      }
-    }
+        // 若還有編輯者存在，就把第一位編輯者升級為新擁有者
+        const newOwnerId = updatedEditors[0];
 
+        // 更新行程的擁有者與 allowedEditors
+        await db
+          .update(itineraries)
+          .set({
+            userId: newOwnerId,
+            allowedEditors: updatedEditors,
+          })
+          .where(eq(itineraries.id, itineraryId));
+
+        return res.status(200).json({
+          message: "Editor removed and owner transferred successfully",
+        });
+      }
+    } else {
+      // 如果使用者不是行程擁有者，就只需要更新 allowedEditors
+      await db
+        .update(itineraries)
+        .set({ allowedEditors: updatedEditors })
+        .where(eq(itineraries.id, itineraryId));
+
+      return res.status(200).json({ message: "Editor removed successfully" });
+    }
   } catch (error) {
     console.error("Error removing editor:", error);
-    res.status(500).json({ error: "Internal Server Error" });
+    // 500 Internal Server Error
+    return res.status(500).json({ error: "Internal Server Error" });
   }
 });
 
