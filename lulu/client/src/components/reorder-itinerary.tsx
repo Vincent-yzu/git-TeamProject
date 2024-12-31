@@ -174,6 +174,9 @@ const ReorderItinerary = () => {
           newDays[updatedActivities.dayIndex] = updatedActivities.activities
           return newDays
         })
+        if (updatedActivities.dayIndex == parseInt(selectedDayIndex, 10)) {
+          setCurrentActivities(updatedActivities.activities)  // 更新圖標順序 (直接把handleLoadMap加在這裡會跳錯誤)
+        }
       }
     )
 
@@ -191,6 +194,15 @@ const ReorderItinerary = () => {
         }
         return newDays
       })
+      setCurrentActivities((prev) => {
+        let newActivities = [...prev]
+        if (newActivities) {
+          newActivities = newActivities.filter(
+            (activity) => activity.id !== data.activityId
+          )
+        }
+        return newActivities
+      })  // 更新圖標順序 (直接把handleLoadMap加在這裡會跳錯誤)
     })
 
     // 監聽: 編輯備註
@@ -308,6 +320,9 @@ const ReorderItinerary = () => {
       }
       const data = await response.json()
       console.log("Mails saved successfully:", data)
+
+      // 更新圖標順序
+      handleLoadMap()
     } catch (error) {
       console.error("Error saving mails:", error)
     }
@@ -354,6 +369,17 @@ const ReorderItinerary = () => {
         )
         return newDays
       })
+
+      // 更新圖標順序
+      setCurrentActivities((prev) => {
+        let newActivities = [...prev]
+        if (newActivities) {
+          newActivities = newActivities.filter(
+            (activity) => activity.id !== activityId
+          )
+        }
+        return newActivities
+      })  // 更新圖標順序 (直接把handleLoadMap加在這裡會跳錯誤)
     } catch (error) {
       console.error("Error deleting trip:", error)
     }

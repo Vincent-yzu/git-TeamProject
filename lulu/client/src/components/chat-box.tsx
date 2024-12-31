@@ -19,6 +19,7 @@ import {
 } from "@/components/ui/dialog"
 import { Input } from "@/components/ui/input"
 import { ScrollArea } from "@/components/ui/scroll-area"
+import { useMapContext } from "./MapContext"; // 引入 Context
 
 dayjs.extend(relativeTime)
 
@@ -49,6 +50,10 @@ function ChatBox() {
   const [isChatOpen, setIsChatOpen] = useState(false)
   // 4) 是否有新訊息 (小紅標)
   const [hasNewMessage, setHasNewMessage] = useState(false)
+  // MapContext
+    const { 
+      setCallCloseDetail,
+    } = useMapContext()
 
   const socketRef = useRef<Socket | null>(null)
   const { data: auth } = useAuth()
@@ -151,6 +156,10 @@ function ChatBox() {
     setIsChatOpen(true)
     // 清除小紅標
     setHasNewMessage(false)
+    // 關閉詳細資訊
+    setCallCloseDetail(() => () => {
+      console.log('Close Detail!');
+    })
   }
 
   if (!auth?.user) return null
