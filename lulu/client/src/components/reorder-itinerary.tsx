@@ -69,6 +69,7 @@ const ReorderItinerary = () => {
     setSelectedPlace, 
     setZoomLevel,
     setCallCloseDetail,
+    currentActivities: contextCurrentActivities,
     setCurrentActivities 
   } = useMapContext()
 
@@ -85,6 +86,7 @@ const ReorderItinerary = () => {
   const [noteValue, setNoteValue] = useState<string>("")
   const [isPopupOpen, setIsPopupOpen] = useState<boolean>(false)
   const [descriptionActivityId, setDescriptionActivityId] = useState<string | null>(null)
+  const [isNotePopupOpen, setIsNotePopupOpen] = useState<boolean>(false);
 
   // 停留時間
   const [isDurationPopupOpen, setIsDurationPopupOpen] = useState<boolean>(false)
@@ -98,6 +100,36 @@ const ReorderItinerary = () => {
 
   // 節流用
   const timeoutRef = useRef<NodeJS.Timeout | null>(null)
+
+  // 當 contextCurrentActivities 改變時，更新 daysActivities 中當前天數 (currentDayIndex) 的活動的 recommendDuration
+  useEffect(() => {
+    const durations = contextCurrentActivities?.map((act) => {
+      return act.recommendDuration;
+    });
+
+    if(!durations) return;
+
+    daysActivities[currentDayIndex]?.forEach((act, idx) => {
+      act.recommendDuration = durations[idx];
+    });
+
+    setDaysActivities(JSON.parse(JSON.stringify(daysActivities)));
+  }, [contextCurrentActivities]);
+
+  // 當 contextCurrentActivities 改變時，更新 daysActivities 中當前天數 (currentDayIndex) 的活動的 note
+  useEffect(() => {
+    const notes = contextCurrentActivities?.map((act) => {
+      return act.note;
+    });
+
+    if(!notes) return;
+
+    daysActivities[currentDayIndex]?.forEach((act, idx) => {
+      act.note = notes[idx];
+    });
+
+    setDaysActivities(JSON.parse(JSON.stringify(daysActivities)));
+  }, [contextCurrentActivities]);
 
   useEffect(() => {
     if (itinerary && itinerary.days && itinerary.days.length > 0) {
@@ -333,7 +365,7 @@ const ReorderItinerary = () => {
   const handleNoteClick = (activityId: string, note: string) => {
     setEditingNoteId(activityId)
     setNoteValue(note)
-    setIsPopupOpen(true)
+    setIsNotePopupOpen(true)
     setCallCloseDetail(() => () => {
       console.log('Close Detail!');
     })
@@ -375,11 +407,13 @@ const ReorderItinerary = () => {
         const newDays = [...prev]
         newDays[currentDayIndex] = newDays[currentDayIndex].map((activity) =>
           activity.id === editingNoteId ? { ...activity, note: noteValue } : activity
-        )
+        ) as Itinerary["days"][number]["activities"]
         return newDays
       })
 
-      setIsPopupOpen(false)
+      setIsNotePopupOpen(false)
+      // updateActivityInDays(editingNoteId, { note: noteValue });
+      // setIsPopupOpen(false); // Close the popup
       setEditingNoteId(null)
     } catch (error) {
       console.error("Error updating note:", error)
@@ -387,16 +421,16 @@ const ReorderItinerary = () => {
   }
 
   const handleNoteCancel = () => {
-    setIsPopupOpen(false)
+    setIsNotePopupOpen(false)
     setEditingNoteId(null)
   }
 
   /**
    * 顯示 / 收合說明
    */
-  const toggleDescription = (activityId: string) => {
-    setDescriptionActivityId((prevId) => (prevId === activityId ? null : activityId))
-  }
+  // const toggleDescription = (activityId: string) => {
+  //   setDescriptionActivityId((prevId) => (prevId === activityId ? null : activityId))
+  // }
 
   // 停留時間
   const handleDurationClick = (activityId: string, duration: number) => {
@@ -411,6 +445,8 @@ const ReorderItinerary = () => {
     if (!editingDurationActivityId) return
     await handleRecommendDurationChange(editingDurationActivityId, newDuration)
     setIsDurationPopupOpen(false)
+    // updateActivityInDays(editingDurationActivityId, { recommendDuration: newDuration });
+    setIsDurationPopupOpen(false); // Close the popup  // Merge到一半我發現ui的這邊多了一行重複的 不知道有沒有功能(?
   }
 
   const handleRecommendDurationChange = async (activityId: string, newDuration: number) => {
@@ -465,6 +501,7 @@ const ReorderItinerary = () => {
     if (!editingTravelTimeActivityId) return
     await handleCommutingTimeChange(editingTravelTimeActivityId, newTravelTime)
     setIsTravelTimePopupOpen(false)
+    setIsTravelTimePopupOpen(false); // Close the popup  // Merge到一半我發現ui的這邊多了一行重複的 不知道有沒有功能(?
   }
 
   const handleCommutingTimeChange = async (activityId: string, newCommutingTime: number) => {
@@ -566,18 +603,22 @@ const ReorderItinerary = () => {
   const formatDuration = (minutes: number) => {
     const hours = Math.floor(minutes / 60)
     const remainingMinutes = minutes % 60
-    return `${hours > 0 ? `${hours} hr ` : ""}${remainingMinutes} mins`
+    return `${hours > 0 ? `${hours} 小時 ` : ""}${remainingMinutes} 分鐘`
   }
   
   return (
     <div ref={containerRef} className="p-2 flex flex-col h-full">
-      <h2 className="text-xl font-bold mb-1">Itinerary: {itinerary.location}</h2>
-      <p className="text-sm font-semibold text-gray-600 mb-1">
-        {itinerary.description}
-      </p>
+      <div className="bg-gray-200 p-4">
+        <h2 className="text-xl font-bold mb-2">
+          {itinerary.description}
+        </h2>
+        <p className="text-base font-semibold text-gray-600">
+          地點: {itinerary.location}
+        </p>
+      </div>
 
       {/* 選擇 Day */}
-      <div className="flex space-x-2 mb-1">
+      <div className="flex space-x-2 mb-2 overflow-x-auto scrollbar-hide whitespace-nowrap bg-gray-100 p-2">
         {itinerary.days.map((_, index) => (
           <button
             key={index}
@@ -587,11 +628,20 @@ const ReorderItinerary = () => {
                 ? "bg-blue-500 text-white"
                 : "bg-gray-200 text-gray-700 hover:bg-gray-300"
             }`}
-          >
+              >
             Day {index + 1}
           </button>
         ))}
       </div>
+      <style>{`
+        .overflow-x-auto {
+          -ms-overflow-style: none; /* IE and Edge */
+          scrollbar-width: none; /* Firefox */
+        }
+        .overflow-x-auto::-webkit-scrollbar {
+          display: none; /* Chrome, Safari, and Edge */
+        }
+      `}</style>
 
       {/* 出發時間 */}
       <div className="flex items-center mb-2">
@@ -642,13 +692,13 @@ const ReorderItinerary = () => {
               <div className="mt-auto flex space-x-2 pt-2">
               <button
                 onClick={() => handlePlaceClick(activity)}
-                className={`px-2 py-1 rounded text-xs ${
+                className={`px-2 py-1 rounded text-sm w-20 h-10 ${
                 descriptionActivityId === activity.id
-                  ? "bg-slate-500 text-white hover:bg-slate-600"
-                  : "bg-cyan-700 text-white hover:bg-cyan-800"
+                ? "bg-slate-500 text-white hover:bg-slate-600"
+                : "bg-cyan-700 text-white hover:bg-cyan-800"
                 }`}
               >
-                {descriptionActivityId === activity.id ? "Hide Description" : "Show Description"}
+                {descriptionActivityId === activity.id ? "Hide Description" : "詳細資訊"}
               </button>
 
                 <button
@@ -656,9 +706,9 @@ const ReorderItinerary = () => {
                     e.stopPropagation()
                     handleDeletePlace(activity.id)
                   }}
-                  className="px-2 py-1 rounded text-xs bg-red-500 text-white hover:bg-red-600"
+                  className="px-2 py-1 rounded text-sm bg-red-500 text-white hover:bg-red-600 w-20 h-10"
                 >
-                  Delete!
+                  刪除
                 </button>
               </div>
             </div>
@@ -686,7 +736,7 @@ const ReorderItinerary = () => {
                     handleNoteClick(activity.id, activity.note)
                   }}
                 >
-                  {activity.note ? activity.note.slice(0, 8) + "..." : <span className="underline">Edit Note</span>}
+                  {activity.note ? activity.note.slice(0, 8) + "..." : <span className="underline">編輯個人筆記</span>}
                 </p>
 
                 {/* 停留時間 */}
@@ -748,6 +798,26 @@ const ReorderItinerary = () => {
           onSave={handleCommutingTimeSave}
           onCancel={() => setIsTravelTimePopupOpen(false)}
         />
+      )}
+
+      {isTravelTimePopupOpen && (
+        <TravelTimePopup
+          travelTime={newTravelTime}
+          onTravelTimeChange={setNewTravelTime}
+          onSave={handleCommutingTimeSave}
+          onCancel={() => setIsTravelTimePopupOpen(false)}
+        />
+      )}
+
+      {isNotePopupOpen && (
+        <div style={{ position: "fixed", inset: 0, zIndex: 2000 }}>
+          <NotePopup
+            noteValue={noteValue}
+            onChange={handleNoteChange}
+            onSave={handleNoteSave}
+            onCancel={handleNoteCancel}
+          />
+        </div>
       )}
     </div>
   )

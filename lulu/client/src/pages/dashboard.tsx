@@ -48,7 +48,7 @@ export default function Dashboard() {
         >
           <MapProvider>
             <AppSidebar /> {/*文字搜尋欄在裡面*/}
-            <AttractionDetail /> {/* 景點詳細資訊 */}
+            <AttractionDetail /> {/*景點詳細資訊*/}
             <SidebarInset>
               {/* <header className="sticky top-0 flex shrink-0 items-center gap-2 border-b bg-background p-4">
                 <SidebarTrigger className="-ml-1" />

@@ -202,7 +202,7 @@ const MyTripPage: React.FC = () => {
   return (
     <SidebarProvider>
       <div className="my-trip-page">
-        <header className="header">
+        <header className="header mb-2">
           <button className="logo-button" onClick={handleNavigateToHome}>
             <img src="/img/logl.png" alt="Logo" className="logo-image" />
           </button>
@@ -213,98 +213,85 @@ const MyTripPage: React.FC = () => {
             {auth?.user ? <NavUser user={auth.user} /> : null}
           </div>
         </header>
-        <main className="main-content">
+        <main className="main-content flex flex-col h-full" style={{ backgroundColor: "#f5f5f5" }}>
           <h1 className="page-title">我的行程</h1>
-          <div className="tabs container items-center mx-auto px-4 flex justify-between">
-            <div>
-              <div className="flex items-center gap-4 justify-center">
-                <button
-                  className="create-trip-button"
-                  onClick={handleOpenModal}
-                >
-                  建立新行程
-                </button>
-
-                <ItineraryForm />
-              </div>
-            </div>
+          <div className="flex items-center gap-4">
+            <button className="create-trip-button" onClick={handleOpenModal}>
+              建立新行程
+            </button>
+            <ItineraryForm />
           </div>
-          <div className="container mx-auto px-4">
-            <div className="trip-placeholder">
-              {!itineraries || itineraries.length === 0 ? (
-                <>
-                  <div className="placeholder-image">
-                    <img
-                      src="/img/null.png"
-                      alt="null"
-                      className="null-image"
-                    />
-                  </div>
-                  <p className="placeholder-text">
-                    還沒有行程，現在就開始安排！
-                  </p>
-                </>
-              ) : (
-                <>
-                  <div className="grid grid-cols-3 gap-6">
-                    {itineraries.map((itinerary) => {
-                      return (
-                        <div
-                          key={itinerary.id}  // Add the `key` prop here
-                          className="flex flex-col gap-2 items-center cursor-pointer"
-                          onClick={() => navigate(`/dashboard/${itinerary.id}`)}
-                        >
-                          <div className="relative w-full">
-                            <img
-                              src={
-                                itinerary.days?.[0]?.activities?.[0]
-                                  ?.photoUrls?.[0]
-                              }
-                              alt={
-                                itinerary.days?.[0]?.activities?.[0]?.description
-                              }
-                              className="w-full h-full aspect-video object-cover rounded-md"
-                            />
-                            <button 
-                              className="absolute top-0 right-0 m-2 bg-white p-1 rounded"
-                              onClick={(e) => {
-                                e.stopPropagation()
-                                handleDeleteOpenModal(itinerary.id)
-                              }}
-                            >
-                               X 
-                            </button>
-                            <button
-                              className="absolute top-0 right-6 m-2 bg-white p-1 rounded"
-                              onClick={(e) => {
-                                // TODO: add member logic
-                                console.log("itinerary id is :", itinerary.id)
-                                e.stopPropagation()
-                                handleOpenAddMemberModal(itinerary.id)
-                              }}
-                            >
-                              添加成員
-                            </button>
-                          </div>
-                          <h3 className="text-lg font-semibold">
-                            {itinerary.location +
-                              " " +
-                              ((new Date(itinerary.endDate).getTime() -
-                                new Date(itinerary.startDate).getTime()) /
-                                (1000 * 60 * 60 * 24) +
-                                1) +
-                              "天" +
-                              (new Date(itinerary.endDate).getTime() -
-                                new Date(itinerary.startDate).getTime()) /
-                              (1000 * 60 * 60 * 24) +
-                              "夜之旅"}
-                          </h3>
+          <div className="flex-1 w-full" style={{ backgroundColor: "#f5f5f5" }}>
+            <div className="container mx-auto px-4">
+              <div className="trip-placeholder">
+                {!itineraries || itineraries.length === 0 ? (
+                  <>
+                    <div className="placeholder-image">
+                      <img
+                        src="/img/null.png"
+                        alt="null"
+                        className="null-image"
+                      />
+                    </div>
+                    <p className="placeholder-text">
+                      還沒有行程，現在就開始安排！
+                    </p>
+                  </>
+                ) : (
+                  <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 w-full">
+                    {itineraries.map((itinerary) => (
+                      <div
+                        key={itinerary.id}
+                        className="flex flex-col gap-2 items-center cursor-pointer"
+                        onClick={() => navigate(`/dashboard/${itinerary.id}`)}
+                      >
+                        <div className="relative w-full">
+                          <img
+                            src={itinerary.days?.[0]?.activities?.[0]
+                              ?.photoUrls?.[0]}
+                            alt={
+                              itinerary.days?.[0]?.activities?.[0]?.description
+                            }
+                            className="w-full h-full aspect-video object-cover rounded-md"
+                          />
+                          <button
+                            className="absolute top-0 right-0 m-2 bg-white p-1 rounded"
+                            onClick={(e) => {
+                              e.stopPropagation()
+                              handleDeleteOpenModal(itinerary.id)
+                            }}
+                          >
+                            X
+                          </button>
+                          <button
+                            className="absolute top-0 right-6 m-2 bg-white p-1 rounded"
+                            onClick={(e) => {
+                              // TODO: add member logic
+                              console.log("itinerary id is :", itinerary.id)
+                              e.stopPropagation()
+                              handleOpenAddMemberModal(itinerary.id)
+                            }}
+                          >
+                            添加成員
+                          </button>
                         </div>
-                      )
-                    })}
+                        <h3 className="text-lg font-semibold">
+                          {itinerary.location +
+                            " " +
+                            ((new Date(itinerary.endDate).getTime() -
+                              new Date(itinerary.startDate).getTime()) /
+                              (1000 * 60 * 60 * 24) +
+                              1) +
+                            "天" +
+                            (new Date(itinerary.endDate).getTime() - new Date(itinerary.startDate).getTime()) /
+                            (1000 * 60 * 60 * 24) +
+                            "夜之旅"}
+                        </h3>
+                      </div>
+                    ))}
                   </div>
-                </>
-              )}
+                )}
+              </div>
             </div>
           </div>
         </main>

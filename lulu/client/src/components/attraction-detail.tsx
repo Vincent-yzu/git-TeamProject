@@ -1,6 +1,8 @@
 import React, { useState, useEffect, useContext, useRef } from "react";
 import { useMapContext } from "./MapContext"; // 引入 Context
-import { useParams } from "react-router-dom"
+import { useParams } from "react-router-dom";
+import DurationPopup from "./DurationPopup"; // 引入 DurationPopup
+import NotePopup from "./NotePopup"; // 引入 NotePopup
 // 假設您有一個自訂的 socket context 或在任何地方能取得 socketRef
 import { io, Socket } from "socket.io-client";
 
@@ -19,16 +21,24 @@ interface Place {
   };
   icon: string;
   description: string;
+  recommendDuration: number;
+  note: string;
   // 根據需要添加其他欄位
 }
 
 export const AttractionDetail = () => {
-  const { selectedPlace } = useMapContext(); // 從 Context 中取用 `selectedPlace`
-  const { heyUpdateData, setHeyUpdateData } = useMapContext(); // 從 Context 中取用 `heyUpdateData`
-  const {selectedDayIndex} = useMapContext(); // 從 Context 中取用 `selectedDayIndex`
-  const { id } = useParams()
-  const [isVisible, setIsVisible] = useState(false); // 控制容器顯示/隱藏的狀態
+  const { selectedPlace, setSelectedPlace } = useMapContext();
+  const { heyUpdateData, setHeyUpdateData } = useMapContext();
+  const { selectedDayIndex } = useMapContext(); 
+  const { id } = useParams();
+  const [isVisible, setIsVisible] = useState(false);
   const { callCloseDetail } = useMapContext();
+  const [isDurationPopupOpen, setIsDurationPopupOpen] = useState<boolean>(false);
+  const [newDuration, setNewDuration] = useState<number>(0);
+  const [isNotePopupOpen, setIsNotePopupOpen] = useState<boolean>(false);
+  const [noteValue, setNoteValue] = useState<string>("");
+  const socketRef = useMapContext(); // 引入 socketRef
+  const {currentActivities, setCurrentActivities} = useMapContext();
   const socketRef = useRef<Socket | null>(null)
 
   // Update visibility when selectedPlace changes
@@ -102,6 +112,112 @@ export const AttractionDetail = () => {
     });
   };
 
+  const handleDurationClick = (duration: number) => {
+    setNewDuration(duration);
+    setIsDurationPopupOpen(true);
+  };
+
+  const handleDurationSave = async () => {
+    if (selectedPlace) {
+      const updatedPlace = { ...selectedPlace, recommendDuration: newDuration };
+      setSelectedPlace(updatedPlace);
+
+      const updatedNote = {
+        itineraryId: id, // 替換為實際的 id 值
+        curDays: selectedDayIndex, // 替換為實際的 days 值
+        place: { activityId: selectedPlace.place_id, recommendDuration: newDuration },
+      };
+
+      // update to DataBase
+      const response = await fetch(`${BACKEND_URL}/api/addactivity/updateDuration`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(updatedNote),
+      });
+
+      if (!response.ok) {
+        throw new Error(`Failed to update duration: ${response.statusText}`);
+      }
+
+      // Emit socket event
+      socketRef.current?.emit("update_duration", {
+        roomId: id,
+        dayIndex: selectedDayIndex,
+        activityId: selectedPlace.place_id,
+        recommendDuration: newDuration,
+      });
+
+      currentActivities?.find((activity) => {
+        if (activity.id === selectedPlace.place_id) {
+          activity.recommendDuration = newDuration;
+        }
+      });
+      setCurrentActivities(JSON.parse(JSON.stringify(currentActivities)));
+      setIsDurationPopupOpen(false);
+    }
+  };
+
+  const handleDurationCancel = () => {
+    setIsDurationPopupOpen(false);
+  };
+
+  const handleNoteClick = (note: string) => {
+    setNoteValue(note);
+    setIsNotePopupOpen(true);
+  };
+
+  const handleNoteChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    setNoteValue(e.target.value);
+  };
+
+  const handleNoteSave = async () => {
+    if (selectedPlace) {
+      const updatedPlace = { ...selectedPlace, note: noteValue };
+      setSelectedPlace(updatedPlace);
+
+      const updatedNote = {
+        itineraryId: id, // 替換為實際的 id 值
+        curDays: selectedDayIndex, // 替換為實際的 days 值
+        place: { activityId: selectedPlace.place_id, note: noteValue },
+      };
+
+      // update to DataBase
+      const response = await fetch(`${BACKEND_URL}/api/addactivity/updateNote`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(updatedNote),
+      });
+
+      if (!response.ok) {
+        throw new Error(`Failed to update note: ${response.statusText}`);
+      }
+
+      // Emit socket event
+      socketRef.current?.emit("update_note", {
+        roomId: id,
+        dayIndex: selectedDayIndex,
+        activityId: selectedPlace.place_id,
+        note: noteValue,
+      });
+
+      currentActivities?.find((activity) => {
+        if (activity.id === selectedPlace.place_id) {
+          activity.note = noteValue;
+        }
+      });
+      setCurrentActivities(JSON.parse(JSON.stringify(currentActivities)));
+      setIsNotePopupOpen(false);
+    }
+  };
+
+  const handleNoteCancel = () => {
+    setIsNotePopupOpen(false);
+  };
+
   // 如果 selectedPlace 為 null 或 undefined，則返回 null
   if (!selectedPlace) return null;
 
@@ -112,7 +228,7 @@ export const AttractionDetail = () => {
   const formatDuration = (minutes: number) => {
     const hours = Math.floor(minutes / 60)
     const remainingMinutes = minutes % 60
-    return `${hours > 0 ? `${hours} hr ` : ""}${remainingMinutes} mins`
+    return `${hours > 0 ? `${hours} 小時 ` : ""}${remainingMinutes} 分鐘`
   }
 
   return (
@@ -124,7 +240,9 @@ export const AttractionDetail = () => {
         left: '10px',
         width: 'calc(100vw - 20px)', // Adjust width based on viewport size
         maxWidth: '400px', // Set a max width to prevent it from getting too large
-        zIndex: 1000
+        zIndex: 1000,
+        overflowY: "auto", // Make the container scrollable
+        maxHeight: "90vh", // Set a max height to prevent it from getting too large
       }}>
         {/* "X" 按鈕 */}
         <button
@@ -155,21 +273,22 @@ export const AttractionDetail = () => {
           {selectedPlace.formatted_address}
         </p>
         {selectedPlace.recommendDuration !== 20241225 && (
-          <p style={styles.address}>
+          <p
+            style={styles.address}
+            onClick={() => handleDurationClick(selectedPlace.recommendDuration)}
+            className="cursor-pointer underline"
+          >
             <strong>⏳ 停留時間:</strong>
             <br />
             {selectedPlace.recommendDuration > 0 ? formatDuration(selectedPlace.recommendDuration) : "停留時間不可以小於0喔！ 😊"}
           </p>
         )}
-        {/* {selectedPlace.commutingTime !== 20241225 && (
-          <p style={styles.address}>
-            <strong>🚗 通勤時間:</strong>
-            <br />
-            {selectedPlace.commutingTime > 0 ? formatDuration(selectedPlace.commutingTime) : "通勤時間不可以小於0喔！ 😊"}
-          </p>
-        )} */}
         {selectedPlace.note !== "預設的神奇空值" && (
-          <p style={styles.address}>
+          <p
+            style={styles.address}
+            onClick={() => handleNoteClick(selectedPlace.note)}
+            className="cursor-pointer underline"
+          >
             <strong>💡 個人筆記:</strong>
             <br />
             {selectedPlace.note ? selectedPlace.note : "您可以在此處撰寫備註，方便記錄您的想法或重要資訊哦！ 😊"}
@@ -200,6 +319,28 @@ export const AttractionDetail = () => {
           ➕ Add to Trips
         </button>
       </div>
+
+      {isDurationPopupOpen && (
+        <div style={{ position: "fixed", inset: 0, zIndex: 2000 }}>
+          <DurationPopup
+            duration={newDuration}
+            onDurationChange={setNewDuration}
+            onSave={handleDurationSave}
+            onCancel={handleDurationCancel}
+          />
+        </div>
+      )}
+
+      {isNotePopupOpen && (
+        <div style={{ position: "fixed", inset: 0, zIndex: 2000 }}>
+          <NotePopup
+            noteValue={noteValue}
+            onChange={handleNoteChange}
+            onSave={handleNoteSave}
+            onCancel={handleNoteCancel}
+          />
+        </div>
+      )}
     </div>
   );
 };
