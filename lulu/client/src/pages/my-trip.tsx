@@ -418,7 +418,6 @@ const MyTripPage: React.FC = () => {
                 <li>
                   <button 
                     className="option-button"
-                    // TODO: add recommended trip
                     onClick={() => handleRecommendedTrip.mutate({ itineraryId: '3ASFvu7DZcYTwrvzNV8Hk', userID: auth.user.id })}
                   >
                     <img
@@ -430,43 +429,55 @@ const MyTripPage: React.FC = () => {
                   </button>
                 </li>
                 <li>
-                  <button className="option-button">
+                  <button 
+                    className="option-button"
+                    onClick={() => handleRecommendedTrip.mutate({ itineraryId: 'w7Qd27jeIab5Tn35njTah', userID: auth.user.id })}
+                  >
                     <img
                       src="/img/sample2.png"
                       alt="Sample 2"
                       className="option-icon"
                     />
-                    <span>蘭嶼海龜共游潛水套裝五天四夜</span>
+                    <span>台北一日遊</span>
                   </button>
                 </li>
                 <li>
-                  <button className="option-button">
+                  <button 
+                    className="option-button"
+                    onClick={() => handleRecommendedTrip.mutate({ itineraryId: 'zISq8OjOoFtM0wsqjZ4K6', userID: auth.user.id })}
+                  >
                     <img
                       src="/img/sample3.png"
                       alt="Sample 3"
                       className="option-icon"
                     />
-                    <span>京阪良六天五夜自由行</span>
+                    <span>東京二日遊</span>
                   </button>
                 </li>
                 <li>
-                  <button className="option-button">
+                  <button 
+                    className="option-button"
+                    onClick={() => handleRecommendedTrip.mutate({ itineraryId: 'V6WniSCWin1XxP9D1yXlL', userID: auth.user.id })}
+                  >
                     <img
                       src="/img/sample4.png"
                       alt="Sample 4"
                       className="option-icon"
                     />
-                    <span>首爾私房景點四天三夜</span>
+                    <span>新加坡一日遊</span>
                   </button>
                 </li>
                 <li>
-                  <button className="option-button">
+                  <button 
+                    className="option-button"
+                    onClick={() => handleRecommendedTrip.mutate({ itineraryId: 'WnS2QZY4HDfDkLlwj-MFO', userID: auth.user.id })}
+                  >
                     <img
                       src="/img/sample5.png"
                       alt="Sample 5"
                       className="option-icon"
                     />
-                    <span>曼谷嗨翻天五天四夜自由行</span>
+                    <span>京都二日遊</span>
                   </button>
                 </li>
               </ul>
