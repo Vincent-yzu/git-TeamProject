@@ -13,6 +13,11 @@ import { NavUser } from "@/components/nav-user"
 import { CreateTripModal } from "@/components/create-trip-modal"
 import { DeleteTripModal } from "@/components/delete-trip"
 
+import { useMutation } from "@tanstack/react-query";
+// import { toast } from 'react-toastify';
+import { useToast } from "@/hooks/use-toast"
+import { useQueryClient } from "@tanstack/react-query";
+
 const MyTripPage: React.FC = () => {
   const { data: auth } = useAuth()
   const navigate = useNavigate()
@@ -122,8 +127,6 @@ const MyTripPage: React.FC = () => {
       console.error('Error finding userID:', error);
     }  
 
-    // TODO: add userID to itinerary
-
     // try {
     //   const response = await fetch(`/api/itineraries/${selectedItineraryId}`, {
     //     method: 'POST',
@@ -144,6 +147,93 @@ const MyTripPage: React.FC = () => {
     setAddMemberModalOpen(false)
     
   }
+
+  // TODO:
+  const { toast } = useToast();
+  const queryClient = useQueryClient();
+  const handleRecommendedTrip = useMutation({
+    
+    mutationFn: async (variables: { itineraryId: string, userID: string }) => {
+      try {
+        const response = await fetcher(`/api/itinerary/recommended/${variables.itineraryId}/${variables.userID}`, {
+          options: {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+          }
+        });
+        if (!response.ok) {
+          console.log('QQQQQQQQ Failed to recommend trip');
+          throw new Error('Failed to recommend trip');
+        } else {
+          console.log('QQQQQQQQ Successfully recommend trip');
+          // return response.json();
+        }
+        return response.json();
+      } catch (error) {
+        throw new Error(error.message || 'Error adding recommended trip');
+      }
+    },
+    onSuccess: async (data) => {
+      if (data.success) {
+        toast({
+          title: "Recommended Trip Added Successfully!",
+          description: "You can now access the recommended itinerary.",
+        });
+        
+        if (data.itineraryId) {
+          // Wait for queries to invalidate
+          await Promise.all([
+            queryClient.invalidateQueries({ queryKey: ['itinerary', data.itineraryId] }),
+            queryClient.invalidateQueries({ queryKey: ['user', data.userID] })
+          ]);
+          
+          // Small delay to ensure everything is updated
+          setTimeout(() => {
+            navigate(`/dashboard/${data.itineraryId}`);
+          }, 100);
+        }
+      }
+    },
+    onError: (error) => {
+      toast({
+        title: "Something went wrong.",
+        description: error.message || "Please try again.",
+      });
+    },
+  });
+  // const handleRecommendedTrip = async (itineraryId: string, userID: string) => {
+  //   // const queryClient = useQueryClient();
+  //   try {
+  //     console.log(itineraryId, userID);
+  //     const response = await fetcher(`/api/itinerary/recommended/${itineraryId}/${userID}`, {
+  //       options: {
+  //         method: 'POST',
+  //         headers: { 'Content-Type': 'application/json' },
+  //       }
+  //     });
+  //     if (!response.ok) {
+  //       const errorText = await response.text();
+  //       console.error('Failed to recommend trip:', errorText);
+  //       alert('Failed to recommend trip: ' + errorText);
+  //       return;
+  //     }
+  //     const result = await response.json();
+  //     if (result.success) {
+  //       console.log('Adding recommended trip successfully');
+  //       alert('Adding recommended trip successfully');
+  //       // Invalidate the relevant queries
+  //       // queryClient.invalidateQueries({ queryKey: ['itinerary', itineraryId] });
+  //       // queryClient.invalidateQueries({ queryKey: ['user', userID] });
+  //       navigate(`/dashboard/${itineraryId}`);
+  //     } else {
+  //       console.error('Failed to add recommend trip:', result.message);
+  //       alert('Failed to add recommend trip');
+  //     }
+  //   } catch (error) {
+  //     console.error('Error adding recommending trip:', error);
+  //     alert('Error adding recommending trip');
+  //   }
+  // }
 
   const handleConfirmTrip = async () => {
     // navigate("/dashboard") // 無論如何，先跳轉至 Dashboard 頁面
@@ -215,83 +305,94 @@ const MyTripPage: React.FC = () => {
         </header>
         <main className="main-content flex flex-col h-full" style={{ backgroundColor: "#f5f5f5" }}>
           <h1 className="page-title">我的行程</h1>
-          <div className="flex items-center gap-4">
-            <button className="create-trip-button" onClick={handleOpenModal}>
-              建立新行程
-            </button>
-            <ItineraryForm />
-          </div>
-          <div className="flex-1 w-full" style={{ backgroundColor: "#f5f5f5" }}>
-            <div className="container mx-auto px-4">
-              <div className="trip-placeholder">
-                {!itineraries || itineraries.length === 0 ? (
-                  <>
-                    <div className="placeholder-image">
-                      <img
-                        src="/img/null.png"
-                        alt="null"
-                        className="null-image"
-                      />
-                    </div>
-                    <p className="placeholder-text">
-                      還沒有行程，現在就開始安排！
-                    </p>
-                  </>
-                ) : (
-                  <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 w-full">
-                    {itineraries.map((itinerary) => (
-                      <div
-                        key={itinerary.id}
-                        className="flex flex-col gap-2 items-center cursor-pointer"
-                        onClick={() => navigate(`/dashboard/${itinerary.id}`)}
-                      >
-                        <div className="relative w-full">
-                          <img
-                            src={itinerary.days?.[0]?.activities?.[0]
-                              ?.photoUrls?.[0]}
-                            alt={
-                              itinerary.days?.[0]?.activities?.[0]?.description
-                            }
-                            className="w-full h-full aspect-video object-cover rounded-md"
-                          />
-                          <button
-                            className="absolute top-0 right-0 m-2 bg-white p-1 rounded"
-                            onClick={(e) => {
-                              e.stopPropagation()
-                              handleDeleteOpenModal(itinerary.id)
-                            }}
-                          >
-                            X
-                          </button>
-                          <button
-                            className="absolute top-0 right-6 m-2 bg-white p-1 rounded"
-                            onClick={(e) => {
-                              // TODO: add member logic
-                              console.log("itinerary id is :", itinerary.id)
-                              e.stopPropagation()
-                              handleOpenAddMemberModal(itinerary.id)
-                            }}
-                          >
-                            添加成員
-                          </button>
-                        </div>
-                        <h3 className="text-lg font-semibold">
-                          {itinerary.location +
-                            " " +
-                            ((new Date(itinerary.endDate).getTime() -
-                              new Date(itinerary.startDate).getTime()) /
-                              (1000 * 60 * 60 * 24) +
-                              1) +
-                            "天" +
-                            (new Date(itinerary.endDate).getTime() - new Date(itinerary.startDate).getTime()) /
-                            (1000 * 60 * 60 * 24) +
-                            "夜之旅"}
-                        </h3>
-                      </div>
-                    ))}
-                  </div>
-                )}
+          <div className="tabs container items-center mx-auto px-4 flex justify-between">
+            <div>
+              <div className="flex items-center gap-4 justify-center">
+                <button
+                  className="create-trip-button"
+                  onClick={handleOpenModal}
+                >
+                  建立新行程
+                </button>
+                <ItineraryForm />
               </div>
+              </div>
+          </div>
+          <div className="container mx-auto px-4">
+            <div className="trip-placeholder">
+              {!itineraries || itineraries.length === 0 ? (
+                <>
+                  <div className="placeholder-image">
+                    <img
+                      src="/img/null.png"
+                      alt="null"
+                      className="null-image"
+                    />
+                  </div>
+                  <p className="placeholder-text">
+                    還沒有行程，現在就開始安排！
+                  </p>
+                </>
+              ) : (
+                <>
+                  <div className="grid grid-cols-3 gap-6">
+                    {itineraries.map((itinerary) => {
+                      return (
+                        <div
+                          key={itinerary.id}  // Add the `key` prop here
+                          className="flex flex-col gap-2 items-center cursor-pointer"
+                          onClick={() => navigate(`/dashboard/${itinerary.id}`)}
+                        >
+                          <div className="relative w-full">
+                            <img
+                              src={
+                                itinerary.days?.[0]?.activities?.[0]
+                                  ?.photoUrls?.[0]
+                              }
+                              alt={
+                                itinerary.days?.[0]?.activities?.[0]?.description
+                              }
+                              className="w-full h-full aspect-video object-cover rounded-md"
+                            />
+                            <button
+                              className="absolute top-0 right-0 m-2 bg-white p-1 rounded"
+                              onClick={(e) => {
+                                e.stopPropagation()
+                                handleDeleteOpenModal(itinerary.id)
+                              }}
+                            >
+                               X
+                            </button>
+                            <button
+                              className="absolute top-0 right-6 m-2 bg-white p-1 rounded"
+                              onClick={(e) => {
+                                console.log("itinerary id is :", itinerary.id)
+                                e.stopPropagation()
+                                handleOpenAddMemberModal(itinerary.id)
+                              }}
+                            >
+                              添加成員
+                            </button>
+                          </div>
+                          <h3 className="text-lg font-semibold">
+                            {itinerary.location +
+                              " " +
+                              ((new Date(itinerary.endDate).getTime() -
+                                new Date(itinerary.startDate).getTime()) /
+                                (1000 * 60 * 60 * 24) +
+                                1) +
+                              "天" +
+                              (new Date(itinerary.endDate).getTime() -
+                                new Date(itinerary.startDate).getTime()) /
+                              (1000 * 60 * 60 * 24) +
+                              "夜之旅"}
+                          </h3>
+                        </div>
+                      )
+                    })}
+                  </div>
+                </>
+              )}
             </div>
           </div>
         </main>
@@ -315,13 +416,17 @@ const MyTripPage: React.FC = () => {
                   </button>
                 </li>
                 <li>
-                  <button className="option-button">
+                  <button 
+                    className="option-button"
+                    // TODO: add recommended trip
+                    onClick={() => handleRecommendedTrip.mutate({ itineraryId: '3ASFvu7DZcYTwrvzNV8Hk', userID: auth.user.id })}
+                  >
                     <img
                       src="/img/sample1.png"
                       alt="Sample 1"
                       className="option-icon"
                     />
-                    <span>宜蘭上下海三天兩夜</span>
+                    <span>美國德州三天兩夜</span>
                   </button>
                 </li>
                 <li>

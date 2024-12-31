@@ -72,7 +72,59 @@ router.get("/recommended", async (req, res) => {
   res.json(responseData)
 })
 
-// TODO: add a member to the itinerary
+// TODO: Implement the POST /itinerary/:itineraryID/:userID endpoint
+router.post("/recommended/:itineraryID/:userID", requireAuth, async (req, res) => {
+  try {
+    const { itineraryID, userID } = req.params;
+
+    if (!userID) {
+      throw new BadRequestError("User ID is required");
+    }
+
+    if (!itineraryID) {
+      throw new BadRequestError("Itinerary ID is required");
+    }
+
+    const [itinerary] = await db
+      .select()
+      .from(itineraries)
+      .where(eq(itineraries.id, itineraryID));
+
+    if (!itinerary) {
+      throw new BadRequestError("Itinerary not found");
+    }
+
+    const result = await db
+      .insert(itineraries)
+      .values({
+        userId: itinerary.userId,
+        allowedEditors: [userID],
+        isPublic: false,
+        isAuthorized: false,
+        location: itinerary.location,
+        startDate: new Date('2030-09-09'),
+        endDate: new Date('2030-09-13'),
+        travelCategories: itinerary.travelCategories,
+        description: itinerary.description,
+        language: itinerary.language,
+        days: itinerary.days,
+      }).returning({ id: itineraries.id });;
+
+      res.status(201).json({ 
+        success: true, 
+        message: "Itinerary duplicated and editor added",
+        itineraryId: result[0]?.id ?? null, // or however you get the new ID
+        userID: userID
+      });
+  } catch (error) {
+    if (error instanceof Error) {
+      throw new BadRequestError(error.message);
+    } else {
+      throw new BadRequestError("An unknown error occurred");
+    }
+  }
+});
+
 router.post("/addMember/:itineraryID/:userID", requireAuth, async (req, res) => {
   const { itineraryID, userID } = req.params;
 
