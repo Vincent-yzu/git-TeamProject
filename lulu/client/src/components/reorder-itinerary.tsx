@@ -699,103 +699,108 @@ const ReorderItinerary = () => {
           <Reorder.Item
             key={activity.id}
             value={activity}
-            className="flex flex-row justify-between items-stretch rounded-lg border p-3 shadow-lg mb-2"
+            className="flex flex-col rounded-lg border p-3 shadow-lg mb-2"
             onDragEnd={() => saveMails()}
             onClick={() => handlePlaceClick(activity)}
             onLoad={() => handleLoadMap()}
           >
-            {/* 左側內容 */}
-            <div className="flex flex-col flex-1">
-              <p>行程 {idx + 1}</p>
-              <h3 className="text-lg font-semibold leading-6">
-                {activity.name}
-              </h3>
-              <p className="text-xs text-gray-500">📍 {activity.location}</p>
+            {/* 左右並排內容 */}
+            <div className="flex flex-row justify-between items-stretch">
+              {/* 左側內容 */}
+              <div className="flex flex-col flex-1">
+                <p>行程 {idx + 1}</p>
+                <h3 className="text-lg font-semibold leading-6">
+                  {activity.name}
+                </h3>
+                <p className="text-xs text-gray-500">📍 {activity.location}</p>
 
-              {/* Merge後的寫法有點爛  但我想睡覺了之後再改(X */}
-              <p className="text-xs text-gray-500">{calculateTimeRange(calculateNextStartTime(itinerary.days[currentDayIndex].startTime, currentActivities.slice(0, idx).reduce((acc, act) => acc + act.recommendDuration + act.commutingTime, 0)), activity.recommendDuration)}</p>
+                {/* Merge後的寫法有點爛  但我想睡覺了之後再改(X */}
+                <p className="text-xs text-gray-500">{calculateTimeRange(calculateNextStartTime(itinerary.days[currentDayIndex].startTime, currentActivities.slice(0, idx).reduce((acc, act) => acc + act.recommendDuration + act.commutingTime, 0)), activity.recommendDuration)}</p>
 
-              <div className="mt-auto flex space-x-2 pt-2">
-              <button
-                onClick={() => handlePlaceClick(activity)}
-                className={`px-2 py-1 rounded text-sm w-20 h-10 ${
-                descriptionActivityId === activity.id
-                ? "bg-slate-500 text-white hover:bg-slate-600"
-                : "bg-cyan-700 text-white hover:bg-cyan-800"
-                }`}
-              >
-                {descriptionActivityId === activity.id ? "Hide Description" : "詳細資訊"}
-              </button>
+                <div className="mt-auto flex space-x-2 pt-2">
+                  <button
+                    onClick={() => handlePlaceClick(activity)}
+                    className={`px-2 py-1 rounded text-sm w-20 h-10 ${
+                      descriptionActivityId === activity.id
+                        ? "bg-slate-500 text-white hover:bg-slate-600"
+                        : "bg-cyan-700 text-white hover:bg-cyan-800"
+                    }`}
+                  >
+                    {descriptionActivityId === activity.id ? "Hide Description" : "詳細資訊"}
+                  </button>
 
-                <button
-                  onClick={(e) => {
-                    e.stopPropagation()
-                    handleDeletePlace(activity.id)
-                  }}
-                  className="px-2 py-1 rounded text-sm bg-red-500 text-white hover:bg-red-600 w-20 h-10"
-                >
-                  刪除
-                </button>
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleDeletePlace(activity.id);
+                    }}
+                    className="px-2 py-1 rounded text-sm bg-red-500 text-white hover:bg-red-600 w-20 h-10"
+                  >
+                    刪除
+                  </button>
+                </div>
               </div>
-            </div>
 
-            {/* 右側內容 */}
-            <div className="flex flex-col items-start justify-between w-40 ml-4">
-              {/* 說明 / 圖片 */}
-              {descriptionActivityId === activity.id ? (
-                <div className="text-sm text-gray-600">{activity.description}</div>
-              ) : (
-                <img
-                  src={activity.photoUrls?.[0]}
-                  alt={activity.name}
-                  className="w-full h-20 object-cover rounded-md"
-                />
-              )}
+              {/* 右側內容 */}
+              <div className="flex flex-col items-start justify-between w-40 ml-4">
+                {/* 說明 / 圖片 */}
+                {descriptionActivityId === activity.id ? (
+                  <div className="text-sm text-gray-600">{activity.description}</div>
+                ) : (
+                  <img
+                    src={activity.photoUrls?.[0]}
+                    alt={activity.name}
+                    className="w-full h-20 object-cover rounded-md"
+                  />
+                )}
 
-              <div className="mt-2">
-                {/* 備註 */}
-                <span className="text-gray-500">💡</span>
-                <p
-                  className="text-xs text-gray-500 cursor-pointer underline inline"
-                  onClick={(e) => {
-                    e.stopPropagation()
-                    handleNoteClick(activity.id, activity.note)
-                  }}
-                >
-                  {activity.note ? activity.note.slice(0, 8) + "..." : <span className="underline">編輯個人筆記</span>}
-                </p>
-
-                {/* 停留時間 */}
-                <div className="flex items-center">
-                  <span className="text-gray-500">⏳</span>
+                <div className="mt-2">
+                  {/* 備註 */}
+                  <span className="text-gray-500">💡</span>
                   <p
                     className="text-xs text-gray-500 cursor-pointer underline inline"
                     onClick={(e) => {
-                      e.stopPropagation()
-                      handleDurationClick(activity.id, activity.recommendDuration)
+                      e.stopPropagation();
+                      handleNoteClick(activity.id, activity.note);
                     }}
                   >
-                    {formatDuration(activity.recommendDuration)}
+                    {activity.note ? activity.note.slice(0, 8) + "..." : <span className="underline">編輯個人筆記</span>}
                   </p>
-                </div>
 
-                {/* 交通時間 (若不是最後一個行程才顯示) */}
-                {idx < currentActivities.length - 1 && (
+                  {/* 停留時間 */}
                   <div className="flex items-center">
-                    <span className="text-gray-500">🚗</span>
+                    <span className="text-gray-500">⏳</span>
                     <p
                       className="text-xs text-gray-500 cursor-pointer underline inline"
                       onClick={(e) => {
-                        e.stopPropagation()
-                        handleTravelTimeClick(activity.id, activity.commutingTime)
+                        e.stopPropagation();
+                        handleDurationClick(activity.id, activity.recommendDuration);
                       }}
                     >
-                      {formatDuration(activity.commutingTime)}
+                      {formatDuration(activity.recommendDuration)}
                     </p>
                   </div>
-                )}
+                </div>
               </div>
             </div>
+
+            {/* 下方內容 - 交通時間 */}
+            {idx < currentActivities.length - 1 && (
+              <div className="flex items-center mt-4 w-full p-3 rounded-lg bg-gray-50 shadow-md">
+                <span className="text-gray-500 text-xl mr-2">🚗</span>
+                <p
+                  className="text-sm text-gray-700 cursor-pointer hover:text-gray-900 underline inline"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleTravelTimeClick(activity.id, activity.commutingTime);
+                  }}
+                >
+                  到下一站的車程大約:{" "}
+                  <span className="font-semibold">{formatDuration(activity.commutingTime)}</span>
+                  &nbsp;!
+                </p>
+              </div>
+            )}
           </Reorder.Item>
         ))}
         <div style={{ height: "50px" }}></div> {/* 占位 */}

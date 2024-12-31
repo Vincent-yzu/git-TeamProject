@@ -304,8 +304,8 @@ const MyTripPage: React.FC = () => {
           </div>
         </header>
         <main className="main-content flex flex-col h-full" style={{ backgroundColor: "#f5f5f5" }}>
-          <h1 className="page-title">我的行程</h1>
-          <div className="tabs container items-center mx-auto px-4 flex justify-between">
+          {/* <h1 className="page-title">我的行程</h1> */}
+          <div className="container mx-auto px-4 flex justify-between">
             <div>
               <div className="flex items-center gap-4 justify-center">
                 <button
@@ -355,23 +355,23 @@ const MyTripPage: React.FC = () => {
                               className="w-full h-full aspect-video object-cover rounded-md"
                             />
                             <button
-                              className="absolute top-0 right-0 m-2 bg-white p-1 rounded"
+                              className="absolute top-0 right-0 m-2 bg-red-500 text-white p-1.5 rounded-full shadow-lg hover:bg-red-600 transition-all duration-300"
                               onClick={(e) => {
                                 e.stopPropagation()
                                 handleDeleteOpenModal(itinerary.id)
                               }}
                             >
-                               X
+                              <span className="text-xl font-semibold">X</span>
                             </button>
                             <button
-                              className="absolute top-0 right-6 m-2 bg-white p-1 rounded"
+                              className="absolute top-0 right-8 m-2 bg-blue-500 text-white p-2 rounded-full shadow-lg hover:bg-blue-600 transition-all duration-300"
                               onClick={(e) => {
                                 console.log("itinerary id is :", itinerary.id)
                                 e.stopPropagation()
                                 handleOpenAddMemberModal(itinerary.id)
                               }}
                             >
-                              添加成員
+                              <span className="text-sm font-medium">添加成員</span>
                             </button>
                           </div>
                           <h3 className="text-lg font-semibold">
@@ -502,32 +502,26 @@ const MyTripPage: React.FC = () => {
         )}
         {/* 彈出視窗：添加成員 */}
         {isAddMemberModalOpen && (
-          <div className="modal-overlay">
-            <div className="modal-content">
-              <h2>添加新成員</h2>
+          <div className="modal-overlay fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center">
+            <div className="modal-content bg-white p-6 rounded-lg shadow-lg w-full max-w-md">
+              <h2 className="text-xl font-semibold mb-6 text-center">添加新成員</h2>
               <input
                 type="email"
                 placeholder="輸入電子郵件"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className="mb-4"
+                className="mb-4 w-full p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
               />
-              <div
-                style={{
-                  display: "flex",
-                  justifyContent: "flex-end",
-                  gap: "10px",
-                }}
-              >
+              <div className="flex justify-end gap-4">
                 <button
-                  className="cancel-button"
+                  className="confirm-button bg-gray-300 text-gray-800 p-2 rounded-md hover:bg-gray-400 transition duration-300"
                   type="button"
                   onClick={handleCloseAddMemberModal}
                 >
                   取消
                 </button>
                 <button
-                  className="confirm-button"
+                  className="confirm-button bg-blue-500 text-white p-2 rounded-md hover:bg-blue-600 transition duration-300"
                   onClick={handleAddMember}
                 >
                   添加
@@ -536,6 +530,7 @@ const MyTripPage: React.FC = () => {
             </div>
           </div>
         )}
+
       </div>
     </SidebarProvider>
   )
