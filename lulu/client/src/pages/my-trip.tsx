@@ -375,17 +375,7 @@ const MyTripPage: React.FC = () => {
                             </button>
                           </div>
                           <h3 className="text-lg font-semibold">
-                            {itinerary.location +
-                              " " +
-                              ((new Date(itinerary.endDate).getTime() -
-                                new Date(itinerary.startDate).getTime()) /
-                                (1000 * 60 * 60 * 24) +
-                                1) +
-                              "天" +
-                              (new Date(itinerary.endDate).getTime() -
-                                new Date(itinerary.startDate).getTime()) /
-                              (1000 * 60 * 60 * 24) +
-                              "夜之旅"}
+                            {itinerary.description}
                           </h3>
                         </div>
                       )
