@@ -374,6 +374,19 @@ const MyTripPage: React.FC = () => {
                               <span className="text-sm font-medium">添加成員</span>
                             </button>
                           </div>
+                          {/* <h3 className="text-lg font-semibold">
+                            {itinerary.location +
+                              " " +
+                              ((new Date(itinerary.endDate).getTime() -
+                                new Date(itinerary.startDate).getTime()) /
+                                (1000 * 60 * 60 * 24) +
+                                1) +
+                              "天" +
+                              (new Date(itinerary.endDate).getTime() -
+                                new Date(itinerary.startDate).getTime()) /
+                              (1000 * 60 * 60 * 24) +
+                              "夜之旅"}
+                          </h3> */}
                           <h3 className="text-lg font-semibold">
                             {itinerary.description}
                           </h3>

@@ -25,6 +25,7 @@ export const DisplayMap = () => {
   const mapRef = useRef<google.maps.Map | null>(null); // 用來儲存地圖實例
   const markerRefs = useRef<google.maps.Marker[]>([]); // 用來儲存所有標記
   const polylineRef = useRef<google.maps.Polyline | null>(null); // 用來儲存 Polyline 實例
+  const selectedMarkerRef = useRef<google.maps.Marker | null>(null); // 用於儲存 selectedPlace 的 Marker
 
   // 更新活動的地點列表
   useEffect(() => {
@@ -37,6 +38,51 @@ export const DisplayMap = () => {
       updateMarkersOnMap();
     }
   }, [currentActivities]);
+
+  // 地圖移到特定景點
+  useEffect(() => {
+    if (selectedPlace && mapRef.current) {
+      const newCenter = {
+        lat: selectedPlace.geometry.location.lat,
+        lng: selectedPlace.geometry.location.lng,
+      };
+
+      // 設定地圖的新中心
+      mapRef.current.panTo(newCenter); // 移動地圖到選中的位置
+      mapRef.current.setZoom(zoomLevel); // 設定縮放級別
+
+      // 如果已經有標記，移除舊標記
+      if (selectedMarkerRef.current) {
+        selectedMarkerRef.current.setMap(null);
+      }
+
+      // 檢查 currentActivities 是否存在，且是有效的陣列
+      const placeExists = Array.isArray(currentActivities) && currentActivities.some((activity) => activity.name === selectedPlace.name);
+
+      if (!placeExists) {
+        // 創建新的標記並將其添加到地圖
+        selectedMarkerRef.current = new google.maps.Marker({
+          position: newCenter,
+          map: mapRef.current,
+          title: selectedPlace.name,
+          icon: "http://maps.google.com/mapfiles/ms/icons/blue-dot.png", // 使用藍色標記圖標作為選中標記
+        });
+
+        // 新增資訊視窗
+        const infoWindow = new google.maps.InfoWindow({
+          content: `<div><strong>${selectedPlace.name}</strong><br>${selectedPlace.formatted_address}</div>`,
+        });
+
+        selectedMarkerRef.current.addListener("click", () => {
+          infoWindow.open({
+            anchor: selectedMarkerRef.current,
+            map: mapRef.current,
+            shouldFocus: false,
+          });
+        });
+      }
+    }
+  }, [selectedPlace, zoomLevel, currentActivities]);
 
   // 更新地圖上的圖標
   const updateMarkersOnMap = () => {

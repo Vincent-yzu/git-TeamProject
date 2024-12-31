@@ -45,7 +45,7 @@ export const DeleteTripModal: FC<DeleteTripModalProps> = ({
       //navigate("/my-trip"); // 返回儀表板
       window.location.reload();  // 重新整理
     } catch (error) {
-      console.error("Error deleting trip:", error);
+      console.error("Error deleting trip:", error.message || error);
       alert("退出行程時出現問題，請稍後再試！");
     }
   };
