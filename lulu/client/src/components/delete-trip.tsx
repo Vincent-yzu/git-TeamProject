@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { useMutation } from "@tanstack/react-query"; 
 import { useAuth } from "@/hooks/use-auth";
 import { fetcher } from "@/lib/fetcher";
+import { queryClient } from "@/lib/query-client";
 
 interface DeleteTripModalProps {
   isOpen: boolean;
@@ -41,7 +42,7 @@ export const DeleteTripModal: FC<DeleteTripModalProps> = ({
     onSuccess: () => {
       alert("退出行程成功！");
       onClose();           // 關閉彈窗
-      window.location.reload();  // 重新整理頁面
+      queryClient.invalidateQueries({ queryKey: ["itineraries"] });
     },
     // 失敗時要做的事
     onError: (error) => {

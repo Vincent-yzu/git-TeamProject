@@ -21,9 +21,11 @@ import { useQueryClient } from "@tanstack/react-query";
 const MyTripPage: React.FC = () => {
   const { data: auth } = useAuth()
   const navigate = useNavigate()
-  if (!auth?.user) {
-    navigate("/sign-in")
-  }
+  React.useEffect(() => {
+    if (!auth?.user) {
+      navigate("/sign-in");
+    }
+  }, [auth, navigate]);
 
   const { data: itineraries, isLoading } = useItineraries()
   const [isModalOpen, setModalOpen] = useState(false) // 用於控制彈窗的狀態
@@ -286,7 +288,7 @@ const MyTripPage: React.FC = () => {
     }
   }, [])
 
-  if (isLoading) return null
+  if (isLoading) null
   // console.log(itineraries)
 
   return (
@@ -320,7 +322,7 @@ const MyTripPage: React.FC = () => {
           </div>
           <div className="container mx-auto px-4">
             <div className="trip-placeholder">
-              {!itineraries || itineraries.length === 0 ? (
+              {!Array.isArray(itineraries) || itineraries.length === 0 ? (
                 <>
                   <div className="placeholder-image">
                     <img
@@ -426,7 +428,7 @@ const MyTripPage: React.FC = () => {
                 <li>
                   <button 
                     className="option-button"
-                    onClick={() => handleRecommendedTrip.mutate({ itineraryId: '3ASFvu7DZcYTwrvzNV8Hk', userID: auth.user.id })}
+                    onClick={() => handleRecommendedTrip.mutate({ itineraryId: 'ZnHMQLXdjNGLg3Wdxk46T', userID: auth.user.id })}
                   >
                     <img
                       src="https://lh3.googleusercontent.com/places/ANXAkqHKFCvNvIjO1lhQ4jS7yc3TSStsq8pAOjoLbGunRxSmTv1jOqJ3eaYRMfUiXft_P6sgC5WzzCNZKVz4V_VtdLPKuiOrPdY0HJo=s4800-w500-h500"
@@ -465,7 +467,7 @@ const MyTripPage: React.FC = () => {
                 <li>
                   <button 
                     className="option-button"
-                    onClick={() => handleRecommendedTrip.mutate({ itineraryId: 'V6WniSCWin1XxP9D1yXlL', userID: auth.user.id })}
+                    onClick={() => handleRecommendedTrip.mutate({ itineraryId: 'qm8vqoFeROd2pX_NbXpZ4', userID: auth.user.id })}
                   >
                     <img
                       src="https://lh3.googleusercontent.com/places/ANXAkqEC0WirSKQqhsdG2lIK1Xz-fLv6rmgARH0esD328jGr-_4BGLkZmJqQWlQL5YnP8oFCPNK6p39HkOd2SOIJbz3YB_kKH1GTNCM=s4800-w500-h500"

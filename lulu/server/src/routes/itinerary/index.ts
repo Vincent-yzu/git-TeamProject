@@ -181,7 +181,7 @@ router.get("/", requireAuth, async (req, res) => {
     .select()
     .from(itineraries)
     .where(
-      or(
+      and(
         eq(itineraries.userId, userId),
         sql`EXISTS (SELECT 1 FROM jsonb_array_elements_text(${itineraries.allowedEditors}) AS editor WHERE editor = ${userId})`
       )

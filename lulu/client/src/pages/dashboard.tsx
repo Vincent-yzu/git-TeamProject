@@ -20,9 +20,11 @@ export default function Dashboard() {
   const { data: auth } = useAuth()
   const { id } = useParams()
   const navigate = useNavigate()
-  if (!auth?.user) {
-    navigate("/sign-in")
-  }
+  React.useEffect(() => {
+    if (!auth?.user) {
+      navigate("/sign-in")
+    }
+  }, [auth, navigate])
 
   if (!id) {
     navigate("/my-trip")
