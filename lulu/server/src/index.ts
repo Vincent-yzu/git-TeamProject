@@ -100,7 +100,7 @@ io.on("connection", (socket) => {
         throw new UnauthorizedError("Unauthorized: invalid session")
       }
     } catch (error) {
-      throw new UnauthorizedError("Unauthorized: invalid sesseion")
+      console.log(error)
     }
 
     console.log(`User ${socket.data.user.id} joined room:`, roomId)
