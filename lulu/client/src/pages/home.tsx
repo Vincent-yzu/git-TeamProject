@@ -38,7 +38,17 @@ const HomePage: React.FC = () => {
             </div>
           </div>
           <section className="recommendation-section">
-            <h2>推薦行程</h2>
+            <h2 style={{
+              textAlign: 'center',
+              fontSize: '36px',
+              color: 'rgb(50, 137, 230)',
+              padding: '20px 0',
+              marginBottom: '30px',
+              borderBottom: '2px solid rgb(35, 119, 209)',
+              fontWeight: 'bold'
+            }}>
+              推薦行程
+            </h2>
             <div className="recommendations w-full h-full">
               <>
               {itineraries ? (
