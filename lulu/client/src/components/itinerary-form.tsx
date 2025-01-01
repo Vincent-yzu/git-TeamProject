@@ -149,14 +149,19 @@ export default function ItineraryForm() {
   return (
     <Dialog open={open || mutation.isPending} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button className=" size-[44px] px-14" disabled={mutation.isPending} variant="outline">AI Planner</Button>
+        <Button
+          className="size-[44px] px-24 bg-purple-500 text-white hover:bg-purple-400 disabled:bg-purple-200"
+          disabled={mutation.isPending}
+          variant="outline"
+        >
+          讓 AI 安排你的旅程吧！
+        </Button>
       </DialogTrigger>
       <DialogContent className="sm:max-w-sm md:max-w-md lg:max-w-lg">
         <DialogHeader>
-          <DialogTitle>Create Your Itinerary</DialogTitle>
+          <DialogTitle>你希望 AI 產生怎麼樣的行程呢？</DialogTitle>
           <DialogDescription>
-            Fill out the form below to create your personalized travel
-            itinerary.
+            填寫以下表單，為您打造專屬的旅行行程！
           </DialogDescription>
         </DialogHeader>
         <div className="max-h-[85vh] overflow-y-auto">
@@ -172,7 +177,7 @@ export default function ItineraryForm() {
                   name="location"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Location</FormLabel>
+                      <FormLabel>目的地</FormLabel>
                       <FormControl>
                         <Input
                           placeholder="Enter location (e.g., Tokyo, Japan)"
@@ -190,7 +195,7 @@ export default function ItineraryForm() {
                   name="startDate"
                   render={({ field }) => (
                     <FormItem className="flex flex-col">
-                      <FormLabel>Start Date</FormLabel>
+                      <FormLabel>出發日期</FormLabel>
                       <Popover>
                         <PopoverTrigger asChild>
                           <FormControl>
@@ -228,7 +233,7 @@ export default function ItineraryForm() {
                   name="endDate"
                   render={({ field }) => (
                     <FormItem className="flex flex-col">
-                      <FormLabel>End Date</FormLabel>
+                      <FormLabel>結束日期</FormLabel>
                       <Popover>
                         <PopoverTrigger asChild>
                           <FormControl>
@@ -266,7 +271,7 @@ export default function ItineraryForm() {
                   name="travelCategories"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Travel Categories</FormLabel>
+                      <FormLabel>您喜歡哪種類型的旅行呢？</FormLabel>
                       <FormControl>
                         <MultiSelector
                           values={field.value}
@@ -313,7 +318,7 @@ export default function ItineraryForm() {
                   name="language"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Language</FormLabel>
+                      <FormLabel>您的語言是？</FormLabel>
                       <Select
                         onValueChange={field.onChange}
                         defaultValue={field.value}
