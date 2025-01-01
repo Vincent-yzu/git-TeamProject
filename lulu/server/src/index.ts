@@ -38,7 +38,6 @@ app.use(cookieParser())
 app.use(cors(corsConfig))
 console.log("CORS Config:", corsConfig)
 app.use(express.json())
-// app.use(createRateLimiter({ windowMs: 15 * 60 * 1000, limit: 100 }))
 
 app.use("/api", googlesearchRouter) // for google map api (備註: 暫時繞過認證 (待修改!!))
 app.use("/api/addactivity", addactivityRouter) // add activity (備註: 暫時繞過認證 (待修改!!))

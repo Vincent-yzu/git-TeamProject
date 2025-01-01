@@ -2,7 +2,7 @@ import { PlacesClient as Client } from "@googlemaps/places"
 import dotenv from "dotenv"
 import { Router } from "express"
 import OpenAI from "openai"
-
+import { createRateLimiter } from "../../middleware/rate-limiter"
 dotenv.config()
 
 const openai = new OpenAI({
@@ -98,7 +98,7 @@ interface Place {
 }
 
 // handle api
-router.get("/googlesearch", async (req, res) => {
+router.get("/googlesearch", createRateLimiter({ windowMs: 5 * 60 * 1000, limit: 15 }), async (req, res) => {
   //const { latitude, longitude } = req.body;
   const { query } = req.query // 接收查詢參數
 
