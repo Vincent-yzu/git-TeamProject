@@ -974,8 +974,12 @@ const ReorderItinerary = () => {
 
                     <button
                       onClick={(e) => {
-                        e.stopPropagation()
-                        handleDeletePlace(activity.id)
+                        if (editingUser_note && editingUser_note.length > 0 && auth?.user.id != editingUser_note[0].user.id && editingUser_note[0].day === parseInt(selectedDayIndex, 10) && editingUser_note[0].activityId === activity.id) {
+                          return;
+                        } else {
+                          e.stopPropagation()
+                          handleDeletePlace(activity.id)
+                        }
                       }}
                       className="px-2 py-1 rounded text-sm bg-red-500 text-white hover:bg-red-600 w-20 h-10"
                     >
