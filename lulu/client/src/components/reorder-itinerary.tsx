@@ -13,6 +13,7 @@ import DurationPopup from "./DurationPopup"
 import { useMapContext } from "./MapContext"
 import NotePopup from "./NotePopup"
 import TravelTimePopup from "./TravelTimePopup"
+import { Activity } from "lucide-react"
 
 const BACKEND_URL = import.meta.env.VITE_BACKEND_URL
 
@@ -32,6 +33,12 @@ interface Place {
   note: string
   recommendDuration: number
   commutingTime: number
+}
+
+interface EditUser {
+  user: User
+  day: number
+  //activity: Itinerary["days"][number]["activities"]
 }
 
 const calculateTimeRange = (startTime: string, duration: number) => {
@@ -95,7 +102,7 @@ const ReorderItinerary = () => {
   const containerRef = useRef<HTMLDivElement>(null)
   const socketRef = useRef<Socket | null>(null)
   const [roomId] = useState<string>(id as string)
-  const [editingUser, setEditingUser] = useState<User[]>(null)
+  const [editingUser, setEditingUser] = useState<EditUser[]>(null)
 
   // 備註
   const [editingNoteId, setEditingNoteId] = useState<string | null>(null)
@@ -214,7 +221,11 @@ const ReorderItinerary = () => {
         setEditingUser((prev) => {
           const updatedUsers = prev ? [...prev] : [];
           if (!updatedUsers.includes(updatedActivities.user)) {
-            updatedUsers.push(updatedActivities.user); // 新增發出該事件的使用者
+            updatedUsers.push({
+              user: updatedActivities.user,
+              day: updatedActivities.dayIndex
+              //activity: 
+            }); // 新增發出該事件的使用者
           }
           return updatedUsers;
         });
@@ -232,7 +243,7 @@ const ReorderItinerary = () => {
         setEditingUser((prev) => {
           if (!prev) return [];
           // 過濾掉與 updatedActivities.user.id 匹配的項目
-          const updatedUsers = prev.filter((u) => u.id !== updatedActivities.user.id);
+          const updatedUsers = prev.filter((u) => u.user.id !== updatedActivities.user.id);
           return updatedUsers;
         });
       }
@@ -821,11 +832,11 @@ const ReorderItinerary = () => {
         style={{
           width: "100%", // 你可以根據需求調整寬度
           height: "100%", // 你可以根據需求調整高度
-          border: editingUser && editingUser.length > 0 ? "2px solid orange" : "2px solid transparent", // 條件式邊框
+          border: editingUser && editingUser.length > 0 && editingUser[0].day == currentDayIndex ? "2px solid orange" : "2px solid transparent", // 條件式邊框
           transition: "border 0.3s ease", // 加入過渡效果，使邊框變化更平滑
         }}
       >
-        { editingUser && editingUser.length > 0 && (
+        { editingUser && editingUser.length > 0 && editingUser[0].day == currentDayIndex && (
           <p
             style={{
               backgroundColor: "#fff5e1", // 淡橘色背景
@@ -841,7 +852,7 @@ const ReorderItinerary = () => {
               display: "inline-block", // 使元素只佔用內容區域
             }}
           >
-            {editingUser[0].email.split("@")[0]}&nbsp;正在編輯!
+            {editingUser[0].user.email.split("@")[0]}&nbsp;正在編輯!
           </p>
         )}
 
@@ -849,7 +860,7 @@ const ReorderItinerary = () => {
         <Reorder.Group
           axis="y"
           values={currentActivities}
-          onReorder={(editingUser && editingUser.length > 0) ? () => {} : handleReorder}
+          onReorder={(editingUser && editingUser.length > 0 && editingUser[0].day == currentDayIndex) ? () => {} : handleReorder}
           className="flex-1 overflow-auto pb-0.5"
         >
           {currentActivities.map((activity, idx) => (
