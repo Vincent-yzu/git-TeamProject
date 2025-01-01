@@ -81,6 +81,14 @@ io.on("connection", (socket) => {
     socket.to(roomId).emit("reorder_update", reorderData)
   })
 
+  // 當客戶端重新排序結束時，將資訊廣播給同房的其他客戶端
+  socket.on("reorder_finish", (data: { roomId: string; reorderData: any }) => {
+    const { roomId, reorderData } = data
+    console.log(`Reorder event in room ${roomId} by ${socket.id}:`, reorderData)
+    // 將更新廣播給該房間的其他使用者
+    socket.to(roomId).emit("reorder_someone_finish", reorderData)
+  })
+
   // Track users in rooms
   const roomUsers: { [roomId: string]: User[] } = {}
 

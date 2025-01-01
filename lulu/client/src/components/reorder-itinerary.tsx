@@ -95,6 +95,7 @@ const ReorderItinerary = () => {
   const containerRef = useRef<HTMLDivElement>(null)
   const socketRef = useRef<Socket | null>(null)
   const [roomId] = useState<string>(id as string)
+  const [editingUser, setEditingUser] = useState<User[]>(null)
 
   // 備註
   const [editingNoteId, setEditingNoteId] = useState<string | null>(null)
@@ -179,7 +180,7 @@ const ReorderItinerary = () => {
     })
 
     // 加入房間成功
-    socket.on("room_user_joined", (user: User) => {
+    socket.on("room_user_joined", (user: User) => {  // RRRRRRRRRRRRRRRRRR
       if (auth?.user?.id !== user.id) {
         toast({
           title: `${user.email.split("@")[0]} joined room`,
@@ -193,16 +194,47 @@ const ReorderItinerary = () => {
       (updatedActivities: {
         dayIndex: number
         activities: Itinerary["days"][number]["activities"]
+        user: any
       }) => {
-        console.log("Received reorder update:", updatedActivities)
+        console.log("Received reorder update:", updatedActivities);
+
         setDaysActivities((prev) => {
-          const newDays = [...prev]
-          newDays[updatedActivities.dayIndex] = updatedActivities.activities
-          return newDays
-        })
+          const newDays = [...prev];
+          newDays[updatedActivities.dayIndex] = updatedActivities.activities;
+          return newDays;
+        });
+
+        // 如果是當前顯示的日子，更新顯示的活動順序
         if (updatedActivities.dayIndex == parseInt(selectedDayIndex, 10)) {
-          setCurrentActivities(updatedActivities.activities) // 更新圖標順序 (直接把handleLoadMap加在這裡會跳錯誤)
+          setCurrentActivities(updatedActivities.activities);
         }
+
+        // 更新 editingUser 狀態
+        //console.log("Received ID:", updatedActivities.user.id);
+        setEditingUser((prev) => {
+          const updatedUsers = prev ? [...prev] : [];
+          if (!updatedUsers.includes(updatedActivities.user)) {
+            updatedUsers.push(updatedActivities.user); // 新增發出該事件的使用者
+          }
+          return updatedUsers;
+        });
+      }
+    )
+
+    // 監聽: 有人結束 reorder 結果
+    socket.on(
+      "reorder_someone_finish",
+      (updatedActivities: {
+        user: any
+      }) => {
+        // 更新 editingUser 狀態
+        //console.log("Received ID:", updatedActivities.user.id);
+        setEditingUser((prev) => {
+          if (!prev) return [];
+          // 過濾掉與 updatedActivities.user.id 匹配的項目
+          const updatedUsers = prev.filter((u) => u.id !== updatedActivities.user.id);
+          return updatedUsers;
+        });
       }
     )
 
@@ -349,6 +381,7 @@ const ReorderItinerary = () => {
       reorderData: {
         dayIndex: currentDayIndex,
         activities: newOrder,
+        user: auth?.user,
       },
     })
   }
@@ -373,6 +406,14 @@ const ReorderItinerary = () => {
       }
       const data = await response.json()
       console.log("Mails saved successfully:", data)
+
+      // 通知其他使用者
+      socketRef.current?.emit("reorder_finish", {
+        roomId,
+        reorderData: {
+          user: auth?.user,
+        },
+      })
 
       // 更新圖標順序
       handleLoadMap()
@@ -775,151 +816,181 @@ const ReorderItinerary = () => {
           className="px-2 py-1 bg-transparent border-b border-gray-400 focus:outline-none focus:border-blue-500"
         />
       </div>
-
-      {/* 拖曳排序的區域 */}
-      <Reorder.Group
-        axis="y"
-        values={currentActivities}
-        onReorder={handleReorder}
-        className="flex-1 overflow-auto pb-0.5"
+      
+      <div
+        style={{
+          width: "100%", // 你可以根據需求調整寬度
+          height: "100%", // 你可以根據需求調整高度
+          border: editingUser && editingUser.length > 0 ? "2px solid orange" : "2px solid transparent", // 條件式邊框
+          transition: "border 0.3s ease", // 加入過渡效果，使邊框變化更平滑
+        }}
       >
-        {currentActivities.map((activity, idx) => (
-          <Reorder.Item
-            key={activity.id}
-            value={activity}
-            className="flex flex-col rounded-lg border p-3 shadow-lg mb-2"
-            onDragEnd={() => saveMails()}
-            onClick={() => handlePlaceClick(activity)}
-            onLoad={() => handleLoadMap()}
+        { editingUser && editingUser.length > 0 && (
+          <p
+            style={{
+              backgroundColor: "#fff5e1", // 淡橘色背景
+              color: "#ff8c00", // 橘色文字
+              fontWeight: "bold", // 加粗字體
+              fontSize: "18px", // 增加字體大小
+              borderRadius: "8px", // 圓角邊框
+              padding: "10px 20px", // 內邊距
+              boxShadow: "0 4px 8px rgba(0, 0, 0, 0.1)", // 輕微陰影效果
+              transition: "transform 0.3s ease-in-out", // 動畫效果
+              marginTop: "2px", // 上邊距
+              marginBottom: "2px", // 上邊距
+              display: "inline-block", // 使元素只佔用內容區域
+            }}
           >
-            {/* 左右並排內容 */}
-            <div className="flex flex-row justify-between items-stretch">
-              {/* 左側內容 */}
-              <div className="flex flex-col flex-1">
-                <p>行程 {idx + 1}</p>
-                <h3 className="text-lg font-semibold leading-6">
-                  {activity.name}
-                </h3>
-                <p className="text-xs text-gray-500">📍 {activity.location}</p>
+            {editingUser[0].email.split("@")[0]}&nbsp;正在編輯!
+          </p>
+        )}
 
-                {/* Merge後的寫法有點爛  但我想睡覺了之後再改(X */}
-                <p className="text-xs text-gray-500">
-                  {calculateTimeRange(
-                    calculateNextStartTime(
-                      itinerary.days[currentDayIndex].startTime,
-                      currentActivities
-                        .slice(0, idx)
-                        .reduce(
-                          (acc, act) =>
-                            acc + act.recommendDuration + act.commutingTime,
-                          0
-                        )
-                    ),
-                    activity.recommendDuration
-                  )}
-                </p>
+        {/* 拖曳排序的區域 */}
+        <Reorder.Group
+          axis="y"
+          values={currentActivities}
+          onReorder={(editingUser && editingUser.length > 0) ? () => {} : handleReorder}
+          className="flex-1 overflow-auto pb-0.5"
+        >
+          {currentActivities.map((activity, idx) => (
+            <Reorder.Item
+              key={activity.id}
+              value={activity}
+              className="flex flex-col rounded-lg border p-3 shadow-lg mb-2"
+              onDragEnd={() => saveMails()}
+              onClick={() => handlePlaceClick(activity)}
+              onLoad={() => handleLoadMap()}
+            >
+              {/* 左右並排內容 */}
+              <div className="flex flex-row justify-between items-stretch">
+                {/* 左側內容 */}
+                <div className="flex flex-col flex-1">
+                  <p>行程 {idx + 1}</p>
+                  <h3 className="text-lg font-semibold leading-6">
+                    {activity.name}
+                  </h3>
+                  <p className="text-xs text-gray-500">📍 {activity.location}</p>
 
-                <div className="mt-auto flex space-x-2 pt-2">
-                  <button
-                    onClick={() => handlePlaceClick(activity)}
-                    className={`px-2 py-1 rounded text-sm w-20 h-10 ${
-                      descriptionActivityId === activity.id
-                        ? "bg-slate-500 text-white hover:bg-slate-600"
-                        : "bg-cyan-700 text-white hover:bg-cyan-800"
-                    }`}
-                  >
-                    {descriptionActivityId === activity.id
-                      ? "Hide Description"
-                      : "詳細資訊"}
-                  </button>
-
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation()
-                      handleDeletePlace(activity.id)
-                    }}
-                    className="px-2 py-1 rounded text-sm bg-red-500 text-white hover:bg-red-600 w-20 h-10"
-                  >
-                    刪除
-                  </button>
-                </div>
-              </div>
-
-              {/* 右側內容 */}
-              <div className="flex flex-col items-start justify-between w-40 ml-4">
-                {/* 說明 / 圖片 */}
-                {descriptionActivityId === activity.id ? (
-                  <div className="text-sm text-gray-600">
-                    {activity.description}
-                  </div>
-                ) : (
-                  <img
-                    src={activity.photoUrls?.[0]}
-                    alt={activity.name}
-                    className="w-full h-20 object-cover rounded-md"
-                  />
-                )}
-
-                <div className="mt-2">
-                  {/* 備註 */}
-                  <span className="text-gray-500">💡</span>
-                  <p
-                    className="text-xs text-gray-500 cursor-pointer underline inline"
-                    onClick={(e) => {
-                      e.stopPropagation()
-                      handleNoteClick(activity.id, activity.note)
-                    }}
-                  >
-                    {activity.note ? (
-                      activity.note.slice(0, 8) + "..."
-                    ) : (
-                      <span className="underline">編輯個人筆記</span>
+                  {/* Merge後的寫法有點爛  但我想睡覺了之後再改(X */}
+                  <p className="text-xs text-gray-500">
+                    {calculateTimeRange(
+                      calculateNextStartTime(
+                        itinerary.days[currentDayIndex].startTime,
+                        currentActivities
+                          .slice(0, idx)
+                          .reduce(
+                            (acc, act) =>
+                              acc + act.recommendDuration + act.commutingTime,
+                            0
+                          )
+                      ),
+                      activity.recommendDuration
                     )}
                   </p>
 
-                  {/* 停留時間 */}
-                  <div className="flex items-center">
-                    <span className="text-gray-500">⏳</span>
+                  <div className="mt-auto flex space-x-2 pt-2">
+                    <button
+                      onClick={() => handlePlaceClick(activity)}
+                      className={`px-2 py-1 rounded text-sm w-20 h-10 ${
+                        descriptionActivityId === activity.id
+                          ? "bg-slate-500 text-white hover:bg-slate-600"
+                          : "bg-cyan-700 text-white hover:bg-cyan-800"
+                      }`}
+                    >
+                      {descriptionActivityId === activity.id
+                        ? "Hide Description"
+                        : "詳細資訊"}
+                    </button>
+
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        handleDeletePlace(activity.id)
+                      }}
+                      className="px-2 py-1 rounded text-sm bg-red-500 text-white hover:bg-red-600 w-20 h-10"
+                    >
+                      刪除
+                    </button>
+                  </div>
+                </div>
+
+                {/* 右側內容 */}
+                <div className="flex flex-col items-start justify-between w-40 ml-4">
+                  {/* 說明 / 圖片 */}
+                  {descriptionActivityId === activity.id ? (
+                    <div className="text-sm text-gray-600">
+                      {activity.description}
+                    </div>
+                  ) : (
+                    <img
+                      src={activity.photoUrls?.[0]}
+                      alt={activity.name}
+                      className="w-full h-20 object-cover rounded-md"
+                    />
+                  )}
+
+                  <div className="mt-2">
+                    {/* 備註 */}
+                    <span className="text-gray-500">💡</span>
                     <p
                       className="text-xs text-gray-500 cursor-pointer underline inline"
                       onClick={(e) => {
                         e.stopPropagation()
-                        handleDurationClick(
-                          activity.id,
-                          activity.recommendDuration
-                        )
+                        handleNoteClick(activity.id, activity.note)
                       }}
                     >
-                      {formatDuration(activity.recommendDuration)}
+                      {activity.note ? (
+                        activity.note.slice(0, 8) + "..."
+                      ) : (
+                        <span className="underline">編輯個人筆記</span>
+                      )}
                     </p>
+
+                    {/* 停留時間 */}
+                    <div className="flex items-center">
+                      <span className="text-gray-500">⏳</span>
+                      <p
+                        className="text-xs text-gray-500 cursor-pointer underline inline"
+                        onClick={(e) => {
+                          e.stopPropagation()
+                          handleDurationClick(
+                            activity.id,
+                            activity.recommendDuration
+                          )
+                        }}
+                      >
+                        {formatDuration(activity.recommendDuration)}
+                      </p>
+                    </div>
                   </div>
                 </div>
               </div>
-            </div>
 
-            {/* 下方內容 - 交通時間 */}
-            {idx < currentActivities.length - 1 && (
-              <div className="flex items-center mt-4 w-full p-3 rounded-lg bg-gray-50 shadow-md">
-                <span className="text-gray-500 text-xl mr-2">🚗</span>
-                <p
-                  className="text-sm text-gray-700 cursor-pointer hover:text-gray-900 underline inline"
-                  onClick={(e) => {
-                    e.stopPropagation()
-                    handleTravelTimeClick(activity.id, activity.commutingTime)
-                  }}
-                >
-                  到下一站的車程大約:{" "}
-                  <span className="font-semibold">
-                    {formatDuration(activity.commutingTime)}
-                  </span>
-                  &nbsp;!
-                </p>
-              </div>
-            )}
-          </Reorder.Item>
-        ))}
-        <div style={{ height: "50px" }}></div> {/* 占位 */}
-      </Reorder.Group>
+              {/* 下方內容 - 交通時間 */}
+              {idx < currentActivities.length - 1 && (
+                <div className="flex items-center mt-4 w-full p-3 rounded-lg bg-gray-50 shadow-md">
+                  <span className="text-gray-500 text-xl mr-2">🚗</span>
+                  <p
+                    className="text-sm text-gray-700 cursor-pointer hover:text-gray-900 underline inline"
+                    onClick={(e) => {
+                      e.stopPropagation()
+                      handleTravelTimeClick(activity.id, activity.commutingTime)
+                    }}
+                  >
+                    到下一站的車程大約:{" "}
+                    <span className="font-semibold">
+                      {formatDuration(activity.commutingTime)}
+                    </span>
+                    &nbsp;!
+                  </p>
+                </div>
+              )}
+            </Reorder.Item>
+          ))}
+          <div style={{ height: "50px" }}></div> {/* 占位 */}
+        </Reorder.Group>
+      </div>
+      
 
       {isPopupOpen && (
         <NotePopup
