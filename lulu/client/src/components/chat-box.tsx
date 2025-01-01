@@ -170,9 +170,7 @@ function ChatBox() {
       open={isChatOpen}
       onOpenChange={(open) => {
         setIsChatOpen(open)
-        if (open) {
-          setHasNewMessage(false)
-        }
+        setHasNewMessage(false)
       }}
     >
       {/* 
