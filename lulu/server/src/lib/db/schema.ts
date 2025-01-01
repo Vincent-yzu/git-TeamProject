@@ -97,7 +97,7 @@ export const comments = pgTable("comments", {
     .references(() => users.id),
   itineraryId: text("itinerary_id")
     .notNull()
-    .references(() => itineraries.id),
+    .references(() => itineraries.id, { onDelete: "cascade" }),
   content: text("content").notNull(),
   createdAt: timestamp("created_at", {
     withTimezone: true,
