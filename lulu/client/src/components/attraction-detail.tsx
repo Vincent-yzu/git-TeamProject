@@ -339,7 +339,7 @@ export const AttractionDetail = () => {
             <p
               style={styles.address}
               onClick={(e) => {
-                if (editingUser_note && editingUser_note.length > 0 && auth?.user.id != editingUser_note[0].user.id && editingUser_note[0].day === parseInt(selectedDayIndex, 10) && editingUser_note[0].activityId === selectedPlace.place_id) {
+                if (editingUser_note && editingUser_note.length > 0 && auth?.user.id != editingUser_note[0].user.id && editingUser_note[0].day == parseInt(selectedDayIndex, 10) && editingUser_note[0].activityId == selectedPlace.place_id) {
                   return;
                 } else {
                   e.stopPropagation();
