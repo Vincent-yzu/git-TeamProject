@@ -78,10 +78,48 @@ export const SearchBarGoogleMap = ({ placeholder }: SearchBarGoogleMapProps) => 
   
   // call google map api
   const handleSearch = useCallback(async (queryValue: string) => {
+    if (!queryValue || queryValue.trim() === "") {
+      alert("搜尋字串為空，請輸入有效的查詢內容！");
+      return;
+    }
+
+    if (queryValue.length > 36) {
+      alert("搜尋字串過長，請縮短查詢內容！");
+      return;
+    }
+
+    // 防範 SQL 注入和 XSS 攻擊: 只允許安全的字符
+    // 允許所有語言字符（包括漢字、阿拉伯文等），並保留常見符號
+    const safeCharactersRegex = /^[\w\s\-'\:\(\)\/\*\.\,·&@一-龥ぁ-んァ-ン가-힣]+$/;
+    if (!safeCharactersRegex.test(queryValue)) {
+      alert("搜尋字串包含不安全的字符，請檢查並修改！");
+      return;
+    }
+
+    // 清理多餘的空白字符
+    const sanitizedQuery = queryValue.replace(/\s+/g, " ").trim();
+
+    // 防止誤刪除有效符號，特別是 HTML 標籤，繼續檢查 HTML 標籤
+    const sanitizedHtmlQuery = sanitizedQuery.replace(/<.*?>/g, "");
+
+    if (!sanitizedHtmlQuery) {
+      alert("搜尋字串不應包含HTML標籤，請檢查！");
+      return;
+    }
+    
     try {
       // 使用 text search 取得景點資料
       const response = await fetch(`${BACKEND_URL}/api/googlesearch?query=${queryValue}`);
       if (!response.ok) {
+        if (response.status == 500) {
+          alert("伺服器忙碌中！");
+        }
+        else if (response.status == 502) {
+          alert("目前太多人使用了! 稍等一下喔！");
+        } else {
+          alert("找不到輸入的景點喔！");
+        }
+        console.log("error: " + response);
         throw new Error("Failed to fetch places");
       }
   
@@ -114,7 +152,7 @@ export const SearchBarGoogleMap = ({ placeholder }: SearchBarGoogleMapProps) => 
     } catch (error) {
       console.error("搜尋失敗:", error);
     }
-  }, [setPlaces, setSelectedPlace]);
+  }, []);
   
 
   const handlePlaceClick = useCallback(
