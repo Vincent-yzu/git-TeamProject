@@ -52,6 +52,14 @@ export const CreateTripModal: FC<CreateTripModalProps> = ({
         description: tripName,
       }
 
+      // Check if startDate is before endDate
+      const start = new Date(startDate);
+      const end = new Date(endDate);
+      if (start >= end) {
+        alert('這裡不提供回到過去的時光旅行服務喔！');
+        return;
+      }
+
       const response = await fetcher("/api/addactivity/creatTrip", {
         options: {
           method: "POST",
