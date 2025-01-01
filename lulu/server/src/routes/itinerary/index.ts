@@ -73,7 +73,7 @@ router.get("/recommended", createRateLimiter({ windowMs: 1 * 60 * 1000, limit: 6
 })
 
 // TODO: Implement the POST /itinerary/:itineraryID/:userID endpoint
-router.post("/recommended/:itineraryID/:userID", requireAuth, createRateLimiter({ windowMs: 1 * 60 * 1000, limit: 10 }), async (req, res) => {
+router.post("/recommended/:itineraryID/:userID", requireAuth, createRateLimiter({ windowMs: 1 * 60 * 1000, limit: 60 }), async (req, res) => {
   try {
     const { itineraryID, userID } = req.params;
 
@@ -125,7 +125,7 @@ router.post("/recommended/:itineraryID/:userID", requireAuth, createRateLimiter(
   }
 });
 
-router.post("/addMember/:itineraryID/:userID", createRateLimiter({ windowMs: 1 * 60 * 1000, limit: 10 }), requireAuth, async (req, res) => {
+router.post("/addMember/:itineraryID/:userID", createRateLimiter({ windowMs: 1 * 60 * 1000, limit: 60 }), requireAuth, async (req, res) => {
   const { itineraryID, userID } = req.params;
 
   if (typeof itineraryID !== "string") {
@@ -169,7 +169,7 @@ router.post("/addMember/:itineraryID/:userID", createRateLimiter({ windowMs: 1 *
 
 })
 
-router.get("/", requireAuth, createRateLimiter({ windowMs: 1 * 60 * 1000, limit: 60 }), async (req, res) => {
+router.get("/", requireAuth, createRateLimiter({ windowMs: 15 * 60 * 1000, limit: 10 }), async (req, res) => {
   // const itinerariesFromDB = await db.select().from(itineraries).where(eq(itineraries.userId, req.user!.id))
   // res.json(itinerariesFromDB)
   if (!req.user) {
@@ -224,7 +224,7 @@ router.get("/:id", requireAuth, createRateLimiter({ windowMs: 1 * 60 * 1000, lim
 })
 
 
-router.post("/", requireAuth, createRateLimiter({ windowMs: 15 * 60 * 1000, limit: 5 }), async (req, res) => {
+router.post("/", requireAuth, createRateLimiter({ windowMs: 1 * 60 * 1000, limit: 60 }), async (req, res) => {
 
   const parsedBody = itineraryFrontendSchema.safeParse(req.body)
 

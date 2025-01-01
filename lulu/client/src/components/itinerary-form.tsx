@@ -147,11 +147,10 @@ export default function ItineraryForm() {
   const [open, setOpen] = useState(false)
 
   return (
-    <Dialog open={open || mutation.isPending} onOpenChange={setOpen}>
+    <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
         <Button
           className="size-[44px] px-24 bg-purple-500 text-white hover:bg-purple-400 disabled:bg-purple-200"
-          disabled={mutation.isPending}
           variant="outline"
         >
           讓 AI 安排你的旅程吧！

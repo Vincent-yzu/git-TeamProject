@@ -98,7 +98,7 @@ interface Place {
 }
 
 // handle api
-router.get("/googlesearch", createRateLimiter({ windowMs: 5 * 60 * 1000, limit: 15 }), async (req, res) => {
+router.get("/googlesearch", createRateLimiter({ windowMs: 1 * 60 * 1000, limit: 60 }), async (req, res) => {
   //const { latitude, longitude } = req.body;
   const { query } = req.query // 接收查詢參數
 
