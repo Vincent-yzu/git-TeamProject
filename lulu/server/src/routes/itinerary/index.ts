@@ -269,6 +269,7 @@ router.post("/", requireAuth, async (req, res) => {
             return {
               ...activity,
               id: nanoid(),
+              commutingTime: 30,
               note: "",
               photoUrls: data.photoUrls,
               latitude: data.latitude,
