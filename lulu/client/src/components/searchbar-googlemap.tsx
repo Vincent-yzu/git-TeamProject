@@ -2,6 +2,7 @@ import { useState, useCallback, useEffect } from "react";
 import { useSearchParams } from "react-router-dom";
 import { SidebarInput } from "@/components/ui/sidebar";
 import { useMapContext } from "./MapContext"; // 引入 Context
+import { LoaderCircle } from "lucide-react";
 
 const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
 
@@ -29,18 +30,20 @@ interface Place {
 }
 
 export const SearchBarGoogleMap = ({ placeholder }: SearchBarGoogleMapProps) => {
-  const [query, setQuery] = useState(""); // 儲存搜尋文字
-  const [places, setPlaces] = useState<any[]>([]); // 儲存搜尋結果
-  const { selectedPlace, setSelectedPlace } = useMapContext() // 從 Context 中取用 `selectedPlace`
-  const { setZoomLevel } = useMapContext(); // 從 Context 中取用 `setZoomLevel`
+  const [query, setQuery] = useState(""); 
+  const [places, setPlaces] = useState<any[]>([]);
+  const [isLoading, setIsLoading] = useState(false); // <-- NEW: loading state
+
+  const { selectedPlace, setSelectedPlace } = useMapContext();
+  const { setZoomLevel } = useMapContext();
   const { setCallCloseDetail } = useMapContext();
+
   const [searchParams] = useSearchParams();
   const destination = searchParams.get("destination") || "";
 
   const handleSearchChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
     const newQuery = e.target.value;
     setQuery(newQuery);
-
     if (newQuery.trim() === "") {
       setPlaces([]);
     }
@@ -49,85 +52,79 @@ export const SearchBarGoogleMap = ({ placeholder }: SearchBarGoogleMapProps) => 
   // 初始文字
   useEffect(() => {
     setQuery(destination);
-    if (destination != "")  handleSearch(destination);
+    if (destination !== "") handleSearch(destination);
   }, [destination]);
 
   // 清除搜尋內容
   const handleClearSearch = useCallback(() => {
     setQuery("");
     setPlaces([]);
-
     // 關閉詳細資訊
     setCallCloseDetail(() => () => {
-      console.log('Close Detail!');
+      console.log("Close Detail!");
     });
   }, []);
-  
-  // handleKeyDown
-  const handleKeyDown = useCallback(async (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === "Enter") {
-      if (query.trim() === "") {
-        setPlaces([]);
-        return;
+
+  // Enter key handler
+  const handleKeyDown = useCallback(
+    async (e: React.KeyboardEvent<HTMLInputElement>) => {
+      if (e.key === "Enter") {
+        if (query.trim() === "") {
+          setPlaces([]);
+          return;
+        }
+        handleSearch(query);
       }
-      
-      // search
-      handleSearch(query);
-    }
-  }, [query]);
-  
+    },
+    [query]
+  );
+
   // call google map api
   const handleSearch = useCallback(async (queryValue: string) => {
     if (!queryValue || queryValue.trim() === "") {
       alert("搜尋字串為空，請輸入有效的查詢內容！");
       return;
     }
-
     if (queryValue.length > 36) {
       alert("搜尋字串過長，請縮短查詢內容！");
       return;
     }
 
     // 防範 SQL 注入和 XSS 攻擊: 只允許安全的字符
-    // 允許所有語言字符（包括漢字、阿拉伯文等），並保留常見符號
     const safeCharactersRegex = /^[\w\s\-'\:\(\)\/\*\.\,·&@一-龥ぁ-んァ-ン가-힣]+$/;
     if (!safeCharactersRegex.test(queryValue)) {
       alert("搜尋字串包含不安全的字符，請檢查並修改！");
       return;
     }
 
-    // 清理多餘的空白字符
     const sanitizedQuery = queryValue.replace(/\s+/g, " ").trim();
-
-    // 防止誤刪除有效符號，特別是 HTML 標籤，繼續檢查 HTML 標籤
     const sanitizedHtmlQuery = sanitizedQuery.replace(/<.*?>/g, "");
-
     if (!sanitizedHtmlQuery) {
       alert("搜尋字串不應包含HTML標籤，請檢查！");
       return;
     }
-    
+
+    // Start loading
+    setIsLoading(true);
     try {
-      // 使用 text search 取得景點資料
       const response = await fetch(`${BACKEND_URL}/api/googlesearch?query=${queryValue}`);
       if (!response.ok) {
-        if (response.status == 500) {
+        if (response.status === 500) {
           alert("伺服器忙碌中！");
-        }
-        else if (response.status == 502) {
+        } else if (response.status === 502) {
           alert("目前太多人使用了! 稍等一下喔！");
         } else {
           alert("找不到輸入的景點喔！");
         }
-        console.log("error: " + response);
+        console.log("error:", response);
         throw new Error("Failed to fetch places");
       }
-  
+
       const data = await response.json();
       setPlaces(data);
-  
+
       console.log(data);
-  
+
       // 更新右側地圖 (使用第一筆資料)
       if (data.length > 0) {
         setZoomLevel(15);
@@ -151,9 +148,11 @@ export const SearchBarGoogleMap = ({ placeholder }: SearchBarGoogleMapProps) => 
       }
     } catch (error) {
       console.error("搜尋失敗:", error);
+    } finally {
+      // End loading
+      setIsLoading(false);
     }
   }, []);
-  
 
   const handlePlaceClick = useCallback(
     (place: Place) => {
@@ -174,14 +173,14 @@ export const SearchBarGoogleMap = ({ placeholder }: SearchBarGoogleMapProps) => 
         recommendDuration: 20241225,
         commutingTime: 20241225,
       });
-      setZoomLevel(15); // 適當調整地圖縮放層級
+      setZoomLevel(15);
     },
     [setSelectedPlace, setZoomLevel]
   );
 
   return (
     <div>
-      <div style={{ display: 'flex', alignItems: 'center' }}>
+      <div style={{ display: "flex", alignItems: "center" }}>
         <SidebarInput
           placeholder={placeholder || "搜尋附近"}
           value={query}
@@ -192,27 +191,43 @@ export const SearchBarGoogleMap = ({ placeholder }: SearchBarGoogleMapProps) => 
           <button
             onClick={handleClearSearch}
             style={{
-              marginLeft: '8px',
-              padding: '6px',
-              border: 'none',
-              backgroundColor: '#eee',
-              borderRadius: '50%',
-              cursor: 'pointer',
+              marginLeft: "8px",
+              padding: "6px",
+              border: "none",
+              backgroundColor: "#eee",
+              borderRadius: "50%",
+              cursor: "pointer",
             }}
           >
             X
           </button>
         )}
       </div>
+
+      {/* Loading Indicator */}
+      {isLoading && (
+        <div className="flex items-center gap-2 mt-4">
+          <p>Loading...</p>
+          <LoaderCircle className="animate-spin" />
+        </div>
+      )}
+
       <ul className="pt-[18px]">
         {places.slice(0, 5).map((place) => (
-          // 最多顯示5筆，點擊更新選擇的地點
           <li
             key={place.place_id}
             onClick={() => handlePlaceClick(place)}
-            style={{ cursor: "pointer", marginBottom: '10px', padding: '6px', border: '1px solid #eee', borderRadius: '5px', backgroundColor: '#f9f9f9', transition: 'background-color 0.3s' }}
-            onMouseOver={(e) => e.currentTarget.style.backgroundColor = '#f1f1f1'}
-            onMouseOut={(e) => e.currentTarget.style.backgroundColor = '#f9f9f9'}
+            style={{
+              cursor: "pointer",
+              marginBottom: "10px",
+              padding: "6px",
+              border: "1px solid #eee",
+              borderRadius: "5px",
+              backgroundColor: "#f9f9f9",
+              transition: "background-color 0.3s",
+            }}
+            onMouseOver={(e) => (e.currentTarget.style.backgroundColor = "#f1f1f1")}
+            onMouseOut={(e) => (e.currentTarget.style.backgroundColor = "#f9f9f9")}
           >
             <strong style={styles.title}>{place.name}</strong>
             <p style={styles.address}>{place.description}</p>
@@ -226,12 +241,12 @@ export const SearchBarGoogleMap = ({ placeholder }: SearchBarGoogleMapProps) => 
 
 const styles = {
   title: {
-    fontSize: '16px',
-    marginBottom: '10px',
-    color: '#333',
+    fontSize: "16px",
+    marginBottom: "10px",
+    color: "#333",
   },
   address: {
-    fontSize: '12px',
-    color: '#555',
+    fontSize: "12px",
+    color: "#555",
   },
 };
