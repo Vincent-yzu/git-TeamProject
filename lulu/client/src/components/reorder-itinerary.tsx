@@ -1037,7 +1037,7 @@ const ReorderItinerary = () => {
                       <p
                         className="text-xs text-gray-500 cursor-pointer underline inline"
                         onClick={(e) => {
-                          if (editingUser_note && editingUser_note.length > 0 && auth?.user.id != editingUser_note[0].user.id && editingUser_note[0].day === parseInt(selectedDayIndex, 10) && editingUser_note[0].activityId === activity.id) {
+                          if (editingUser_note && editingUser_note.length > 0 && auth?.user.id != editingUser_note[0].user.id && editingUser_note[0].day == parseInt(selectedDayIndex, 10) && editingUser_note[0].activityId == activity.id) {
                             return;
                           } else {
                             e.stopPropagation();
