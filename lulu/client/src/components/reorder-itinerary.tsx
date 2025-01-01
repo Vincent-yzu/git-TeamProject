@@ -50,28 +50,19 @@ const calculateTimeRange = (startTime: string, duration: number) => {
   const endMinutes = endDate.getMinutes().toString().padStart(2, "0")
   return `${startTime} - ${endHours}:${endMinutes}`
 }
-const calculateNextStartTime = (
-  startTime: string,
-  previousDurations: number
-) => {
+
+const calculateNextStartTime = (startTime: string, previousDurations: number) => {
   const [startHours, startMinutes] = startTime.split(":").map(Number)
   const startDate = new Date()
   startDate.setHours(startHours, startMinutes, 0, 0)
-  const nextStartDate = new Date(
-    startDate.getTime() + previousDurations * 60000
-  )
+  const nextStartDate = new Date(startDate.getTime() + previousDurations * 60000)
   const nextStartHours = nextStartDate.getHours().toString().padStart(2, "0")
-  const nextStartMinutes = nextStartDate
-    .getMinutes()
-    .toString()
-    .padStart(2, "0")
+  const nextStartMinutes = nextStartDate.getMinutes().toString().padStart(2, "0")
   return `${nextStartHours}:${nextStartMinutes}`
 }
 
 const ReorderItinerary = () => {
-  const [isDescriptionOn, setIsDescriptionOn] = useState<boolean | undefined>(
-    false
-  )
+  const [isDescriptionOn, setIsDescriptionOn] = useState<boolean | undefined>(false)
   const { data: auth } = useAuth()
   if (!auth?.user) {
     return null
@@ -88,15 +79,26 @@ const ReorderItinerary = () => {
     setCallCloseDetail,
     currentActivities: contextCurrentActivities,
     setCurrentActivities,
-    editingUser_note, 
+    editingUser_note,
     setEditingUser_note,
   } = useMapContext()
 
   const { id } = useParams()
-  const { data: itinerary, isLoading } = useItinerary(
+  // 從 useItinerary hook 拉回後端資料
+  const { data: fetchedItinerary, isLoading } = useItinerary(
     id as string,
     heyUpdateData
   )
+
+  // 本地可編輯的 itinerary 狀態 (避免和 fetchedItinerary 混用)
+  const [localItinerary, setLocalItinerary] = useState<Itinerary | null>(null)
+
+  // 當從後端取得 fetchedItinerary 後，把它放進本地狀態
+  useEffect(() => {
+    if (fetchedItinerary) {
+      setLocalItinerary(fetchedItinerary)
+    }
+  }, [fetchedItinerary])
 
   const [daysActivities, setDaysActivities] = useState<
     Itinerary["days"][number]["activities"][]
@@ -106,15 +108,15 @@ const ReorderItinerary = () => {
   const [roomId] = useState<string>(id as string)
   const [editingUser, setEditingUser] = useState<EditUser[]>(null)
   // const [editingUser_note, setEditingUser_note] = useState<EditUser[]>(null)
-  const [editingUser_commutingTime, setEditingUser_commutingTime] = useState<EditUser[]>(null)  // 未完成
+  const [editingUser_commutingTime, setEditingUser_commutingTime] = useState<EditUser[]>(null) // 未完成
 
   // 備註
   const [editingNoteId, setEditingNoteId] = useState<string | null>(null)
   const [noteValue, setNoteValue] = useState<string>("")
   const [isPopupOpen, setIsPopupOpen] = useState<boolean>(false)
-  const [descriptionActivityId, setDescriptionActivityId] = useState<
-    string | null
-  >(null)
+  const [descriptionActivityId, setDescriptionActivityId] = useState<string | null>(
+    null
+  )
   const [isNotePopupOpen, setIsNotePopupOpen] = useState<boolean>(false)
 
   // 停留時間
@@ -125,8 +127,7 @@ const ReorderItinerary = () => {
   const [newDuration, setNewDuration] = useState<number>(0)
 
   // 交通時間
-  const [isTravelTimePopupOpen, setIsTravelTimePopupOpen] =
-    useState<boolean>(false)
+  const [isTravelTimePopupOpen, setIsTravelTimePopupOpen] = useState<boolean>(false)
   const [editingTravelTimeActivityId, setEditingTravelTimeActivityId] =
     useState<string | null>(null)
   const [newTravelTime, setNewTravelTime] = useState<number>(0)
@@ -136,10 +137,7 @@ const ReorderItinerary = () => {
 
   // 當 contextCurrentActivities 改變時，更新 daysActivities 中當前天數 (currentDayIndex) 的活動的 recommendDuration
   useEffect(() => {
-    const durations = contextCurrentActivities?.map((act) => {
-      return act.recommendDuration
-    })
-
+    const durations = contextCurrentActivities?.map((act) => act.recommendDuration)
     if (!durations) return
 
     daysActivities[currentDayIndex]?.forEach((act, idx) => {
@@ -151,10 +149,7 @@ const ReorderItinerary = () => {
 
   // 當 contextCurrentActivities 改變時，更新 daysActivities 中當前天數 (currentDayIndex) 的活動的 note
   useEffect(() => {
-    const notes = contextCurrentActivities?.map((act) => {
-      return act.note
-    })
-
+    const notes = contextCurrentActivities?.map((act) => act.note)
     if (!notes) return
 
     daysActivities[currentDayIndex]?.forEach((act, idx) => {
@@ -164,19 +159,21 @@ const ReorderItinerary = () => {
     setDaysActivities(JSON.parse(JSON.stringify(daysActivities)))
   }, [contextCurrentActivities])
 
+  // 根據 localItinerary 來初始化 daysActivities
   useEffect(() => {
-    if (itinerary && itinerary.days && itinerary.days.length > 0) {
+    if (localItinerary && localItinerary.days && localItinerary.days.length > 0) {
       // 根據 order 排序每個 day's activity
       setDaysActivities(
-        itinerary.days.map((day) => {
+        localItinerary.days.map((day) => {
           return day.activities
             ? day.activities.sort((a, b) => a.order - b.order)
             : []
         })
       )
     }
-  }, [itinerary, heyUpdateData])
+  }, [localItinerary, heyUpdateData])
 
+  // Socket 連線
   useEffect(() => {
     const socket = io(`${BACKEND_URL}`, {
       withCredentials: true,
@@ -207,154 +204,138 @@ const ReorderItinerary = () => {
         activities: Itinerary["days"][number]["activities"]
         user: any
       }) => {
-        console.log("Received reorder update:", updatedActivities);
+        console.log("Received reorder update:", updatedActivities)
 
         setDaysActivities((prev) => {
-          const newDays = [...prev];
-          newDays[updatedActivities.dayIndex] = updatedActivities.activities;
-          return newDays;
-        });
+          const newDays = [...prev]
+          newDays[updatedActivities.dayIndex] = updatedActivities.activities
+          return newDays
+        })
 
         // 如果是當前顯示的日子，更新顯示的活動順序
         if (updatedActivities.dayIndex == parseInt(selectedDayIndex, 10)) {
-          setCurrentActivities(updatedActivities.activities);
+          setCurrentActivities(updatedActivities.activities)
         }
 
         // 更新 editingUser 狀態
-        //console.log("Received ID:", updatedActivities.user.id);
         setEditingUser((prev) => {
-          const updatedUsers = prev ? [...prev] : [];
+          const updatedUsers = prev ? [...prev] : []
           if (!updatedUsers.includes(updatedActivities.user)) {
             updatedUsers.push({
               user: updatedActivities.user,
               day: updatedActivities.dayIndex,
-              activityId: '0',
-            }); // 新增發出該事件的使用者
+              activityId: "0",
+            })
           }
-          return updatedUsers;
-        });
+          return updatedUsers
+        })
       }
     )
 
     // 監聽: 有人結束 reorder 結果
-    socket.on(
-      "reorder_someone_finish",
-      (updatedActivities: {
-        user: any
-      }) => {
-        // 更新 editingUser 狀態
-        //console.log("Received ID:", updatedActivities.user.id);
-        setEditingUser((prev) => {
-          if (!prev) return [];
-          // 過濾掉與 updatedActivities.user.id 匹配的項目
-          const updatedUsers = prev.filter((u) => u.user.id !== updatedActivities.user.id);
-          return updatedUsers;
-        });
-      }
-    )
+    socket.on("reorder_someone_finish", (updatedActivities: { user: any }) => {
+      setEditingUser((prev) => {
+        if (!prev) return []
+        // 過濾掉與 updatedActivities.user.id 匹配的項目
+        const updatedUsers = prev.filter((u) => u.user.id !== updatedActivities.user.id)
+        return updatedUsers
+      })
+    })
 
     // 監聽: 刪除行程
-    socket.on(
-      "trip_deleted",
-      (data: { dayIndex: number; activityId: string }) => {
-        console.log("Trip deleted:", data)
-        setDaysActivities((prev) => {
-          const newDays = [...prev]
-          if (newDays[data.dayIndex]) {
-            newDays[data.dayIndex] = newDays[data.dayIndex].filter(
-              (activity) => activity.id !== data.activityId
-            )
-          }
-          return newDays
-        })
-        setCurrentActivities((prev) => {
-          let newActivities = [...prev]
-          if (newActivities) {
-            newActivities = newActivities.filter(
-              (activity) => activity.id !== data.activityId
-            )
-          }
-          return newActivities
-        }) // 更新圖標順序 (直接把handleLoadMap加在這裡會跳錯誤)
-      }
-    )
+    socket.on("trip_deleted", (data: { dayIndex: number; activityId: string }) => {
+      console.log("Trip deleted:", data)
+      setDaysActivities((prev) => {
+        const newDays = [...prev]
+        if (newDays[data.dayIndex]) {
+          newDays[data.dayIndex] = newDays[data.dayIndex].filter(
+            (activity) => activity.id !== data.activityId
+          )
+        }
+        return newDays
+      })
+      setCurrentActivities((prev) => {
+        let newActivities = [...prev]
+        if (newActivities) {
+          newActivities = newActivities.filter(
+            (activity) => activity.id !== data.activityId
+          )
+        }
+        return newActivities
+      })
+    })
 
     // 監聽: 編輯備註
     socket.on(
       "note_edited",
-      (data: { dayIndex: number; activityId: string; note: string , user: User}) => {
+      (data: { dayIndex: number; activityId: string; note: string; user: User }) => {
         console.log("Note edited:", data)
         setDaysActivities((prev) => {
           const newDays = [...prev]
           newDays[data.dayIndex] = newDays[data.dayIndex].map((activity) =>
-            activity.id === data.activityId
-              ? { ...activity, note: data.note }
-              : activity
+            activity.id === data.activityId ? { ...activity, note: data.note } : activity
           )
           return newDays
         })
         setEditingUser_note((prev) => {
-          if (!prev) return [];
-          // 過濾掉與 updatedActivities.user.id 匹配的項目
-          const updatedUsers = prev.filter((u) => u.user.id !== data.user.id);
-          return updatedUsers;
-        });
+          if (!prev) return []
+          // 過濾掉與 data.user.id 匹配的項目
+          const updatedUsers = prev.filter((u) => u.user.id !== data.user.id)
+          return updatedUsers
+        })
       }
     )
+
     socket.on(
       "start_note_edited",
       (data: { dayIndex: number; activityId: string; user: User }) => {
-        // 更新 editingUser 狀態
-        // console.log("Received ID:", data.activityId);
+        // 更新 editingUser_note 狀態
         setEditingUser_note((prev) => {
-          const updatedUsers = prev ? [...prev] : [];
-          if (!updatedUsers.some((user) => user.user.id === data.user.id)) { // Check by user ID or unique identifier
+          const updatedUsers = prev ? [...prev] : []
+          if (!updatedUsers.some((user) => user.user.id === data.user.id)) {
             updatedUsers.push({
-              user: data.user,           // `data.user` is of type `User`
-              day: data.dayIndex,        // `data.dayIndex` is of type `number`
+              user: data.user,
+              day: data.dayIndex,
               activityId: data.activityId,
-            });
+            })
           }
-          return updatedUsers;
-        });
+          return updatedUsers
+        })
       }
     )
+
     socket.on(
       "cancel_note_edited",
       (data: { dayIndex: number; activityId: string; user: User }) => {
-        // 更新 editingUser 狀態
-        //console.log("Received ID:", updatedActivities.user.id);
         setEditingUser_note((prev) => {
-          if (!prev) return [];
-          // 過濾掉與 updatedActivities.user.id 匹配的項目
-          const updatedUsers = prev.filter((u) => u.user.id !== data.user.id);
-          return updatedUsers;
-        });
+          if (!prev) return []
+          // 過濾掉與 data.user.id 匹配的項目
+          const updatedUsers = prev.filter((u) => u.user.id !== data.user.id)
+          return updatedUsers
+        })
       }
     )
-    
 
     // 監聽: 編輯每日開始時間
-    socket.on(
-      "start_time_updated",
-      (data: { dayIndex: number; startTime: string }) => {
-        console.log("Start time updated:", data)
-        // 這裡要特別注意，如果想即時更新 itinerary.days[startTime]，可能需要在 local state 也存那個 startTime
-        if (itinerary?.days?.[data.dayIndex]) {
-          itinerary.days[data.dayIndex].startTime = data.startTime
+    socket.on("start_time_updated", (data: { dayIndex: number; startTime: string }) => {
+      console.log("Start time updated:", data)
+      // 如果想立即讓畫面 re-render，需要用 setLocalItinerary 更新 state
+      setLocalItinerary((prevItinerary) => {
+        if (!prevItinerary) return prevItinerary
+        const updatedItinerary = { ...prevItinerary }
+        updatedItinerary.days = [...(updatedItinerary.days || [])]
+        updatedItinerary.days[data.dayIndex] = {
+          ...updatedItinerary.days[data.dayIndex],
+          startTime: data.startTime,
         }
-        // 若想讓畫面立即 re-render，需要配合 setItinerary 或 setDaysActivities 做一些額外處理
-      }
-    )
+        return updatedItinerary
+      })
+    })
 
     // 監聽: 編輯停留時間
     socket.on(
       "duration_updated",
-      (data: {
-        dayIndex: number
-        activityId: string
-        recommendDuration: number
-      }) => {
+      (data: { dayIndex: number; activityId: string; recommendDuration: number }) => {
         console.log("Duration updated:", data)
         setDaysActivities((prev) => {
           const newDays = [...prev]
@@ -368,12 +349,11 @@ const ReorderItinerary = () => {
       }
     )
 
+    // 監聽: 新增行程
     socket.on("trip_added", (data: { dayIndex: number; newActivity: any }) => {
       console.log("trip_added => ", data)
-      // 例如將該活動插入指定 dayIndex 的行程中
       setDaysActivities((prev) => {
         const newDays = [...prev]
-        // 先確保 newDays[data.dayIndex] 存在
         if (newDays[data.dayIndex]) {
           newDays[data.dayIndex] = [...newDays[data.dayIndex], data.newActivity]
         }
@@ -384,11 +364,7 @@ const ReorderItinerary = () => {
     // 監聽: 編輯交通時間
     socket.on(
       "commuting_time_updated",
-      (data: {
-        dayIndex: number
-        activityId: string
-        commutingTime: number
-      }) => {
+      (data: { dayIndex: number; activityId: string; commutingTime: number }) => {
         console.log("Commuting time updated:", data)
         setDaysActivities((prev) => {
           const newDays = [...prev]
@@ -408,26 +384,29 @@ const ReorderItinerary = () => {
     }
   }, [roomId])
 
-  // 異步拉資料完成前的狀態
+  // 如果還在載入 (後端資料)
   if (isLoading) return <div>Loading...</div>
 
-  // 沒有行程資料
-  if (!itinerary || !itinerary.days) {
-    console.log("No itinerary data available", itinerary)
+  // 如果後端沒有任何行程資料
+  if (!localItinerary || !localItinerary.days) {
+    console.log("No itinerary data available", localItinerary)
     return <div>No itinerary data available</div>
   }
 
-  // 目前選擇的 day activities
+  // 目前選擇的 day
   const currentDayIndex = parseInt(selectedDayIndex, 10)
   const currentActivities = daysActivities[currentDayIndex] || []
 
-  // reorder 的 callback
-  const handleReorder = (newOrder: Itinerary["days"][number]["activities"]) => {
+  // 拖曳排序的 callback
+  const handleReorder = (
+    newOrder: Itinerary["days"][number]["activities"]
+  ) => {
     setDaysActivities((prev) => {
       const newDays = [...prev]
       newDays[currentDayIndex] = newOrder
       return newDays
     })
+
     // 通知其他使用者
     socketRef.current?.emit("reorder_event", {
       roomId,
@@ -475,11 +454,7 @@ const ReorderItinerary = () => {
     }
   }
 
-  // ============== 以下為新增的功能/Socket 行為 ==============
-
-  /**
-   * 刪除行程
-   */
+  // 刪除行程
   const handleDeletePlace = async (activityId: string) => {
     // 關閉詳細資訊
     setCallCloseDetail(() => () => {
@@ -508,6 +483,7 @@ const ReorderItinerary = () => {
         dayIndex: currentDayIndex,
         activityId,
       })
+
       // 本地端也先行刪除
       setDaysActivities((prev) => {
         const newDays = [...prev]
@@ -526,15 +502,13 @@ const ReorderItinerary = () => {
           )
         }
         return newActivities
-      }) // 更新圖標順序 (直接把handleLoadMap加在這裡會跳錯誤)
+      })
     } catch (error) {
       console.error("Error deleting trip:", error)
     }
   }
 
-  /**
-   * 編輯備註
-   */
+  // 編輯備註
   const handleNoteClick = (activityId: string, note: string) => {
     setEditingNoteId(activityId)
     setNoteValue(note)
@@ -568,14 +542,11 @@ const ReorderItinerary = () => {
       }
 
       // Update to DB
-      const response = await fetch(
-        `${BACKEND_URL}/api/addactivity/updateNote`,
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(updatedNote),
-        }
-      )
+      const response = await fetch(`${BACKEND_URL}/api/addactivity/updateNote`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(updatedNote),
+      })
       if (!response.ok) {
         throw new Error(`Failed to update note: ${response.statusText}`)
       }
@@ -593,16 +564,12 @@ const ReorderItinerary = () => {
       setDaysActivities((prev) => {
         const newDays = [...prev]
         newDays[currentDayIndex] = newDays[currentDayIndex].map((activity) =>
-          activity.id === editingNoteId
-            ? { ...activity, note: noteValue }
-            : activity
-        ) as Itinerary["days"][number]["activities"]
+          activity.id === editingNoteId ? { ...activity, note: noteValue } : activity
+        )
         return newDays
       })
 
       setIsNotePopupOpen(false)
-      // updateActivityInDays(editingNoteId, { note: noteValue });
-      // setIsPopupOpen(false); // Close the popup
       setEditingNoteId(null)
     } catch (error) {
       console.error("Error updating note:", error)
@@ -622,13 +589,6 @@ const ReorderItinerary = () => {
     })
   }
 
-  /**
-   * 顯示 / 收合說明
-   */
-  // const toggleDescription = (activityId: string) => {
-  //   setDescriptionActivityId((prevId) => (prevId === activityId ? null : activityId))
-  // }
-
   // 停留時間
   const handleDurationClick = (activityId: string, duration: number) => {
     setEditingDurationActivityId(activityId)
@@ -638,35 +598,30 @@ const ReorderItinerary = () => {
       console.log("Close Detail!")
     })
   }
+
   const handleDurationSave = async () => {
     if (!editingDurationActivityId) return
     await handleRecommendDurationChange(editingDurationActivityId, newDuration)
     setIsDurationPopupOpen(false)
-    // updateActivityInDays(editingDurationActivityId, { recommendDuration: newDuration });
-    setIsDurationPopupOpen(false) // Close the popup  // Merge到一半我發現ui的這邊多了一行重複的 不知道有沒有功能(?
   }
 
   const handleRecommendDurationChange = async (
     activityId: string,
     newDuration: number
   ) => {
-    // 更新DB
     try {
       const updatedNote = {
         itineraryId: id,
         curDays: selectedDayIndex,
         place: { activityId, recommendDuration: newDuration },
       }
-      const response = await fetch(
-        `${BACKEND_URL}/api/addactivity/updateDuration`,
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(updatedNote),
-        }
-      )
+      const response = await fetch(`${BACKEND_URL}/api/addactivity/updateDuration`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(updatedNote),
+      })
       if (!response.ok) {
-        throw new Error(`Failed to update note: ${response.statusText}`)
+        throw new Error(`Failed to update duration: ${response.statusText}`)
       }
     } catch (error) {
       console.error("Error updating recommendDuration:", error)
@@ -704,14 +659,12 @@ const ReorderItinerary = () => {
     if (!editingTravelTimeActivityId) return
     await handleCommutingTimeChange(editingTravelTimeActivityId, newTravelTime)
     setIsTravelTimePopupOpen(false)
-    setIsTravelTimePopupOpen(false) // Close the popup  // Merge到一半我發現ui的這邊多了一行重複的 不知道有沒有功能(?
   }
 
   const handleCommutingTimeChange = async (
     activityId: string,
     newCommutingTime: number
   ) => {
-    // 更新DB
     try {
       const updatedCommutingTime = {
         itineraryId: id,
@@ -727,9 +680,7 @@ const ReorderItinerary = () => {
         }
       )
       if (!response.ok) {
-        throw new Error(
-          `Failed to update commuting time: ${response.statusText}`
-        )
+        throw new Error(`Failed to update commuting time: ${response.statusText}`)
       }
     } catch (error) {
       console.error("Error updating commuting time:", error)
@@ -747,9 +698,7 @@ const ReorderItinerary = () => {
     setDaysActivities((prev) => {
       const newDays = [...prev]
       newDays[currentDayIndex] = newDays[currentDayIndex].map((act) =>
-        act.id === activityId
-          ? { ...act, commutingTime: newCommutingTime }
-          : act
+        act.id === activityId ? { ...act, commutingTime: newCommutingTime } : act
       )
       return newDays
     })
@@ -783,9 +732,7 @@ const ReorderItinerary = () => {
     setCurrentActivities(currentActivities)
   }
 
-  /**
-   * 修改每日開始時間
-   */
+  // 修改每日開始時間
   const handleStartTime = async (newStartTime: string) => {
     const updatedTime = {
       itineraryId: id,
@@ -826,25 +773,25 @@ const ReorderItinerary = () => {
     <div ref={containerRef} className="p-2 flex flex-col h-full">
       <div className="bg-gray-200 p-4">
         <h2 className="text-xl font-bold mb-2">
-          {itinerary.description.length > 15
-            ? itinerary.location +
+          {localItinerary.description.length > 15
+            ? localItinerary.location +
               " " +
-              ((new Date(itinerary.endDate).getTime() -
-                new Date(itinerary.startDate).getTime()) /
+              ((new Date(localItinerary.endDate).getTime() -
+                new Date(localItinerary.startDate).getTime()) /
                 (1000 * 60 * 60 * 24) +
                 1) +
               "日遊"
-            : itinerary.description}
+            : localItinerary.description}
         </h2>
 
         <p className="text-base font-semibold text-gray-600">
-          地點: {itinerary.location}
+          地點: {localItinerary.location}
         </p>
       </div>
 
       {/* 選擇 Day */}
       <div className="flex space-x-2 mb-2 min-h-[50px] overflow-x-auto scrollbar-hide whitespace-nowrap bg-gray-100 p-2">
-        {itinerary.days.map((_, index) => (
+        {localItinerary.days.map((_, index) => (
           <button
             key={index}
             onClick={() => setSelectedDayIndex(index.toString())}
@@ -876,50 +823,75 @@ const ReorderItinerary = () => {
         <input
           type="time"
           id="start-time"
-          value={itinerary.days[currentDayIndex].startTime || "08:00"}
+          value={localItinerary?.days?.[currentDayIndex]?.startTime || "08:00"}
           onChange={(e) => {
             const newStartTime = e.target.value
-            // 先行更新本地資料
-            itinerary.days[currentDayIndex].startTime = newStartTime
+
+            // 用 setLocalItinerary 更新本地 State
+            setLocalItinerary((prevItinerary) => {
+              if (!prevItinerary) return prevItinerary
+              const updatedItinerary = { ...prevItinerary }
+              updatedItinerary.days = [...(updatedItinerary.days || [])]
+              updatedItinerary.days[currentDayIndex] = {
+                ...updatedItinerary.days[currentDayIndex],
+                startTime: newStartTime,
+              }
+              return updatedItinerary
+            })
+
+            // 呼叫後端 API + emit socket
             handleStartTime(newStartTime)
           }}
           className="px-2 py-1 bg-transparent border-b border-gray-400 focus:outline-none focus:border-blue-500"
         />
       </div>
-      
+
+      {/* 拖曳排序內容 */}
       <div
         style={{
-          width: "100%", // 你可以根據需求調整寬度
-          height: "100%", // 你可以根據需求調整高度
-          border: editingUser && editingUser.length > 0 && editingUser[0].day == currentDayIndex ? "2px solid orange" : "2px solid transparent", // 條件式邊框
-          transition: "border 0.3s ease", // 加入過渡效果，使邊框變化更平滑
+          width: "100%",
+          height: "100%",
+          border:
+            editingUser &&
+            editingUser.length > 0 &&
+            editingUser[0].day == currentDayIndex
+              ? "2px solid orange"
+              : "2px solid transparent",
+          transition: "border 0.3s ease",
         }}
       >
-        { editingUser && editingUser.length > 0 && editingUser[0].day == currentDayIndex && (
-          <p
-            style={{
-              backgroundColor: "#fff5e1", // 淡橘色背景
-              color: "#ff8c00", // 橘色文字
-              fontWeight: "bold", // 加粗字體
-              fontSize: "18px", // 增加字體大小
-              borderRadius: "8px", // 圓角邊框
-              padding: "10px 20px", // 內邊距
-              boxShadow: "0 4px 8px rgba(0, 0, 0, 0.1)", // 輕微陰影效果
-              transition: "transform 0.3s ease-in-out", // 動畫效果
-              marginTop: "2px", // 上邊距
-              marginBottom: "2px", // 上邊距
-              display: "inline-block", // 使元素只佔用內容區域
-            }}
-          >
-            {editingUser[0].user.email.split("@")[0]}&nbsp;正在編輯!
-          </p>
-        )}
+        {editingUser &&
+          editingUser.length > 0 &&
+          editingUser[0].day == currentDayIndex && (
+            <p
+              style={{
+                backgroundColor: "#fff5e1",
+                color: "#ff8c00",
+                fontWeight: "bold",
+                fontSize: "18px",
+                borderRadius: "8px",
+                padding: "10px 20px",
+                boxShadow: "0 4px 8px rgba(0, 0, 0, 0.1)",
+                transition: "transform 0.3s ease-in-out",
+                marginTop: "2px",
+                marginBottom: "2px",
+                display: "inline-block",
+              }}
+            >
+              {editingUser[0].user.email.split("@")[0]}&nbsp;正在編輯!
+            </p>
+          )}
 
-        {/* 拖曳排序的區域 */}
         <Reorder.Group
           axis="y"
           values={currentActivities}
-          onReorder={(editingUser && editingUser.length > 0 && editingUser[0].day == currentDayIndex) ? () => {} : handleReorder}
+          onReorder={
+            editingUser &&
+            editingUser.length > 0 &&
+            editingUser[0].day == currentDayIndex
+              ? () => {}
+              : handleReorder
+          }
           className="flex-1 overflow-auto pb-0.5"
         >
           {currentActivities.map((activity, idx) => (
@@ -931,26 +903,20 @@ const ReorderItinerary = () => {
               onClick={() => handlePlaceClick(activity)}
               onLoad={() => handleLoadMap()}
             >
-              {/* 左右並排內容 */}
               <div className="flex flex-row justify-between items-stretch">
-                {/* 左側內容 */}
                 <div className="flex flex-col flex-1">
                   <p>行程 {idx + 1}</p>
-                  <h3 className="text-lg font-semibold leading-6">
-                    {activity.name}
-                  </h3>
+                  <h3 className="text-lg font-semibold leading-6">{activity.name}</h3>
                   <p className="text-xs text-gray-500">📍 {activity.location}</p>
 
-                  {/* Merge後的寫法有點爛  但我想睡覺了之後再改(X */}
                   <p className="text-xs text-gray-500">
                     {calculateTimeRange(
                       calculateNextStartTime(
-                        itinerary.days[currentDayIndex].startTime,
+                        localItinerary.days[currentDayIndex].startTime,
                         currentActivities
                           .slice(0, idx)
                           .reduce(
-                            (acc, act) =>
-                              acc + act.recommendDuration + act.commutingTime,
+                            (acc, act) => acc + act.recommendDuration + act.commutingTime,
                             0
                           )
                       ),
@@ -984,13 +950,9 @@ const ReorderItinerary = () => {
                   </div>
                 </div>
 
-                {/* 右側內容 */}
                 <div className="flex flex-col items-start justify-between w-40 ml-4">
-                  {/* 說明 / 圖片 */}
                   {descriptionActivityId === activity.id ? (
-                    <div className="text-sm text-gray-600">
-                      {activity.description}
-                    </div>
+                    <div className="text-sm text-gray-600">{activity.description}</div>
                   ) : (
                     <img
                       src={activity.photoUrls?.[0]}
@@ -1000,52 +962,68 @@ const ReorderItinerary = () => {
                   )}
 
                   <div className="mt-2">
-                    
                     <div
                       style={{
-                        width: "100%", // 你可以根據需求調整寬度
-                        height: "80%", // 你可以根據需求調整高度
-                        border: editingUser_note && editingUser_note.length > 0 && auth?.user.id != editingUser_note[0].user.id && editingUser_note[0].day == parseInt(selectedDayIndex, 10) && editingUser_note[0].activityId == activity.id ? "4px solid rgb(75, 202, 118)" : "2px solid transparent", // 條件式邊框
-                        transition: "border 0.3s ease", // 加入過渡效果，使邊框變化更平滑
+                        width: "100%",
+                        height: "80%",
+                        border:
+                          editingUser_note &&
+                          editingUser_note.length > 0 &&
+                          auth?.user.id != editingUser_note[0].user.id &&
+                          editingUser_note[0].day == parseInt(selectedDayIndex, 10) &&
+                          editingUser_note[0].activityId == activity.id
+                            ? "4px solid rgb(75, 202, 118)"
+                            : "2px solid transparent",
+                        transition: "border 0.3s ease",
                       }}
                     >
-                      { editingUser_note && editingUser_note.length > 0 && auth?.user.id != editingUser_note[0].user.id && editingUser_note[0].day == parseInt(selectedDayIndex, 10) && editingUser_note[0].activityId == activity.id && (
-                        <p
-                          style={{
-                            backgroundColor: "rgb(188, 238, 188)", // 淡橘色背景
-                            color: "rgb(31, 102, 55)", // 橘色文字
-                            fontWeight: "bold", // 加粗字體
-                            fontSize: "12px", // 增加字體大小
-                            borderRadius: "8px", // 圓角邊框
-                            padding: "2px 5px", // 內邊距
-                            boxShadow: "0 4px 8px rgba(0, 0, 0, 0.1)", // 輕微陰影效果
-                            transition: "transform 0.3s ease-in-out", // 動畫效果
-                            marginTop: "2px", // 上邊距
-                            marginBottom: "2px", // 上邊距
-                            display: "inline-block", // 使元素只佔用內容區域
-                          }}
-                        >
-                          {editingUser_note[0].user.email.split("@")[0]}&nbsp;正在編輯!
-                        </p>
-                      )}
+                      {editingUser_note &&
+                        editingUser_note.length > 0 &&
+                        auth?.user.id != editingUser_note[0].user.id &&
+                        editingUser_note[0].day == parseInt(selectedDayIndex, 10) &&
+                        editingUser_note[0].activityId == activity.id && (
+                          <p
+                            style={{
+                              backgroundColor: "rgb(188, 238, 188)",
+                              color: "rgb(31, 102, 55)",
+                              fontWeight: "bold",
+                              fontSize: "12px",
+                              borderRadius: "8px",
+                              padding: "2px 5px",
+                              boxShadow: "0 4px 8px rgba(0, 0, 0, 0.1)",
+                              transition: "transform 0.3s ease-in-out",
+                              marginTop: "2px",
+                              marginBottom: "2px",
+                              display: "inline-block",
+                            }}
+                          >
+                            {editingUser_note[0].user.email.split("@")[0]}
+                            &nbsp;正在編輯!
+                          </p>
+                        )}
                       {/* 備註 */}
                       <span className="text-gray-500">💡</span>
                       <p
                         className="text-xs text-gray-500 cursor-pointer underline inline"
                         onClick={(e) => {
-                          if (editingUser_note && editingUser_note.length > 0 && auth?.user.id != editingUser_note[0].user.id && editingUser_note[0].day === parseInt(selectedDayIndex, 10) && editingUser_note[0].activityId === activity.id) {
-                            return;
+                          // 若有人正在編輯 (且不是自己)，則不允許點擊
+                          if (
+                            editingUser_note &&
+                            editingUser_note.length > 0 &&
+                            auth?.user.id != editingUser_note[0].user.id &&
+                            editingUser_note[0].day === parseInt(selectedDayIndex, 10) &&
+                            editingUser_note[0].activityId === activity.id
+                          ) {
+                            return
                           } else {
-                            e.stopPropagation();
-                            handleNoteClick(activity.id, activity.note);
+                            e.stopPropagation()
+                            handleNoteClick(activity.id, activity.note)
                           }
                         }}
                       >
-                        {activity.note ? (
-                          activity.note.slice(0, 8) + "..."
-                        ) : (
-                          <span className="underline">編輯個人筆記</span>
-                        )}
+                        {activity.note
+                          ? activity.note.slice(0, 8) + "..."
+                          : "編輯個人筆記"}
                       </p>
                     </div>
 
@@ -1056,10 +1034,7 @@ const ReorderItinerary = () => {
                         className="text-xs text-gray-500 cursor-pointer underline inline"
                         onClick={(e) => {
                           e.stopPropagation()
-                          handleDurationClick(
-                            activity.id,
-                            activity.recommendDuration
-                          )
+                          handleDurationClick(activity.id, activity.recommendDuration)
                         }}
                       >
                         {formatDuration(activity.recommendDuration)}
@@ -1090,10 +1065,9 @@ const ReorderItinerary = () => {
               )}
             </Reorder.Item>
           ))}
-          <div style={{ height: "50px" }}></div> {/* 占位 */}
+          <div style={{ height: "50px" }}></div>
         </Reorder.Group>
       </div>
-      
 
       {isPopupOpen && (
         <NotePopup
@@ -1120,6 +1094,7 @@ const ReorderItinerary = () => {
         />
       )}
 
+      {/* 再次保險：避免兩個重複的 TravelTimePopup (若程式碼有意) */}
       {isTravelTimePopupOpen && (
         <TravelTimePopup
           travelTime={newTravelTime}
