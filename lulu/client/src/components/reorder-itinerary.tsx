@@ -81,6 +81,8 @@ const ReorderItinerary = () => {
     setCurrentActivities,
     editingUser_note,
     setEditingUser_note,
+    editingUser_recommendDuration, 
+    setEditingUser_recommendDuration,
     context_note, 
     setContext_note,
     context_recommendDuration, 
@@ -144,7 +146,7 @@ const ReorderItinerary = () => {
     const durations = contextCurrentActivities?.map((act) => act.recommendDuration)
     if (!durations) return
 
-    daysActivities[currentDayIndex]?.forEach((act, idx) => {
+    daysActivities[parseInt(selectedDayIndex, 10)]?.forEach((act, idx) => {
       act.recommendDuration = durations[idx]
     })
 
@@ -156,7 +158,7 @@ const ReorderItinerary = () => {
     const notes = contextCurrentActivities?.map((act) => act.note)
     if (!notes) return
 
-    daysActivities[currentDayIndex]?.forEach((act, idx) => {
+    daysActivities[parseInt(selectedDayIndex, 10)]?.forEach((act, idx) => {
       act.note = notes[idx]
     })
 
@@ -340,7 +342,7 @@ const ReorderItinerary = () => {
     // 監聽: 編輯停留時間
     socket.on(
       "duration_updated",
-      (data: { dayIndex: number; activityId: string; recommendDuration: number }) => {
+      (data: { dayIndex: number; activityId: string; recommendDuration: number; user: User }) => {
         console.log("Duration updated:", data)
         setDaysActivities((prev) => {
           const newDays = [...prev]
@@ -351,7 +353,45 @@ const ReorderItinerary = () => {
           )
           return newDays
         })
+        setEditingUser_recommendDuration((prev) => {
+          if (!prev) return []
+          // 過濾掉與 data.user.id 匹配的項目
+          const updatedUsers = prev.filter((u) => u.user.id != data.user.id)
+          return updatedUsers
+        })
         setContext_recommendDuration(data.recommendDuration)
+      }
+    )
+
+    socket.on(
+      "start_duration_updated",
+      (data: { dayIndex: number; activityId: string; user: User }) => {
+        console.log("FQ", data);
+        console.log("FQQ", data.user);
+        // 更新 editingUser_note 狀態
+        setEditingUser_recommendDuration((prev) => {
+          const updatedUsers = prev ? [...prev] : []
+          if (!updatedUsers.some((user) => user.user.id == data.user.id)) {
+            updatedUsers.push({
+              user: data.user,
+              day: data.dayIndex,
+              activityId: data.activityId,
+            })
+          }
+          return updatedUsers
+        })
+      }
+    )
+
+    socket.on(
+      "cancel_duration_updated",
+      (data: { dayIndex: number; activityId: string; user: User }) => {
+        setEditingUser_recommendDuration((prev) => {
+          if (!prev) return []
+          // 過濾掉與 data.user.id 匹配的項目
+          const updatedUsers = prev.filter((u) => u.user.id != data.user.id)
+          return updatedUsers
+        })
       }
     )
 
@@ -603,6 +643,13 @@ const ReorderItinerary = () => {
     setCallCloseDetail(() => () => {
       console.log("Close Detail!")
     })
+    // 通知 socket
+    socketRef.current?.emit("start_update_duration", {
+      roomId,
+      dayIndex: parseInt(selectedDayIndex, 10),
+      activityId: activityId,
+      user: auth?.user,
+    })
   }
 
   const handleDurationSave = async () => {
@@ -639,6 +686,7 @@ const ReorderItinerary = () => {
       dayIndex: currentDayIndex,
       activityId,
       recommendDuration: newDuration,
+      user: auth?.user,
     })
 
     // 更新本地資料
@@ -976,7 +1024,20 @@ const ReorderItinerary = () => {
                     <div
                       style={{
                         width: "100%",
-                        height: "80%",
+                        height: 
+                        editingUser_recommendDuration &&
+                        editingUser_recommendDuration.length > 0 &&
+                        auth?.user.id != editingUser_recommendDuration[0].user.id &&
+                        editingUser_recommendDuration[0].day == parseInt(selectedDayIndex, 10) &&
+                        editingUser_recommendDuration[0].activityId == activity.id
+                          ? "25%" :
+                          editingUser_note &&
+                          editingUser_note.length > 0 &&
+                          auth?.user.id != editingUser_note[0].user.id &&
+                          editingUser_note[0].day == parseInt(selectedDayIndex, 10) &&
+                          editingUser_note[0].activityId == activity.id
+                              ? "75%"
+                          : "50%",
                         border:
                           editingUser_note &&
                           editingUser_note.length > 0 &&
@@ -1011,7 +1072,8 @@ const ReorderItinerary = () => {
                             {editingUser_note[0].user.email.split("@")[0]}
                             &nbsp;正在編輯!
                           </p>
-                        )}
+                        )
+                      }
                       {/* 備註 */}
                       <span className="text-gray-500">💡&nbsp;</span>
                       <p
@@ -1037,19 +1099,84 @@ const ReorderItinerary = () => {
                           : "編輯個人筆記"}
                       </p>
                     </div>
-
-                    {/* 停留時間 */}
-                    <div className="flex items-center">
-                      <span className="text-gray-500">⏳&nbsp;</span>
-                      <p
-                        className="text-xs text-gray-500 cursor-pointer underline inline"
-                        onClick={(e) => {
-                          e.stopPropagation()
-                          handleDurationClick(activity.id, activity.recommendDuration)
-                        }}
-                      >
-                        {formatDuration(activity.recommendDuration)}
-                      </p>
+                    
+                    <div
+                      style={{
+                        width: "100%",
+                        height: 
+                        editingUser_recommendDuration &&
+                        editingUser_recommendDuration.length > 0 &&
+                        auth?.user.id != editingUser_recommendDuration[0].user.id &&
+                        editingUser_recommendDuration[0].day == parseInt(selectedDayIndex, 10) &&
+                        editingUser_recommendDuration[0].activityId == activity.id
+                          ? "80%"
+                          : editingUser_note &&
+                            editingUser_note.length > 0 &&
+                            auth?.user.id != editingUser_note[0].user.id &&
+                            editingUser_note[0].day == parseInt(selectedDayIndex, 10) &&
+                            editingUser_note[0].activityId == activity.id
+                              ? "20%"
+                              : "50%",
+                        border:
+                        editingUser_recommendDuration &&
+                        editingUser_recommendDuration.length > 0 &&
+                        auth?.user.id != editingUser_recommendDuration[0].user.id &&
+                        editingUser_recommendDuration[0].day == parseInt(selectedDayIndex, 10) &&
+                        editingUser_recommendDuration[0].activityId == activity.id
+                          ? "4px solid rgb(75, 202, 118)"
+                          : "2px solid transparent",
+                        transition: "border 0.3s ease",
+                      }}
+                    >
+                      { editingUser_recommendDuration &&
+                        editingUser_recommendDuration.length > 0 &&
+                        auth?.user.id != editingUser_recommendDuration[0].user.id &&
+                        editingUser_recommendDuration[0].day == parseInt(selectedDayIndex, 10) &&
+                        editingUser_recommendDuration[0].activityId == activity.id && (
+                          <p
+                            style={{
+                              backgroundColor: "rgb(188, 238, 188)",
+                              color: "rgb(31, 102, 55)",
+                              fontWeight: "bold",
+                              fontSize: "12px",
+                              borderRadius: "8px",
+                              padding: "2px 5px",
+                              boxShadow: "0 4px 8px rgba(0, 0, 0, 0.1)",
+                              transition: "transform 0.3s ease-in-out",
+                              marginTop: "2px",
+                              marginBottom: "2px",
+                              display: "inline-block",
+                            }}
+                          >
+                            {editingUser_recommendDuration[0].user.email.split("@")[0]}
+                            &nbsp;正在編輯!
+                          </p>
+                        )
+                      }
+                      {/* 停留時間 */}
+                      <div className="flex items-center">
+                        <span className="text-gray-500">⏳&nbsp;</span>
+                        <p
+                          className="text-xs text-gray-500 cursor-pointer underline inline"
+                          onClick={(e) => {
+                            // 若有人正在編輯 (且不是自己)，則不允許點擊
+                            if (
+                              editingUser_recommendDuration &&
+                              editingUser_recommendDuration.length > 0 &&
+                              auth?.user.id != editingUser_recommendDuration[0].user.id &&
+                              editingUser_recommendDuration[0].day === parseInt(selectedDayIndex, 10) &&
+                              editingUser_recommendDuration[0].activityId === activity.id
+                            ) {
+                              return
+                            } else {
+                              e.stopPropagation()
+                              handleDurationClick(activity.id, activity.recommendDuration)
+                            }
+                          }}
+                        >
+                          {formatDuration(activity.recommendDuration)}
+                        </p>
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -1093,7 +1220,16 @@ const ReorderItinerary = () => {
           duration={newDuration}
           onDurationChange={setNewDuration}
           onSave={handleDurationSave}
-          onCancel={() => setIsDurationPopupOpen(false)}
+          onCancel={() => {
+            setIsDurationPopupOpen(false)
+            // 通知 socket
+            socketRef.current?.emit("cancel_update_duration", {
+              roomId,
+              dayIndex: parseInt(selectedDayIndex, 10),
+              activityId: "0",
+              user: auth?.user,
+            })
+          }}
         />
       )}
       {isTravelTimePopupOpen && (

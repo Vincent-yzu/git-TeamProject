@@ -178,7 +178,12 @@ function ChatBox() {
         如果只想純粹用 Button 當 Trigger，也可以直接用 <DialogTrigger>Button</DialogTrigger> 
       */}
       <DialogTrigger asChild>
-        <div className="relative">
+        <div 
+          className="relative"
+          style={{
+            zIndex: 1,
+          }}
+        >
           <Button
             variant="outline"
             className="p-6 inline-flex absolute bottom-16 right-32 z-50"

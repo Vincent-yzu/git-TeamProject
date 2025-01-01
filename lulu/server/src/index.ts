@@ -222,7 +222,7 @@ io.on("connection", (socket) => {
     }
   })
   socket.on("update_duration", async (data) => {
-    const { roomId, dayIndex, activityId, recommendDuration } = data
+    const { roomId, dayIndex, activityId, recommendDuration, user } = data
     console.log(`Update duration in room ${roomId} by ${socket.id}:`, data)
     try {
       // 1) Update DB
@@ -232,6 +232,7 @@ io.on("connection", (socket) => {
         dayIndex,
         activityId,
         recommendDuration,
+        user
       })
     } catch (error) {
       console.error("Error updating duration:", error)

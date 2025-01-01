@@ -153,6 +153,13 @@ export const AttractionDetail = () => {
   const handleDurationClick = (duration: number) => {
     setNewDuration(duration);
     setIsDurationPopupOpen(true);
+    // 通知 socket
+    socketRef.current?.emit("start_update_duration", {
+      roomId: id,
+      dayIndex: selectedDayIndex,
+      activityId: selectedPlace.place_id,
+      user: auth?.user,
+    })
   };
 
   const handleDurationSave = async () => {
@@ -185,6 +192,7 @@ export const AttractionDetail = () => {
         dayIndex: selectedDayIndex,
         activityId: selectedPlace.place_id,
         recommendDuration: newDuration,
+        user: auth?.user,
       });
 
       currentActivities?.find((activity) => {
@@ -199,6 +207,13 @@ export const AttractionDetail = () => {
 
   const handleDurationCancel = () => {
     setIsDurationPopupOpen(false);
+    // 通知 socket
+    socketRef.current?.emit("cancel_update_duration", {
+      roomId: id,
+      dayIndex: selectedDayIndex,
+      activityId: selectedPlace.place_id,
+      user: auth?.user,
+    })
   };
 
   const handleNoteClick = (note: string) => {
@@ -327,17 +342,51 @@ export const AttractionDetail = () => {
           <br />
           {selectedPlace.formatted_address}
         </p>
-        {selectedPlace.recommendDuration !== 20241225 && (
-          <p
-            style={styles.address}
-            onClick={() => handleDurationClick(selectedPlace.recommendDuration)}
-            className="cursor-pointer underline"
-          >
-            <strong>⏳ 停留時間:</strong>
-            <br />
-            {selectedPlace.recommendDuration > 0 ? formatDuration(selectedPlace.recommendDuration) : "停留時間不可以小於0喔！ 😊"}
-          </p>
-        )}
+        <div
+          style={{
+            width: "100%", // 你可以根據需求調整寬度
+            height: "80%", // 你可以根據需求調整高度
+            border: editingUser_recommendDuration && editingUser_recommendDuration.length > 0 && auth?.user.id != editingUser_recommendDuration[0].user.id && editingUser_recommendDuration[0].day == parseInt(selectedDayIndex, 10) && editingUser_recommendDuration[0].activityId == selectedPlace.place_id ? "4px solid rgb(75, 202, 118)" : "2px solid transparent", // 條件式邊框
+            transition: "border 0.3s ease", // 加入過渡效果，使邊框變化更平滑
+          }}
+        >
+          { editingUser_recommendDuration && editingUser_recommendDuration.length > 0 && auth?.user.id != editingUser_recommendDuration[0].user.id && editingUser_recommendDuration[0].day == parseInt(selectedDayIndex, 10) && editingUser_recommendDuration[0].activityId == selectedPlace.place_id && (
+            <p
+              style={{
+                backgroundColor: "rgb(188, 238, 188)", // 淡橘色背景
+                color: "rgb(31, 102, 55)", // 橘色文字
+                fontWeight: "bold", // 加粗字體
+                fontSize: "16px", // 增加字體大小
+                borderRadius: "8px", // 圓角邊框
+                padding: "2px 0px", // 內邊距
+                boxShadow: "0 4px 8px rgba(0, 0, 0, 0.1)", // 輕微陰影效果
+                transition: "transform 0.3s ease-in-out", // 動畫效果
+                marginTop: "2px", // 上邊距
+                marginBottom: "2px", // 上邊距
+                display: "inline-block", // 使元素只佔用內容區域
+              }}
+            >
+              {editingUser_recommendDuration[0].user.email.split("@")[0]}&nbsp;正在編輯!
+            </p>
+          )}
+          {selectedPlace.recommendDuration !== 20241225 && (
+            <p
+              style={styles.address}
+              onClick={(e) => {
+                if (editingUser_recommendDuration && editingUser_recommendDuration.length > 0 && auth?.user.id != editingUser_recommendDuration[0].user.id && editingUser_recommendDuration[0].day == parseInt(selectedDayIndex, 10) && editingUser_recommendDuration[0].activityId == selectedPlace.place_id) {
+                  return;
+                } else {
+                  handleDurationClick(selectedPlace.recommendDuration)
+                }
+              }}
+              className="cursor-pointer underline"
+            >
+              <strong>⏳ 停留時間:</strong>
+              <br />
+              {selectedPlace.recommendDuration > 0 ? formatDuration(selectedPlace.recommendDuration) : "停留時間不可以小於0喔！ 😊"}
+            </p>
+          )}
+        </div>
         <div
           style={{
             width: "100%", // 你可以根據需求調整寬度
