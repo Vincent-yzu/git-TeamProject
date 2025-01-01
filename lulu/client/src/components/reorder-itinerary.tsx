@@ -366,8 +366,6 @@ const ReorderItinerary = () => {
     socket.on(
       "start_duration_updated",
       (data: { dayIndex: number; activityId: string; user: User }) => {
-        console.log("FQ", data);
-        console.log("FQQ", data.user);
         // 更新 editingUser_note 狀態
         setEditingUser_recommendDuration((prev) => {
           const updatedUsers = prev ? [...prev] : []
