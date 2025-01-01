@@ -1,4 +1,5 @@
 import React, { createContext, useState, useContext, ReactNode } from "react";
+import { Itinerary, User } from "@/types/response"
 
 // 定義類型
 interface Place {
@@ -48,6 +49,12 @@ interface activitiesArray {
   longitude: number;
 }
 
+interface EditUser {
+  user: User
+  day: number
+  activityId: string
+}
+
 // 定義變數類型
 interface MapContextType {
 
@@ -79,6 +86,10 @@ interface MapContextType {
   currentActivities: activitiesArray[] | null;  
   setCurrentActivities: React.Dispatch<React.SetStateAction<activitiesArray[] | null>>;
 
+  // 新增 editingUser_note
+  editingUser_note: EditUser[] | null;  
+  setEditingUser_note: React.Dispatch<React.SetStateAction<EditUser[] | null>>;
+
   current: any;
 }
 
@@ -93,6 +104,7 @@ export const MapProvider = ({ children }: { children: ReactNode }) => {
   const [selectedDayIndex, setSelectedDayIndex] = useState("0")
   const [callCloseDetail, setCallCloseDetail] = useState<(() => void) | null>(null); // 初始為 null
   const [currentActivities, setCurrentActivities] = useState<activitiesArray[] | null>(null);
+  const [editingUser_note, setEditingUser_note] = useState<EditUser[] | null>(null)
 
   return (
     <MapContext.Provider
@@ -111,6 +123,8 @@ export const MapProvider = ({ children }: { children: ReactNode }) => {
         setCallCloseDetail,
         currentActivities, 
         setCurrentActivities,
+        editingUser_note, 
+        setEditingUser_note,
         current: null, // Add the current property
       }}
     >

@@ -39,6 +39,10 @@ export const AttractionDetail = () => {
   const [noteValue, setNoteValue] = useState<string>("");
   const {currentActivities, setCurrentActivities} = useMapContext();
   const socketRef = useRef<Socket | null>(null)
+  const {
+    editingUser_note, 
+    setEditingUser_note,
+  } = useMapContext()
 
   // Update visibility when selectedPlace changes
   useEffect(() => {
@@ -282,17 +286,45 @@ export const AttractionDetail = () => {
             {selectedPlace.recommendDuration > 0 ? formatDuration(selectedPlace.recommendDuration) : "停留時間不可以小於0喔！ 😊"}
           </p>
         )}
-        {selectedPlace.note !== "預設的神奇空值" && (
-          <p
-            style={styles.address}
-            onClick={() => handleNoteClick(selectedPlace.note)}
-            className="cursor-pointer underline"
-          >
-            <strong>💡 個人筆記:</strong>
-            <br />
-            {selectedPlace.note ? selectedPlace.note : "您可以在此處撰寫備註，方便記錄您的想法或重要資訊哦！ 😊"}
-          </p>
-        )}
+        <div
+          style={{
+            width: "100%", // 你可以根據需求調整寬度
+            height: "80%", // 你可以根據需求調整高度
+            border: editingUser_note && editingUser_note.length > 0 && editingUser_note[0].day == parseInt(selectedDayIndex, 10) && editingUser_note[0].activityId == selectedPlace.place_id ? "4px solid rgb(75, 202, 118)" : "2px solid transparent", // 條件式邊框
+            transition: "border 0.3s ease", // 加入過渡效果，使邊框變化更平滑
+          }}
+        >
+          { editingUser_note && editingUser_note.length > 0 && editingUser_note[0].day == parseInt(selectedDayIndex, 10) && editingUser_note[0].activityId == selectedPlace.place_id && (
+            <p
+              style={{
+                backgroundColor: "rgb(188, 238, 188)", // 淡橘色背景
+                color: "rgb(31, 102, 55)", // 橘色文字
+                fontWeight: "bold", // 加粗字體
+                fontSize: "16px", // 增加字體大小
+                borderRadius: "8px", // 圓角邊框
+                padding: "2px 0px", // 內邊距
+                boxShadow: "0 4px 8px rgba(0, 0, 0, 0.1)", // 輕微陰影效果
+                transition: "transform 0.3s ease-in-out", // 動畫效果
+                marginTop: "2px", // 上邊距
+                marginBottom: "2px", // 上邊距
+                display: "inline-block", // 使元素只佔用內容區域
+              }}
+            >
+              {editingUser_note[0].user.email.split("@")[0]}&nbsp;正在編輯!
+            </p>
+          )}
+          {selectedPlace.note !== "預設的神奇空值" && (
+            <p
+              style={styles.address}
+              onClick={() => handleNoteClick(selectedPlace.note)}
+              className="cursor-pointer underline"
+            >
+              <strong>💡 個人筆記:</strong>
+              <br />
+              {selectedPlace.note ? selectedPlace.note : "您可以在此處撰寫備註，方便記錄您的想法或重要資訊哦！ 😊"}
+            </p>
+          )}
+        </div>
         <div style={styles.coordinates}>
           <strong>Coordinates:</strong>
           <br />

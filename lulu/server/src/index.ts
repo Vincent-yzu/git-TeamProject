@@ -84,7 +84,7 @@ io.on("connection", (socket) => {
   // 當客戶端重新排序結束時，將資訊廣播給同房的其他客戶端
   socket.on("reorder_finish", (data: { roomId: string; reorderData: any }) => {
     const { roomId, reorderData } = data
-    console.log(`Reorder event in room ${roomId} by ${socket.id}:`, reorderData)
+    console.log(`Reorder event finish in room ${roomId} by ${socket.id}:`, reorderData)
     // 將更新廣播給該房間的其他使用者
     socket.to(roomId).emit("reorder_someone_finish", reorderData)
   })
@@ -149,14 +149,32 @@ io.on("connection", (socket) => {
   })
 
   // ========= 新增: edit_note =========
+  socket.on("start_edit_note", async (data) => {
+    const { roomId, dayIndex, activityId, user } = data
+    console.log(`start Edit note in room ${roomId} by ${socket.id}:`, data)
+    try {
+      socket.to(roomId).emit("start_note_edited", { dayIndex, activityId, user })
+    } catch (error) {
+      console.error("Error start editing note:", error)
+    }
+  })
+  socket.on("cancel_edit_note", async (data) => {
+    const { roomId, dayIndex, activityId, user } = data
+    console.log(`cancel Edit note in room ${roomId} by ${socket.id}:`, data)
+    try {
+      socket.to(roomId).emit("cancel_note_edited", { dayIndex, activityId, user })
+    } catch (error) {
+      console.error("Error cancel editing note:", error)
+    }
+  })
   socket.on("edit_note", async (data) => {
-    const { roomId, dayIndex, activityId, note } = data
+    const { roomId, dayIndex, activityId, note, user } = data
     console.log(`Edit note in room ${roomId} by ${socket.id}:`, data)
     try {
       // 1) Update DB
       // await db.update(...).set({ note }).where(...)
       // 2) 廣播
-      socket.to(roomId).emit("note_edited", { dayIndex, activityId, note })
+      socket.to(roomId).emit("note_edited", { dayIndex, activityId, note, user })
     } catch (error) {
       console.error("Error editing note:", error)
     }

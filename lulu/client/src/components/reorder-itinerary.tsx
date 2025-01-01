@@ -38,7 +38,7 @@ interface Place {
 interface EditUser {
   user: User
   day: number
-  //activity: Itinerary["days"][number]["activities"]
+  activityId: string
 }
 
 const calculateTimeRange = (startTime: string, duration: number) => {
@@ -88,6 +88,8 @@ const ReorderItinerary = () => {
     setCallCloseDetail,
     currentActivities: contextCurrentActivities,
     setCurrentActivities,
+    editingUser_note, 
+    setEditingUser_note,
   } = useMapContext()
 
   const { id } = useParams()
@@ -103,6 +105,8 @@ const ReorderItinerary = () => {
   const socketRef = useRef<Socket | null>(null)
   const [roomId] = useState<string>(id as string)
   const [editingUser, setEditingUser] = useState<EditUser[]>(null)
+  // const [editingUser_note, setEditingUser_note] = useState<EditUser[]>(null)
+  const [editingUser_commutingTime, setEditingUser_commutingTime] = useState<EditUser[]>(null)  // 未完成
 
   // 備註
   const [editingNoteId, setEditingNoteId] = useState<string | null>(null)
@@ -187,7 +191,7 @@ const ReorderItinerary = () => {
     })
 
     // 加入房間成功
-    socket.on("room_user_joined", (user: User) => {  // RRRRRRRRRRRRRRRRRR
+    socket.on("room_user_joined", (user: User) => {
       if (auth?.user?.id !== user.id) {
         toast({
           title: `${user.email.split("@")[0]} joined room`,
@@ -223,8 +227,8 @@ const ReorderItinerary = () => {
           if (!updatedUsers.includes(updatedActivities.user)) {
             updatedUsers.push({
               user: updatedActivities.user,
-              day: updatedActivities.dayIndex
-              //activity: 
+              day: updatedActivities.dayIndex,
+              activityId: '0',
             }); // 新增發出該事件的使用者
           }
           return updatedUsers;
@@ -278,7 +282,7 @@ const ReorderItinerary = () => {
     // 監聽: 編輯備註
     socket.on(
       "note_edited",
-      (data: { dayIndex: number; activityId: string; note: string }) => {
+      (data: { dayIndex: number; activityId: string; note: string , user: User}) => {
         console.log("Note edited:", data)
         setDaysActivities((prev) => {
           const newDays = [...prev]
@@ -289,8 +293,46 @@ const ReorderItinerary = () => {
           )
           return newDays
         })
+        setEditingUser_note((prev) => {
+          if (!prev) return [];
+          // 過濾掉與 updatedActivities.user.id 匹配的項目
+          const updatedUsers = prev.filter((u) => u.user.id !== data.user.id);
+          return updatedUsers;
+        });
       }
     )
+    socket.on(
+      "start_note_edited",
+      (data: { dayIndex: number; activityId: string; user: User }) => {
+        // 更新 editingUser 狀態
+        // console.log("Received ID:", data.activityId);
+        setEditingUser_note((prev) => {
+          const updatedUsers = prev ? [...prev] : [];
+          if (!updatedUsers.some((user) => user.user.id === data.user.id)) { // Check by user ID or unique identifier
+            updatedUsers.push({
+              user: data.user,           // `data.user` is of type `User`
+              day: data.dayIndex,        // `data.dayIndex` is of type `number`
+              activityId: data.activityId,
+            });
+          }
+          return updatedUsers;
+        });
+      }
+    )
+    socket.on(
+      "cancel_note_edited",
+      (data: { dayIndex: number; activityId: string; user: User }) => {
+        // 更新 editingUser 狀態
+        //console.log("Received ID:", updatedActivities.user.id);
+        setEditingUser_note((prev) => {
+          if (!prev) return [];
+          // 過濾掉與 updatedActivities.user.id 匹配的項目
+          const updatedUsers = prev.filter((u) => u.user.id !== data.user.id);
+          return updatedUsers;
+        });
+      }
+    )
+    
 
     // 監聽: 編輯每日開始時間
     socket.on(
@@ -500,6 +542,14 @@ const ReorderItinerary = () => {
     setCallCloseDetail(() => () => {
       console.log("Close Detail!")
     })
+
+    // 通知 socket
+    socketRef.current?.emit("start_edit_note", {
+      roomId,
+      dayIndex: currentDayIndex,
+      activityId: activityId,
+      user: auth?.user,
+    })
   }
 
   const handleNoteChange = (
@@ -536,6 +586,7 @@ const ReorderItinerary = () => {
         dayIndex: currentDayIndex,
         activityId: editingNoteId,
         note: noteValue,
+        user: auth?.user,
       })
 
       // Local update
@@ -561,6 +612,14 @@ const ReorderItinerary = () => {
   const handleNoteCancel = () => {
     setIsNotePopupOpen(false)
     setEditingNoteId(null)
+
+    // 通知 socket
+    socketRef.current?.emit("cancel_edit_note", {
+      roomId,
+      dayIndex: currentDayIndex,
+      activityId: editingNoteId,
+      user: auth?.user,
+    })
   }
 
   /**
@@ -941,21 +1000,54 @@ const ReorderItinerary = () => {
                   )}
 
                   <div className="mt-2">
-                    {/* 備註 */}
-                    <span className="text-gray-500">💡</span>
-                    <p
-                      className="text-xs text-gray-500 cursor-pointer underline inline"
-                      onClick={(e) => {
-                        e.stopPropagation()
-                        handleNoteClick(activity.id, activity.note)
+                    
+                    <div
+                      style={{
+                        width: "100%", // 你可以根據需求調整寬度
+                        height: "80%", // 你可以根據需求調整高度
+                        border: editingUser_note && editingUser_note.length > 0 && editingUser_note[0].day == currentDayIndex && editingUser_note[0].activityId == activity.id ? "4px solid rgb(75, 202, 118)" : "2px solid transparent", // 條件式邊框
+                        transition: "border 0.3s ease", // 加入過渡效果，使邊框變化更平滑
                       }}
                     >
-                      {activity.note ? (
-                        activity.note.slice(0, 8) + "..."
-                      ) : (
-                        <span className="underline">編輯個人筆記</span>
+                      { editingUser_note && editingUser_note.length > 0 && editingUser_note[0].day == currentDayIndex && editingUser_note[0].activityId == activity.id && (
+                        <p
+                          style={{
+                            backgroundColor: "rgb(188, 238, 188)", // 淡橘色背景
+                            color: "rgb(31, 102, 55)", // 橘色文字
+                            fontWeight: "bold", // 加粗字體
+                            fontSize: "12px", // 增加字體大小
+                            borderRadius: "8px", // 圓角邊框
+                            padding: "2px 5px", // 內邊距
+                            boxShadow: "0 4px 8px rgba(0, 0, 0, 0.1)", // 輕微陰影效果
+                            transition: "transform 0.3s ease-in-out", // 動畫效果
+                            marginTop: "2px", // 上邊距
+                            marginBottom: "2px", // 上邊距
+                            display: "inline-block", // 使元素只佔用內容區域
+                          }}
+                        >
+                          {editingUser_note[0].user.email.split("@")[0]}&nbsp;正在編輯!
+                        </p>
                       )}
-                    </p>
+                      {/* 備註 */}
+                      <span className="text-gray-500">💡</span>
+                      <p
+                        className="text-xs text-gray-500 cursor-pointer underline inline"
+                        onClick={(e) => {
+                          if (editingUser_note && editingUser_note.length > 0 && editingUser_note[0].day === currentDayIndex && editingUser_note[0].activityId === activity.id) {
+                            return;
+                          } else {
+                            e.stopPropagation();
+                            handleNoteClick(activity.id, activity.note);
+                          }
+                        }}
+                      >
+                        {activity.note ? (
+                          activity.note.slice(0, 8) + "..."
+                        ) : (
+                          <span className="underline">編輯個人筆記</span>
+                        )}
+                      </p>
+                    </div>
 
                     {/* 停留時間 */}
                     <div className="flex items-center">
