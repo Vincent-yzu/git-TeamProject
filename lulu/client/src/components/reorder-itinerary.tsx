@@ -5,78 +5,93 @@ import { Reorder } from "framer-motion"
 import { useParams } from "react-router-dom"
 import { io, Socket } from "socket.io-client"
 
+import { useAuth } from "@/hooks/use-auth"
 import { useItinerary } from "@/hooks/use-itinerary"
 import { useToast } from "@/hooks/use-toast"
 
+import DurationPopup from "./DurationPopup"
 import { useMapContext } from "./MapContext"
 import NotePopup from "./NotePopup"
-import { useAuth } from "@/hooks/use-auth"
-import DurationPopup from "./DurationPopup"
 import TravelTimePopup from "./TravelTimePopup"
 
 const BACKEND_URL = import.meta.env.VITE_BACKEND_URL
 
 interface Place {
-  id: number; // 0 = empty
-  place_id: string;
-  name: string;
-  formatted_address: string;
-  description: string;
+  id: number // 0 = empty
+  place_id: string
+  name: string
+  formatted_address: string
+  description: string
   geometry: {
     location: {
-      lat: number;
-      lng: number;
-    };
-  };
-  icon: string;
-  note: string;
-  recommendDuration: number;
-  commutingTime: number;
+      lat: number
+      lng: number
+    }
+  }
+  icon: string
+  note: string
+  recommendDuration: number
+  commutingTime: number
 }
 
 const calculateTimeRange = (startTime: string, duration: number) => {
-  const [startHours, startMinutes] = startTime.split(":").map(Number);
-  const startDate = new Date();
-  startDate.setHours(startHours, startMinutes, 0, 0);
-  const endDate = new Date(startDate.getTime() + duration * 60000);
-  const endHours = endDate.getHours().toString().padStart(2, "0");
-  const endMinutes = endDate.getMinutes().toString().padStart(2, "0");
-  return `${startTime} - ${endHours}:${endMinutes}`;
-};
-const calculateNextStartTime = (startTime: string, previousDurations: number) => {
-  const [startHours, startMinutes] = startTime.split(":").map(Number);
-  const startDate = new Date();
-  startDate.setHours(startHours, startMinutes, 0, 0);
-  const nextStartDate = new Date(startDate.getTime() + previousDurations * 60000);
-  const nextStartHours = nextStartDate.getHours().toString().padStart(2, "0");
-  const nextStartMinutes = nextStartDate.getMinutes().toString().padStart(2, "0");
-  return `${nextStartHours}:${nextStartMinutes}`;
-};
+  const [startHours, startMinutes] = startTime.split(":").map(Number)
+  const startDate = new Date()
+  startDate.setHours(startHours, startMinutes, 0, 0)
+  const endDate = new Date(startDate.getTime() + duration * 60000)
+  const endHours = endDate.getHours().toString().padStart(2, "0")
+  const endMinutes = endDate.getMinutes().toString().padStart(2, "0")
+  return `${startTime} - ${endHours}:${endMinutes}`
+}
+const calculateNextStartTime = (
+  startTime: string,
+  previousDurations: number
+) => {
+  const [startHours, startMinutes] = startTime.split(":").map(Number)
+  const startDate = new Date()
+  startDate.setHours(startHours, startMinutes, 0, 0)
+  const nextStartDate = new Date(
+    startDate.getTime() + previousDurations * 60000
+  )
+  const nextStartHours = nextStartDate.getHours().toString().padStart(2, "0")
+  const nextStartMinutes = nextStartDate
+    .getMinutes()
+    .toString()
+    .padStart(2, "0")
+  return `${nextStartHours}:${nextStartMinutes}`
+}
 
 const ReorderItinerary = () => {
-  const [isDescriptionOn, setIsDescriptionOn] = useState<boolean | undefined>(false)
+  const [isDescriptionOn, setIsDescriptionOn] = useState<boolean | undefined>(
+    false
+  )
   const { data: auth } = useAuth()
   if (!auth?.user) {
     return null
   }
   const { toast } = useToast()
-  
+
   // MapContext
-  const { 
-    heyUpdateData, 
-    selectedDayIndex, 
-    setSelectedDayIndex, 
-    setSelectedPlace, 
+  const {
+    heyUpdateData,
+    selectedDayIndex,
+    setSelectedDayIndex,
+    setSelectedPlace,
     setZoomLevel,
     setCallCloseDetail,
     currentActivities: contextCurrentActivities,
-    setCurrentActivities 
+    setCurrentActivities,
   } = useMapContext()
 
   const { id } = useParams()
-  const { data: itinerary, isLoading } = useItinerary(id as string, heyUpdateData)
+  const { data: itinerary, isLoading } = useItinerary(
+    id as string,
+    heyUpdateData
+  )
 
-  const [daysActivities, setDaysActivities] = useState<Itinerary["days"][number]["activities"][]>([])
+  const [daysActivities, setDaysActivities] = useState<
+    Itinerary["days"][number]["activities"][]
+  >([])
   const containerRef = useRef<HTMLDivElement>(null)
   const socketRef = useRef<Socket | null>(null)
   const [roomId] = useState<string>(id as string)
@@ -85,17 +100,23 @@ const ReorderItinerary = () => {
   const [editingNoteId, setEditingNoteId] = useState<string | null>(null)
   const [noteValue, setNoteValue] = useState<string>("")
   const [isPopupOpen, setIsPopupOpen] = useState<boolean>(false)
-  const [descriptionActivityId, setDescriptionActivityId] = useState<string | null>(null)
-  const [isNotePopupOpen, setIsNotePopupOpen] = useState<boolean>(false);
+  const [descriptionActivityId, setDescriptionActivityId] = useState<
+    string | null
+  >(null)
+  const [isNotePopupOpen, setIsNotePopupOpen] = useState<boolean>(false)
 
   // 停留時間
   const [isDurationPopupOpen, setIsDurationPopupOpen] = useState<boolean>(false)
-  const [editingDurationActivityId, setEditingDurationActivityId] = useState<string | null>(null)
+  const [editingDurationActivityId, setEditingDurationActivityId] = useState<
+    string | null
+  >(null)
   const [newDuration, setNewDuration] = useState<number>(0)
 
   // 交通時間
-  const [isTravelTimePopupOpen, setIsTravelTimePopupOpen] = useState<boolean>(false)
-  const [editingTravelTimeActivityId, setEditingTravelTimeActivityId] = useState<string | null>(null)
+  const [isTravelTimePopupOpen, setIsTravelTimePopupOpen] =
+    useState<boolean>(false)
+  const [editingTravelTimeActivityId, setEditingTravelTimeActivityId] =
+    useState<string | null>(null)
   const [newTravelTime, setNewTravelTime] = useState<number>(0)
 
   // 節流用
@@ -104,46 +125,51 @@ const ReorderItinerary = () => {
   // 當 contextCurrentActivities 改變時，更新 daysActivities 中當前天數 (currentDayIndex) 的活動的 recommendDuration
   useEffect(() => {
     const durations = contextCurrentActivities?.map((act) => {
-      return act.recommendDuration;
-    });
+      return act.recommendDuration
+    })
 
-    if(!durations) return;
+    if (!durations) return
 
     daysActivities[currentDayIndex]?.forEach((act, idx) => {
-      act.recommendDuration = durations[idx];
-    });
+      act.recommendDuration = durations[idx]
+    })
 
-    setDaysActivities(JSON.parse(JSON.stringify(daysActivities)));
-  }, [contextCurrentActivities]);
+    setDaysActivities(JSON.parse(JSON.stringify(daysActivities)))
+  }, [contextCurrentActivities])
 
   // 當 contextCurrentActivities 改變時，更新 daysActivities 中當前天數 (currentDayIndex) 的活動的 note
   useEffect(() => {
     const notes = contextCurrentActivities?.map((act) => {
-      return act.note;
-    });
+      return act.note
+    })
 
-    if(!notes) return;
+    if (!notes) return
 
     daysActivities[currentDayIndex]?.forEach((act, idx) => {
-      act.note = notes[idx];
-    });
+      act.note = notes[idx]
+    })
 
-    setDaysActivities(JSON.parse(JSON.stringify(daysActivities)));
-  }, [contextCurrentActivities]);
+    setDaysActivities(JSON.parse(JSON.stringify(daysActivities)))
+  }, [contextCurrentActivities])
 
   useEffect(() => {
     if (itinerary && itinerary.days && itinerary.days.length > 0) {
       // 根據 order 排序每個 day's activity
       setDaysActivities(
         itinerary.days.map((day) => {
-          return day.activities ? day.activities.sort((a, b) => a.order - b.order) : []
+          return day.activities
+            ? day.activities.sort((a, b) => a.order - b.order)
+            : []
         })
       )
     }
   }, [itinerary, heyUpdateData])
 
   useEffect(() => {
-    const socket = io(`${BACKEND_URL}`, { withCredentials: true, path: '/api/socket.io' })
+    const socket = io(`${BACKEND_URL}`, {
+      withCredentials: true,
+      path: "/api/socket.io",
+    })
     socketRef.current = socket
 
     // 連線成功
@@ -156,7 +182,7 @@ const ReorderItinerary = () => {
     socket.on("room_user_joined", (user: User) => {
       if (auth?.user?.id !== user.id) {
         toast({
-          title: `${user.email.split('@')[0]} joined room`,
+          title: `${user.email.split("@")[0]} joined room`,
         })
       }
     })
@@ -175,69 +201,87 @@ const ReorderItinerary = () => {
           return newDays
         })
         if (updatedActivities.dayIndex == parseInt(selectedDayIndex, 10)) {
-          setCurrentActivities(updatedActivities.activities)  // 更新圖標順序 (直接把handleLoadMap加在這裡會跳錯誤)
+          setCurrentActivities(updatedActivities.activities) // 更新圖標順序 (直接把handleLoadMap加在這裡會跳錯誤)
         }
       }
     )
 
-    
-
     // 監聽: 刪除行程
-    socket.on("trip_deleted", (data: { dayIndex: number; activityId: string }) => {
-      console.log("Trip deleted:", data)
-      setDaysActivities((prev) => {
-        const newDays = [...prev]
-        if (newDays[data.dayIndex]) {
-          newDays[data.dayIndex] = newDays[data.dayIndex].filter(
-            (activity) => activity.id !== data.activityId
-          )
-        }
-        return newDays
-      })
-      setCurrentActivities((prev) => {
-        let newActivities = [...prev]
-        if (newActivities) {
-          newActivities = newActivities.filter(
-            (activity) => activity.id !== data.activityId
-          )
-        }
-        return newActivities
-      })  // 更新圖標順序 (直接把handleLoadMap加在這裡會跳錯誤)
-    })
+    socket.on(
+      "trip_deleted",
+      (data: { dayIndex: number; activityId: string }) => {
+        console.log("Trip deleted:", data)
+        setDaysActivities((prev) => {
+          const newDays = [...prev]
+          if (newDays[data.dayIndex]) {
+            newDays[data.dayIndex] = newDays[data.dayIndex].filter(
+              (activity) => activity.id !== data.activityId
+            )
+          }
+          return newDays
+        })
+        setCurrentActivities((prev) => {
+          let newActivities = [...prev]
+          if (newActivities) {
+            newActivities = newActivities.filter(
+              (activity) => activity.id !== data.activityId
+            )
+          }
+          return newActivities
+        }) // 更新圖標順序 (直接把handleLoadMap加在這裡會跳錯誤)
+      }
+    )
 
     // 監聽: 編輯備註
-    socket.on("note_edited", (data: { dayIndex: number; activityId: string; note: string }) => {
-      console.log("Note edited:", data)
-      setDaysActivities((prev) => {
-        const newDays = [...prev]
-        newDays[data.dayIndex] = newDays[data.dayIndex].map((activity) =>
-          activity.id === data.activityId ? { ...activity, note: data.note } : activity
-        )
-        return newDays
-      })
-    })
+    socket.on(
+      "note_edited",
+      (data: { dayIndex: number; activityId: string; note: string }) => {
+        console.log("Note edited:", data)
+        setDaysActivities((prev) => {
+          const newDays = [...prev]
+          newDays[data.dayIndex] = newDays[data.dayIndex].map((activity) =>
+            activity.id === data.activityId
+              ? { ...activity, note: data.note }
+              : activity
+          )
+          return newDays
+        })
+      }
+    )
 
     // 監聽: 編輯每日開始時間
-    socket.on("start_time_updated", (data: { dayIndex: number; startTime: string }) => {
-      console.log("Start time updated:", data)
-      // 這裡要特別注意，如果想即時更新 itinerary.days[startTime]，可能需要在 local state 也存那個 startTime
-      if (itinerary?.days?.[data.dayIndex]) {
-        itinerary.days[data.dayIndex].startTime = data.startTime
+    socket.on(
+      "start_time_updated",
+      (data: { dayIndex: number; startTime: string }) => {
+        console.log("Start time updated:", data)
+        // 這裡要特別注意，如果想即時更新 itinerary.days[startTime]，可能需要在 local state 也存那個 startTime
+        if (itinerary?.days?.[data.dayIndex]) {
+          itinerary.days[data.dayIndex].startTime = data.startTime
+        }
+        // 若想讓畫面立即 re-render，需要配合 setItinerary 或 setDaysActivities 做一些額外處理
       }
-      // 若想讓畫面立即 re-render，需要配合 setItinerary 或 setDaysActivities 做一些額外處理
-    })
+    )
 
     // 監聽: 編輯停留時間
-    socket.on("duration_updated", (data: { dayIndex: number; activityId: string; recommendDuration: number }) => {
-      console.log("Duration updated:", data)
-      setDaysActivities((prev) => {
-        const newDays = [...prev]
-        newDays[data.dayIndex] = newDays[data.dayIndex].map((act) =>
-          act.id === data.activityId ? { ...act, recommendDuration: data.recommendDuration } : act
-        )
-        return newDays
-      })
-    })
+    socket.on(
+      "duration_updated",
+      (data: {
+        dayIndex: number
+        activityId: string
+        recommendDuration: number
+      }) => {
+        console.log("Duration updated:", data)
+        setDaysActivities((prev) => {
+          const newDays = [...prev]
+          newDays[data.dayIndex] = newDays[data.dayIndex].map((act) =>
+            act.id === data.activityId
+              ? { ...act, recommendDuration: data.recommendDuration }
+              : act
+          )
+          return newDays
+        })
+      }
+    )
 
     socket.on("trip_added", (data: { dayIndex: number; newActivity: any }) => {
       console.log("trip_added => ", data)
@@ -253,16 +297,25 @@ const ReorderItinerary = () => {
     })
 
     // 監聽: 編輯交通時間
-    socket.on("commuting_time_updated", (data: { dayIndex: number; activityId: string; commutingTime: number }) => {
-      console.log("Commuting time updated:", data)
-      setDaysActivities((prev) => {
-        const newDays = [...prev]
-        newDays[data.dayIndex] = newDays[data.dayIndex].map((act) =>
-          act.id === data.activityId ? { ...act, commutingTime: data.commutingTime } : act
-        )
-        return newDays
-      })
-    })
+    socket.on(
+      "commuting_time_updated",
+      (data: {
+        dayIndex: number
+        activityId: string
+        commutingTime: number
+      }) => {
+        console.log("Commuting time updated:", data)
+        setDaysActivities((prev) => {
+          const newDays = [...prev]
+          newDays[data.dayIndex] = newDays[data.dayIndex].map((act) =>
+            act.id === data.activityId
+              ? { ...act, commutingTime: data.commutingTime }
+              : act
+          )
+          return newDays
+        })
+      }
+    )
 
     // 離開頁面 / 組件銷毀時斷開 socket
     return () => {
@@ -336,7 +389,7 @@ const ReorderItinerary = () => {
   const handleDeletePlace = async (activityId: string) => {
     // 關閉詳細資訊
     setCallCloseDetail(() => () => {
-      console.log('Close Detail!');
+      console.log("Close Detail!")
     })
 
     try {
@@ -379,7 +432,7 @@ const ReorderItinerary = () => {
           )
         }
         return newActivities
-      })  // 更新圖標順序 (直接把handleLoadMap加在這裡會跳錯誤)
+      }) // 更新圖標順序 (直接把handleLoadMap加在這裡會跳錯誤)
     } catch (error) {
       console.error("Error deleting trip:", error)
     }
@@ -393,11 +446,13 @@ const ReorderItinerary = () => {
     setNoteValue(note)
     setIsNotePopupOpen(true)
     setCallCloseDetail(() => () => {
-      console.log('Close Detail!');
+      console.log("Close Detail!")
     })
   }
 
-  const handleNoteChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+  const handleNoteChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+  ) => {
     setNoteValue(e.target.value)
   }
 
@@ -411,11 +466,14 @@ const ReorderItinerary = () => {
       }
 
       // Update to DB
-      const response = await fetch(`${BACKEND_URL}/api/addactivity/updateNote`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(updatedNote),
-      })
+      const response = await fetch(
+        `${BACKEND_URL}/api/addactivity/updateNote`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(updatedNote),
+        }
+      )
       if (!response.ok) {
         throw new Error(`Failed to update note: ${response.statusText}`)
       }
@@ -432,7 +490,9 @@ const ReorderItinerary = () => {
       setDaysActivities((prev) => {
         const newDays = [...prev]
         newDays[currentDayIndex] = newDays[currentDayIndex].map((activity) =>
-          activity.id === editingNoteId ? { ...activity, note: noteValue } : activity
+          activity.id === editingNoteId
+            ? { ...activity, note: noteValue }
+            : activity
         ) as Itinerary["days"][number]["activities"]
         return newDays
       })
@@ -464,18 +524,21 @@ const ReorderItinerary = () => {
     setNewDuration(duration)
     setIsDurationPopupOpen(true)
     setCallCloseDetail(() => () => {
-      console.log('Close Detail!');
-    });
+      console.log("Close Detail!")
+    })
   }
   const handleDurationSave = async () => {
     if (!editingDurationActivityId) return
     await handleRecommendDurationChange(editingDurationActivityId, newDuration)
     setIsDurationPopupOpen(false)
     // updateActivityInDays(editingDurationActivityId, { recommendDuration: newDuration });
-    setIsDurationPopupOpen(false); // Close the popup  // Merge到一半我發現ui的這邊多了一行重複的 不知道有沒有功能(?
+    setIsDurationPopupOpen(false) // Close the popup  // Merge到一半我發現ui的這邊多了一行重複的 不知道有沒有功能(?
   }
 
-  const handleRecommendDurationChange = async (activityId: string, newDuration: number) => {
+  const handleRecommendDurationChange = async (
+    activityId: string,
+    newDuration: number
+  ) => {
     // 更新DB
     try {
       const updatedNote = {
@@ -483,11 +546,14 @@ const ReorderItinerary = () => {
         curDays: selectedDayIndex,
         place: { activityId, recommendDuration: newDuration },
       }
-      const response = await fetch(`${BACKEND_URL}/api/addactivity/updateDuration`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(updatedNote),
-      })
+      const response = await fetch(
+        `${BACKEND_URL}/api/addactivity/updateDuration`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(updatedNote),
+        }
+      )
       if (!response.ok) {
         throw new Error(`Failed to update note: ${response.statusText}`)
       }
@@ -519,18 +585,21 @@ const ReorderItinerary = () => {
     setNewTravelTime(travelTime)
     setIsTravelTimePopupOpen(true)
     setCallCloseDetail(() => () => {
-      console.log('Close Detail!');
-    });
+      console.log("Close Detail!")
+    })
   }
 
   const handleCommutingTimeSave = async () => {
     if (!editingTravelTimeActivityId) return
     await handleCommutingTimeChange(editingTravelTimeActivityId, newTravelTime)
     setIsTravelTimePopupOpen(false)
-    setIsTravelTimePopupOpen(false); // Close the popup  // Merge到一半我發現ui的這邊多了一行重複的 不知道有沒有功能(?
+    setIsTravelTimePopupOpen(false) // Close the popup  // Merge到一半我發現ui的這邊多了一行重複的 不知道有沒有功能(?
   }
 
-  const handleCommutingTimeChange = async (activityId: string, newCommutingTime: number) => {
+  const handleCommutingTimeChange = async (
+    activityId: string,
+    newCommutingTime: number
+  ) => {
     // 更新DB
     try {
       const updatedCommutingTime = {
@@ -538,13 +607,18 @@ const ReorderItinerary = () => {
         curDays: selectedDayIndex,
         place: { activityId, commutingTime: newCommutingTime },
       }
-      const response = await fetch(`${BACKEND_URL}/api/addactivity/updateCommutingTime`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(updatedCommutingTime),
-      })
+      const response = await fetch(
+        `${BACKEND_URL}/api/addactivity/updateCommutingTime`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(updatedCommutingTime),
+        }
+      )
       if (!response.ok) {
-        throw new Error(`Failed to update commuting time: ${response.statusText}`)
+        throw new Error(
+          `Failed to update commuting time: ${response.statusText}`
+        )
       }
     } catch (error) {
       console.error("Error updating commuting time:", error)
@@ -562,7 +636,9 @@ const ReorderItinerary = () => {
     setDaysActivities((prev) => {
       const newDays = [...prev]
       newDays[currentDayIndex] = newDays[currentDayIndex].map((act) =>
-        act.id === activityId ? { ...act, commutingTime: newCommutingTime } : act
+        act.id === activityId
+          ? { ...act, commutingTime: newCommutingTime }
+          : act
       )
       return newDays
     })
@@ -606,11 +682,14 @@ const ReorderItinerary = () => {
       startTime: newStartTime,
     }
     try {
-      const response = await fetch(`${BACKEND_URL}/api/addactivity/updateStartTime`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(updatedTime),
-      })
+      const response = await fetch(
+        `${BACKEND_URL}/api/addactivity/updateStartTime`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(updatedTime),
+        }
+      )
       if (!response.ok) {
         throw new Error("Failed to update StartTime")
       }
@@ -631,13 +710,22 @@ const ReorderItinerary = () => {
     const remainingMinutes = minutes % 60
     return `${hours > 0 ? `${hours} 小時 ` : ""}${remainingMinutes} 分鐘`
   }
-  
+
   return (
     <div ref={containerRef} className="p-2 flex flex-col h-full">
       <div className="bg-gray-200 p-4">
         <h2 className="text-xl font-bold mb-2">
-          {itinerary.description}
+          {itinerary.description.length > 15
+            ? itinerary.location +
+              " " +
+              ((new Date(itinerary.endDate).getTime() -
+                new Date(itinerary.startDate).getTime()) /
+                (1000 * 60 * 60 * 24) +
+                1) +
+              "日遊"
+            : itinerary.description}
         </h2>
+
         <p className="text-base font-semibold text-gray-600">
           地點: {itinerary.location}
         </p>
@@ -654,7 +742,7 @@ const ReorderItinerary = () => {
                 ? "bg-blue-500 text-white"
                 : "bg-gray-200 text-gray-700 hover:bg-gray-300"
             }`}
-              >
+          >
             Day {index + 1}
           </button>
         ))}
@@ -715,7 +803,21 @@ const ReorderItinerary = () => {
                 <p className="text-xs text-gray-500">📍 {activity.location}</p>
 
                 {/* Merge後的寫法有點爛  但我想睡覺了之後再改(X */}
-                <p className="text-xs text-gray-500">{calculateTimeRange(calculateNextStartTime(itinerary.days[currentDayIndex].startTime, currentActivities.slice(0, idx).reduce((acc, act) => acc + act.recommendDuration + act.commutingTime, 0)), activity.recommendDuration)}</p>
+                <p className="text-xs text-gray-500">
+                  {calculateTimeRange(
+                    calculateNextStartTime(
+                      itinerary.days[currentDayIndex].startTime,
+                      currentActivities
+                        .slice(0, idx)
+                        .reduce(
+                          (acc, act) =>
+                            acc + act.recommendDuration + act.commutingTime,
+                          0
+                        )
+                    ),
+                    activity.recommendDuration
+                  )}
+                </p>
 
                 <div className="mt-auto flex space-x-2 pt-2">
                   <button
@@ -726,13 +828,15 @@ const ReorderItinerary = () => {
                         : "bg-cyan-700 text-white hover:bg-cyan-800"
                     }`}
                   >
-                    {descriptionActivityId === activity.id ? "Hide Description" : "詳細資訊"}
+                    {descriptionActivityId === activity.id
+                      ? "Hide Description"
+                      : "詳細資訊"}
                   </button>
 
                   <button
                     onClick={(e) => {
-                      e.stopPropagation();
-                      handleDeletePlace(activity.id);
+                      e.stopPropagation()
+                      handleDeletePlace(activity.id)
                     }}
                     className="px-2 py-1 rounded text-sm bg-red-500 text-white hover:bg-red-600 w-20 h-10"
                   >
@@ -745,7 +849,9 @@ const ReorderItinerary = () => {
               <div className="flex flex-col items-start justify-between w-40 ml-4">
                 {/* 說明 / 圖片 */}
                 {descriptionActivityId === activity.id ? (
-                  <div className="text-sm text-gray-600">{activity.description}</div>
+                  <div className="text-sm text-gray-600">
+                    {activity.description}
+                  </div>
                 ) : (
                   <img
                     src={activity.photoUrls?.[0]}
@@ -760,11 +866,15 @@ const ReorderItinerary = () => {
                   <p
                     className="text-xs text-gray-500 cursor-pointer underline inline"
                     onClick={(e) => {
-                      e.stopPropagation();
-                      handleNoteClick(activity.id, activity.note);
+                      e.stopPropagation()
+                      handleNoteClick(activity.id, activity.note)
                     }}
                   >
-                    {activity.note ? activity.note.slice(0, 8) + "..." : <span className="underline">編輯個人筆記</span>}
+                    {activity.note ? (
+                      activity.note.slice(0, 8) + "..."
+                    ) : (
+                      <span className="underline">編輯個人筆記</span>
+                    )}
                   </p>
 
                   {/* 停留時間 */}
@@ -773,8 +883,11 @@ const ReorderItinerary = () => {
                     <p
                       className="text-xs text-gray-500 cursor-pointer underline inline"
                       onClick={(e) => {
-                        e.stopPropagation();
-                        handleDurationClick(activity.id, activity.recommendDuration);
+                        e.stopPropagation()
+                        handleDurationClick(
+                          activity.id,
+                          activity.recommendDuration
+                        )
                       }}
                     >
                       {formatDuration(activity.recommendDuration)}
@@ -791,12 +904,14 @@ const ReorderItinerary = () => {
                 <p
                   className="text-sm text-gray-700 cursor-pointer hover:text-gray-900 underline inline"
                   onClick={(e) => {
-                    e.stopPropagation();
-                    handleTravelTimeClick(activity.id, activity.commutingTime);
+                    e.stopPropagation()
+                    handleTravelTimeClick(activity.id, activity.commutingTime)
                   }}
                 >
                   到下一站的車程大約:{" "}
-                  <span className="font-semibold">{formatDuration(activity.commutingTime)}</span>
+                  <span className="font-semibold">
+                    {formatDuration(activity.commutingTime)}
+                  </span>
                   &nbsp;!
                 </p>
               </div>
@@ -855,4 +970,3 @@ const ReorderItinerary = () => {
 }
 
 export { ReorderItinerary }
-

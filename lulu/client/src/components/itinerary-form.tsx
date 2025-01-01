@@ -103,6 +103,9 @@ export default function ItineraryForm() {
     mutationFn: async (data: z.infer<typeof itineraryFrontendSchema>) => {
       data.startDate = formatToUTC(data.startDate)
       data.endDate = formatToUTC(data.endDate)
+      if (data.startDate > data.endDate) {
+        throw new Error("Start date cannot be greater than end date")
+      }
       const response = await fetcher("/api/itinerary", {
         options: {
           method: "POST",
@@ -122,11 +125,18 @@ export default function ItineraryForm() {
       })
       navigate(`/dashboard/${data.id}`)
     },
-    onError: () => {
-      toast({
-        title: "Something went wrong.",
-        description: "Please try again.",
-      })
+    onError: (error) => {
+      if (error.message === "Start date cannot be greater than end date") {
+        toast({
+          title: "Start date cannot be greater than end date",
+          description: "Please check your dates and try again.",
+        })
+      } else {
+        toast({
+          title: "Something went wrong.",
+          description: "Please try again.",
+        })
+      }
     },
   })
 

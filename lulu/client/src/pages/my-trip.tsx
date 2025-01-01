@@ -374,21 +374,15 @@ const MyTripPage: React.FC = () => {
                               <span className="text-sm font-medium">添加成員</span>
                             </button>
                           </div>
-                          {/* <h3 className="text-lg font-semibold">
-                            {itinerary.location +
+    
+                          <h3 className="text-lg font-semibold">
+                            {itinerary.description.length > 15 ? (itinerary.location +
                               " " +
                               ((new Date(itinerary.endDate).getTime() -
                                 new Date(itinerary.startDate).getTime()) /
                                 (1000 * 60 * 60 * 24) +
                                 1) +
-                              "天" +
-                              (new Date(itinerary.endDate).getTime() -
-                                new Date(itinerary.startDate).getTime()) /
-                              (1000 * 60 * 60 * 24) +
-                              "夜之旅"}
-                          </h3> */}
-                          <h3 className="text-lg font-semibold">
-                            {itinerary.description}
+                              "日遊"): itinerary.description}
                           </h3>
                         </div>
                       )
@@ -424,7 +418,7 @@ const MyTripPage: React.FC = () => {
                     onClick={() => handleRecommendedTrip.mutate({ itineraryId: '3ASFvu7DZcYTwrvzNV8Hk', userID: auth.user.id })}
                   >
                     <img
-                      src="/img/sample1.png"
+                      src="https://lh3.googleusercontent.com/places/ANXAkqHKFCvNvIjO1lhQ4jS7yc3TSStsq8pAOjoLbGunRxSmTv1jOqJ3eaYRMfUiXft_P6sgC5WzzCNZKVz4V_VtdLPKuiOrPdY0HJo=s4800-w500-h500"
                       alt="Sample 1"
                       className="option-icon"
                     />
@@ -437,7 +431,7 @@ const MyTripPage: React.FC = () => {
                     onClick={() => handleRecommendedTrip.mutate({ itineraryId: 'w7Qd27jeIab5Tn35njTah', userID: auth.user.id })}
                   >
                     <img
-                      src="/img/sample2.png"
+                      src="https://lh3.googleusercontent.com/places/ANXAkqFWDsBsd40JzGAzdcqk8jnaBB-2mrkYI5-mm8ofBIcHPEXVW7CeEWzR3QoBhnzVopGn13brm0AD6FxAze9uwfqjwGaeQMXis4E=s4800-w500-h500"
                       alt="Sample 2"
                       className="option-icon"
                     />
@@ -450,7 +444,7 @@ const MyTripPage: React.FC = () => {
                     onClick={() => handleRecommendedTrip.mutate({ itineraryId: 'zISq8OjOoFtM0wsqjZ4K6', userID: auth.user.id })}
                   >
                     <img
-                      src="/img/sample3.png"
+                      src="https://lh3.googleusercontent.com/places/ANXAkqEFF6Z69pVDkAjVjHM2bazIFbNr8rv9bSdCJXOBWI3yMJ_CLasH1riSoWcuH5VT1F16KxmvNYleWspVCKoe1pDvK0buAZY6Hvo=s4800-w500-h500"
                       alt="Sample 3"
                       className="option-icon"
                     />
@@ -463,7 +457,7 @@ const MyTripPage: React.FC = () => {
                     onClick={() => handleRecommendedTrip.mutate({ itineraryId: 'V6WniSCWin1XxP9D1yXlL', userID: auth.user.id })}
                   >
                     <img
-                      src="/img/sample4.png"
+                      src="https://lh3.googleusercontent.com/places/ANXAkqEC0WirSKQqhsdG2lIK1Xz-fLv6rmgARH0esD328jGr-_4BGLkZmJqQWlQL5YnP8oFCPNK6p39HkOd2SOIJbz3YB_kKH1GTNCM=s4800-w500-h500"
                       alt="Sample 4"
                       className="option-icon"
                     />
@@ -476,7 +470,7 @@ const MyTripPage: React.FC = () => {
                     onClick={() => handleRecommendedTrip.mutate({ itineraryId: 'WnS2QZY4HDfDkLlwj-MFO', userID: auth.user.id })}
                   >
                     <img
-                      src="/img/sample5.png"
+                      src="https://lh3.googleusercontent.com/places/ANXAkqE2UNX_QidW8aQybPWQNFr5EXBjnXZox69D8Lx8NKNyJIRC_Wu23OUFk8ueZYpsxtnaHn9Yi9BG4HqoE56aAb7v3LLSiJzigHE=s4800-w500-h500"
                       alt="Sample 5"
                       className="option-icon"
                     />
