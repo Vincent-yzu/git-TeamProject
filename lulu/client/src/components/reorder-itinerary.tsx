@@ -773,12 +773,12 @@ const ReorderItinerary = () => {
       </div>
 
       {/* 選擇 Day */}
-      <div className="flex space-x-2 mb-2 overflow-x-auto scrollbar-hide whitespace-nowrap bg-gray-100 p-2">
+      <div className="flex space-x-2 mb-2 min-h-[50px] overflow-x-auto scrollbar-hide whitespace-nowrap bg-gray-100 p-2">
         {itinerary.days.map((_, index) => (
           <button
             key={index}
             onClick={() => setSelectedDayIndex(index.toString())}
-            className={`px-3 py-2 pb-3 rounded ${
+            className={`px-3 py-2 pb-2 rounded ${
               selectedDayIndex === index.toString()
                 ? "bg-blue-500 text-white"
                 : "bg-gray-200 text-gray-700 hover:bg-gray-300"
