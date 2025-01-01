@@ -65,26 +65,62 @@ export const DeleteTripModal: FC<DeleteTripModalProps> = ({
         <button
           className="close-button"
           onClick={onClose}
-          style={{ position: "absolute", top: "10px", right: "10px" }}
+          style={{
+            position: "absolute",
+            top: "15px",
+            right: "15px",
+            background: "transparent",
+            border: "none",
+            color: "#333",
+            fontSize: "20px",
+            cursor: "pointer",
+          }}
         >
-          X
+          ×
         </button>
-        <h2>退出確認</h2>
-        <p>是否確定退出此行程？此操作無法復原。</p>
+        <h2 style={{ color: "#333", fontSize: "24px", marginBottom: "20px", fontWeight: "bold" }}>退出確認</h2>
+        <p style={{ color: "#333", fontSize: "18px", marginBottom: "20px" }}>
+          是否確定退出此行程？ 此操作無法復原喔！
+        </p>
         <div
           style={{
             display: "flex",
             justifyContent: "flex-end",
-            gap: "10px",
+            gap: "15px",
           }}
         >
-          <button className="cancel-button" type="button" onClick={onClose}>
+          <button
+            className="cancel-button"
+            type="button"
+            onClick={onClose}
+            style={{
+              padding: "10px 20px",
+              backgroundColor: "#f0f0f0",
+              border: "1px solid #ddd",
+              color: "#333",
+              fontSize: "16px",
+              cursor: "pointer",
+              borderRadius: "5px",
+              transition: "background-color 0.3s ease",
+            }}
+          >
             取消
           </button>
           <button
             className="confirm-delete-button"
             type="button"
             onClick={handleDeleteTrip}
+            style={{
+              marginTop: "16px",
+              padding: "10px 20px",
+              backgroundColor: "#ff4d4f",
+              border: "1px solid #e60000",
+              color: "white",
+              fontSize: "16px",
+              cursor: "pointer",
+              borderRadius: "5px",
+              transition: "background-color 0.3s ease",
+            }}
           >
             確定
           </button>
@@ -92,4 +128,5 @@ export const DeleteTripModal: FC<DeleteTripModalProps> = ({
       </div>
     </div>
   );
+  
 };
