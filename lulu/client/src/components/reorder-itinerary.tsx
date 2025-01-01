@@ -977,7 +977,7 @@ const ReorderItinerary = () => {
                       handleTravelTimeClick(activity.id, activity.commutingTime)
                     }}
                   >
-                    到下一站的車程大約:{" "}
+                    到下個景點的車程大約:{" "}
                     <span className="font-semibold">
                       {formatDuration(activity.commutingTime)}
                     </span>
