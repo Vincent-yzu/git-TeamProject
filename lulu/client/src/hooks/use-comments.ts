@@ -8,7 +8,7 @@ export function useComments(itineraryId: string) {
     queryKey: ["comments", itineraryId],
     queryFn: () => fetchComments(itineraryId),
     refetchOnWindowFocus: false,
-    refetchOnMount: false,
+    refetchOnMount: true,
   })
 }
 
