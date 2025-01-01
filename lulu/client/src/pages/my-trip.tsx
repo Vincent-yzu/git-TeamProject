@@ -441,7 +441,7 @@ const MyTripPage: React.FC = () => {
                 <li>
                   <button 
                     className="option-button"
-                    onClick={() => handleRecommendedTrip.mutate({ itineraryId: 'w7Qd27jeIab5Tn35njTah', userID: auth.user.id })}
+                    onClick={() => handleRecommendedTrip.mutate({ itineraryId: 'jamO_Vv78g7qERuY4dweS', userID: auth.user.id })}
                   >
                     <img
                       src="https://lh3.googleusercontent.com/places/ANXAkqFWDsBsd40JzGAzdcqk8jnaBB-2mrkYI5-mm8ofBIcHPEXVW7CeEWzR3QoBhnzVopGn13brm0AD6FxAze9uwfqjwGaeQMXis4E=s4800-w500-h500"
