@@ -4,10 +4,12 @@ import { useMutation } from "@tanstack/react-query"
 import { format } from "date-fns"
 import { Calendar as CalendarIcon } from "lucide-react"
 import { useForm } from "react-hook-form"
+import { useNavigate } from "react-router-dom"
 import * as z from "zod"
-import { useToast } from "@/hooks/use-toast"
+
 import { fetcher } from "@/lib/fetcher"
 import { cn } from "@/lib/utils"
+import { useToast } from "@/hooks/use-toast"
 import { Button } from "@/components/ui/button"
 import { Calendar } from "@/components/ui/calendar"
 import {
@@ -18,7 +20,6 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog"
-import { useNavigate } from "react-router-dom"
 import {
   Form,
   FormControl,
@@ -69,21 +70,23 @@ const itineraryFrontendSchema = z.object({
         "Adventure & Sports",
         "Family & Group Activities",
       ])
-    ).default([]),
+    )
+    .default([]),
   language: z.enum(["英文", "中文"]),
 })
 
 function formatToUTC(originalDate: Date) {
   // 將日期轉換為 Date 對象
-  const date = new Date(originalDate); // 假設傳入的是 '2024-12-28' 這樣的格式
+  const date = new Date(originalDate) // 假設傳入的是 '2024-12-28' 這樣的格式
 
   // 設置時間為 UTC 的零點
-  const utcDate = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()));
+  const utcDate = new Date(
+    Date.UTC(date.getFullYear(), date.getMonth(), date.getDate())
+  )
 
   // 輸出格式為 ISO 8601
-  return new Date(utcDate.toISOString()); // 格式為 '2024-12-28T00:00:00.000Z'
+  return new Date(utcDate.toISOString()) // 格式為 '2024-12-28T00:00:00.000Z'
 }
-
 
 export default function ItineraryForm() {
   const navigate = useNavigate()
@@ -119,11 +122,13 @@ export default function ItineraryForm() {
       return response.json()
     },
     onSuccess: (data) => {
-      toast({
-        title: "Form Submitted Successfully!",
-        description: "You can now explore the world.",
-      })
-      navigate(`/dashboard/${data.id}`)
+      if (!noRedirect) {
+        toast({
+          title: "Form Submitted Successfully!",
+          description: "You can now explore the world.",
+        })
+        navigate(`/dashboard/${data.id}`)
+      }
     },
     onError: (error) => {
       if (error.message === "Start date cannot be greater than end date") {
@@ -139,7 +144,7 @@ export default function ItineraryForm() {
       }
     },
   })
-
+  const [noRedirect, setNoRedirect] = useState(false)
   function onSubmit(values: z.infer<typeof itineraryFrontendSchema>) {
     console.log(values)
     mutation.mutate(values)
@@ -151,6 +156,7 @@ export default function ItineraryForm() {
       <DialogTrigger asChild>
         <Button
           className="size-[44px] px-24 bg-purple-500 text-white hover:bg-purple-400 disabled:bg-purple-200"
+          onClick={() => setNoRedirect(true)}
           variant="outline"
         >
           讓 AI 安排你的旅程吧！
@@ -264,8 +270,8 @@ export default function ItineraryForm() {
                   )}
                 />
 
-                   {/* Travel Categories */}
-                   <FormField
+                {/* Travel Categories */}
+                <FormField
                   control={form.control}
                   name="travelCategories"
                   render={({ field }) => (
@@ -336,8 +342,6 @@ export default function ItineraryForm() {
                     </FormItem>
                   )}
                 />
-
-             
 
                 {/* Submit Button */}
                 <Button type="submit" disabled={mutation.isPending}>
