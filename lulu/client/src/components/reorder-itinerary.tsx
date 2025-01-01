@@ -778,7 +778,7 @@ const ReorderItinerary = () => {
           <button
             key={index}
             onClick={() => setSelectedDayIndex(index.toString())}
-            className={`px-3 py-1 rounded ${
+            className={`px-3 py-2 pb-3 rounded ${
               selectedDayIndex === index.toString()
                 ? "bg-blue-500 text-white"
                 : "bg-gray-200 text-gray-700 hover:bg-gray-300"

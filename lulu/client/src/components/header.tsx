@@ -22,17 +22,17 @@ const Header: React.FC = () => {
   return (
     <SidebarProvider showNormalHeight={true}>
         <header className="header">
-        {/* Logo 按鈕 */}
-        <button className="logo-button" onClick={handleNavigateToHome}>
-            <img src="/img/logl.png" alt="Logo" className="logo-image" />
-        </button>
+          {/* Logo 按鈕 */}
+          <button className="logo-button" onClick={handleNavigateToHome}>
+              <img src="/img/logl.png" alt="Logo" className="logo-image" />
+          </button>
 
-        <div className="menu">
-            <button className="my-trip-button" onClick={handleNavigateToMyTrip}>
-            我的行程
-            </button>
-            {auth?.user ? <NavUser user={auth.user} /> : <NavGuest />}
-        </div>
+          <div className="menu">
+              <button className="my-trip-button" onClick={handleNavigateToMyTrip}>
+              我的行程
+              </button>
+              {auth?.user ? <NavUser user={auth.user} /> : <NavGuest />}
+          </div>
         </header>
     </SidebarProvider>
   )
