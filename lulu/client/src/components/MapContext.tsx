@@ -94,6 +94,14 @@ interface MapContextType {
   editingUser_recommendDuration: EditUser[] | null;  
   setEditingUser_recommendDuration: React.Dispatch<React.SetStateAction<EditUser[] | null>>;
 
+  // 新增 context_note
+  context_note: string;  
+  setContext_note: React.Dispatch<React.SetStateAction<string>>;
+
+  // 新增 context_recommendDuration
+  context_recommendDuration: number;  
+  setContext_recommendDuration: React.Dispatch<React.SetStateAction<number>>;
+
   current: any;
 }
 
@@ -110,6 +118,8 @@ export const MapProvider = ({ children }: { children: ReactNode }) => {
   const [currentActivities, setCurrentActivities] = useState<activitiesArray[] | null>(null);
   const [editingUser_note, setEditingUser_note] = useState<EditUser[] | null>(null)
   const [editingUser_recommendDuration, setEditingUser_recommendDuration] = useState<EditUser[] | null>(null)
+  const [context_note, setContext_note] = useState<string>();
+  const [context_recommendDuration, setContext_recommendDuration] = useState<number>();
 
   return (
     <MapContext.Provider
@@ -132,6 +142,10 @@ export const MapProvider = ({ children }: { children: ReactNode }) => {
         setEditingUser_note,
         editingUser_recommendDuration, 
         setEditingUser_recommendDuration,
+        context_note, 
+        setContext_note,
+        context_recommendDuration, 
+        setContext_recommendDuration,
         current: null, // Add the current property
       }}
     >

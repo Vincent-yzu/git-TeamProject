@@ -81,6 +81,10 @@ const ReorderItinerary = () => {
     setCurrentActivities,
     editingUser_note,
     setEditingUser_note,
+    context_note, 
+    setContext_note,
+    context_recommendDuration, 
+    setContext_recommendDuration,
   } = useMapContext()
 
   const { id } = useParams()
@@ -283,6 +287,7 @@ const ReorderItinerary = () => {
           const updatedUsers = prev.filter((u) => u.user.id !== data.user.id)
           return updatedUsers
         })
+        setContext_note(data.note)
       }
     )
 
@@ -346,6 +351,7 @@ const ReorderItinerary = () => {
           )
           return newDays
         })
+        setContext_recommendDuration(data.recommendDuration)
       }
     )
 
@@ -905,11 +911,12 @@ const ReorderItinerary = () => {
             >
               <div className="flex flex-row justify-between items-stretch">
                 <div className="flex flex-col flex-1">
-                  <p>景點 {idx + 1}</p>
+                  <p className="font-semibold">景點 {idx + 1}</p>
                   <h3 className="text-lg font-semibold leading-6">{activity.name}</h3>
                   <p className="text-xs text-gray-500">📍 {activity.location}</p>
 
-                  <p className="text-xs text-gray-500">
+                  <p className="text-lg text-gray-500">
+                    🏕️&nbsp;
                     {calculateTimeRange(
                       calculateNextStartTime(
                         localItinerary.days[currentDayIndex].startTime,
@@ -1006,7 +1013,7 @@ const ReorderItinerary = () => {
                           </p>
                         )}
                       {/* 備註 */}
-                      <span className="text-gray-500">💡</span>
+                      <span className="text-gray-500">💡&nbsp;</span>
                       <p
                         className="text-xs text-gray-500 cursor-pointer underline inline"
                         onClick={(e) => {
@@ -1033,7 +1040,7 @@ const ReorderItinerary = () => {
 
                     {/* 停留時間 */}
                     <div className="flex items-center">
-                      <span className="text-gray-500">⏳</span>
+                      <span className="text-gray-500">⏳&nbsp;</span>
                       <p
                         className="text-xs text-gray-500 cursor-pointer underline inline"
                         onClick={(e) => {

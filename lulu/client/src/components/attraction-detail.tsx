@@ -5,7 +5,8 @@ import DurationPopup from "./DurationPopup"; // 引入 DurationPopup
 import NotePopup from "./NotePopup"; // 引入 NotePopup
 // 假設您有一個自訂的 socket context 或在任何地方能取得 socketRef
 import { io, Socket } from "socket.io-client";
-import { useAuth } from "@/hooks/use-auth"
+import { useAuth } from "@/hooks/use-auth";
+import { Itinerary, User } from "@/types/response";
 
 const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
 
@@ -45,6 +46,10 @@ export const AttractionDetail = () => {
     setEditingUser_note,
     editingUser_recommendDuration, 
     setEditingUser_recommendDuration,
+    context_note, 
+    setContext_note,
+    context_recommendDuration, 
+    setContext_recommendDuration,
   } = useMapContext()
 
   const { data: auth } = useAuth()
@@ -61,10 +66,35 @@ export const AttractionDetail = () => {
     handleClose();
   }, [callCloseDetail]);
 
+  // 爛爛的更新寫法 但我想睡覺沒時間了
+  useEffect(() => {
+    if(selectedPlace){
+      const updatedPlace = { ...selectedPlace, note: context_note };
+      setSelectedPlace(updatedPlace);
+    }
+  }, [context_note]);
+  useEffect(() => {
+    if(selectedPlace){
+      const updatedPlace = { ...selectedPlace, recommendDuration: context_recommendDuration };
+      setSelectedPlace(updatedPlace);
+    }
+  }, [context_recommendDuration]);
+
   // socket
   useEffect(() => {
     const socket = io(`${BACKEND_URL}`, { withCredentials: true, path: '/api/socket.io' })
     socketRef.current = socket
+
+    // 監聽: 編輯備註  // 原因不明收不到socket
+    // socket.on(
+    //   "note_edited",
+    //   (data: { dayIndex: number; activityId: string; note: string; user: User;}) => {
+    //     console.log("RRR:", data)
+    //     console.log("data.note:", data.note)
+    //     const updatedPlace = { ...selectedPlace, note: data.note };
+    //     setSelectedPlace(updatedPlace);
+    //   }
+    // )
   }, [id])
 
   // 處理關閉
@@ -213,7 +243,7 @@ export const AttractionDetail = () => {
       }
 
       // Emit socket event
-      socketRef.current?.emit("update_note", {
+      socketRef.current?.emit("edit_note", {
         roomId: id,
         dayIndex: selectedDayIndex,
         activityId: selectedPlace.place_id,

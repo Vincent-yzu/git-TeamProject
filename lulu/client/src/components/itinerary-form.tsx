@@ -133,8 +133,8 @@ export default function ItineraryForm() {
     onError: (error) => {
       if (error.message === "Start date cannot be greater than end date") {
         toast({
-          title: "Start date cannot be greater than end date",
-          description: "Please check your dates and try again.",
+          title: "這裡不提供回到過去的時光旅行服務喔！",
+          description: "回到過去是不可能的! 請遵守時空安全法則!",
         })
       } else {
         toast({
@@ -166,7 +166,8 @@ export default function ItineraryForm() {
         <DialogHeader>
           <DialogTitle>你希望 AI 產生怎麼樣的行程呢？</DialogTitle>
           <DialogDescription>
-            填寫以下表單，為您打造專屬的旅行行程！
+            填寫以下表單，為您打造專屬的旅行行程！<br/>
+            小提醒：每15分鐘只能生成3個行程，讓我們一起避免過度旅行！
           </DialogDescription>
         </DialogHeader>
         <div className="max-h-[85vh] overflow-y-auto">

@@ -335,7 +335,9 @@ const MyTripPage: React.FC = () => {
                 </>
               ) : (
                 <>
-                  <div className="grid grid-cols-3 gap-6">
+                  <div 
+                    className="grid grid-cols-3 gap-6"
+                  >
                     {itineraries.map((itinerary) => {
                       return (
                         <div
@@ -395,7 +397,16 @@ const MyTripPage: React.FC = () => {
         </main>
         {/* 彈出視窗：範本選擇 */}
         {isModalOpen && (
-          <div className="modal-overlay">
+          <div className="modal-overlay"
+               style={{
+                 position: "fixed",
+                 top: 0,
+                 left: 0,
+                 width: "100%",
+                 height: "100%",
+                 zIndex: 6,
+               }}
+          >
             <div className="modal-content">
               <h2>選擇行程範本</h2>
               <ul className="trip-options">

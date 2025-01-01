@@ -2,6 +2,7 @@ import React, { FC } from "react"
 import { useNavigate } from "react-router-dom" // 引入 useNavigate
 import { useAuth } from "@/hooks/use-auth"
 import { fetcher } from "@/lib/fetcher"
+import { useToast } from "@/hooks/use-toast"
 
 interface CreateTripModalProps {
   isOpen: boolean
@@ -30,14 +31,13 @@ export const CreateTripModal: FC<CreateTripModalProps> = ({
 }) => {
   const { data: auth } = useAuth()
   const navigate = useNavigate()
+  const { toast } = useToast()
 
   // check
   if (!isOpen) return null
-  
-  
+
   // create new Trip
   const createTrip = async () => {
-
     // check
     if (!auth?.user) {
       navigate("/sign-in")
@@ -53,11 +53,14 @@ export const CreateTripModal: FC<CreateTripModalProps> = ({
       }
 
       // Check if startDate is before endDate
-      const start = new Date(startDate);
-      const end = new Date(endDate);
-      if (start >= end) {
-        alert('這裡不提供回到過去的時光旅行服務喔！');
-        return;
+      const start = new Date(startDate)
+      const end = new Date(endDate)
+      if (start > end) {
+        toast({
+          title: "這裡不提供回到過去的時光旅行服務喔！",
+          description: "回到過去是不可能的! 請遵守時空安全法則!",
+        })
+        return
       }
 
       const response = await fetcher("/api/addactivity/creatTrip", {
@@ -71,13 +74,16 @@ export const CreateTripModal: FC<CreateTripModalProps> = ({
       if (!response.ok) {
         throw new Error(`Failed to create trip: ${response.statusText}`)
       }
-      
-      const data = await response.json();
-      
 
-      alert("行程建立成功！")
+      const data = await response.json()
+
+      // alert("行程建立成功！")
+      toast({
+        title: "行程建立成功！",
+        description: "趕快開始安排自己的旅行行程吧!",
+      })
       onClose() // 關閉彈窗
-      navigate(`/dashboard/${data.id}?destination=${encodeURIComponent(destination)}`);
+      navigate(`/dashboard/${data.id}?destination=${encodeURIComponent(destination)}`)
     } catch (error) {
       console.error("Error creating trip:", error)
       alert("建立行程時出現問題，請稍後再試！")
@@ -85,8 +91,30 @@ export const CreateTripModal: FC<CreateTripModalProps> = ({
   }
 
   return (
-    <div className="modal-overlay">
-      <div className="modal-content">
+    <div
+      className="modal-overlay"
+      style={{
+        position: "fixed",
+        top: 0,
+        left: 0,
+        width: "100%",
+        height: "100%",
+        backgroundColor: "rgba(0, 0, 0, 0.5)",
+        zIndex: 10,
+      }}
+    >
+      <div
+        className="modal-content"
+        style={{
+          position: "relative",
+          zIndex: 10,
+          background: "#fff",
+          padding: "20px",
+          borderRadius: "8px",
+          maxWidth: "500px",
+          margin: "100px auto",
+        }}
+      >
         <h2>行程設定</h2>
         <form>
           <label>
