@@ -195,6 +195,32 @@ io.on("connection", (socket) => {
   })
 
   // ========= 新增: update_duration (建議停留時間) =========
+  socket.on("start_update_duration", async (data) => {
+    const { roomId, dayIndex, activityId, user } = data
+    console.log(`Update duration in room ${roomId} by ${socket.id}:`, data)
+    try {
+      socket.to(roomId).emit("start_duration_updated", {
+        dayIndex,
+        activityId,
+        user,
+      })
+    } catch (error) {
+      console.error("Error start updating duration:", error)
+    }
+  })
+  socket.on("cancel_update_duration", async (data) => {
+    const { roomId, dayIndex, activityId, user } = data
+    console.log(`Update duration in room ${roomId} by ${socket.id}:`, data)
+    try {
+      socket.to(roomId).emit("cancel_duration_updated", {
+        dayIndex,
+        activityId,
+        user,
+      })
+    } catch (error) {
+      console.error("Error cancel updating duration:", error)
+    }
+  })
   socket.on("update_duration", async (data) => {
     const { roomId, dayIndex, activityId, recommendDuration } = data
     console.log(`Update duration in room ${roomId} by ${socket.id}:`, data)

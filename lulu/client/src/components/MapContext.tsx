@@ -90,6 +90,10 @@ interface MapContextType {
   editingUser_note: EditUser[] | null;  
   setEditingUser_note: React.Dispatch<React.SetStateAction<EditUser[] | null>>;
 
+  // 新增 editingUser_recommendDuration
+  editingUser_recommendDuration: EditUser[] | null;  
+  setEditingUser_recommendDuration: React.Dispatch<React.SetStateAction<EditUser[] | null>>;
+
   current: any;
 }
 
@@ -105,6 +109,7 @@ export const MapProvider = ({ children }: { children: ReactNode }) => {
   const [callCloseDetail, setCallCloseDetail] = useState<(() => void) | null>(null); // 初始為 null
   const [currentActivities, setCurrentActivities] = useState<activitiesArray[] | null>(null);
   const [editingUser_note, setEditingUser_note] = useState<EditUser[] | null>(null)
+  const [editingUser_recommendDuration, setEditingUser_recommendDuration] = useState<EditUser[] | null>(null)
 
   return (
     <MapContext.Provider
@@ -125,6 +130,8 @@ export const MapProvider = ({ children }: { children: ReactNode }) => {
         setCurrentActivities,
         editingUser_note, 
         setEditingUser_note,
+        editingUser_recommendDuration, 
+        setEditingUser_recommendDuration,
         current: null, // Add the current property
       }}
     >

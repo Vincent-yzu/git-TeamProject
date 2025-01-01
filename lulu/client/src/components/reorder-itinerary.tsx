@@ -1005,11 +1005,11 @@ const ReorderItinerary = () => {
                       style={{
                         width: "100%", // 你可以根據需求調整寬度
                         height: "80%", // 你可以根據需求調整高度
-                        border: editingUser_note && editingUser_note.length > 0 && editingUser_note[0].day == currentDayIndex && editingUser_note[0].activityId == activity.id ? "4px solid rgb(75, 202, 118)" : "2px solid transparent", // 條件式邊框
+                        border: editingUser_note && editingUser_note.length > 0 && auth?.user.id != editingUser_note[0].user.id && editingUser_note[0].day == currentDayIndex && editingUser_note[0].activityId == activity.id ? "4px solid rgb(75, 202, 118)" : "2px solid transparent", // 條件式邊框
                         transition: "border 0.3s ease", // 加入過渡效果，使邊框變化更平滑
                       }}
                     >
-                      { editingUser_note && editingUser_note.length > 0 && editingUser_note[0].day == currentDayIndex && editingUser_note[0].activityId == activity.id && (
+                      { editingUser_note && editingUser_note.length > 0 && auth?.user.id != editingUser_note[0].user.id && editingUser_note[0].day == currentDayIndex && editingUser_note[0].activityId == activity.id && (
                         <p
                           style={{
                             backgroundColor: "rgb(188, 238, 188)", // 淡橘色背景
@@ -1033,7 +1033,7 @@ const ReorderItinerary = () => {
                       <p
                         className="text-xs text-gray-500 cursor-pointer underline inline"
                         onClick={(e) => {
-                          if (editingUser_note && editingUser_note.length > 0 && editingUser_note[0].day === currentDayIndex && editingUser_note[0].activityId === activity.id) {
+                          if (editingUser_note && editingUser_note.length > 0 && auth?.user.id != editingUser_note[0].user.id && editingUser_note[0].day === currentDayIndex && editingUser_note[0].activityId === activity.id) {
                             return;
                           } else {
                             e.stopPropagation();

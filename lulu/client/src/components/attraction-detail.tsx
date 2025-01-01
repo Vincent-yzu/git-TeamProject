@@ -5,6 +5,7 @@ import DurationPopup from "./DurationPopup"; // 引入 DurationPopup
 import NotePopup from "./NotePopup"; // 引入 NotePopup
 // 假設您有一個自訂的 socket context 或在任何地方能取得 socketRef
 import { io, Socket } from "socket.io-client";
+import { useAuth } from "@/hooks/use-auth"
 
 const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
 
@@ -42,7 +43,11 @@ export const AttractionDetail = () => {
   const {
     editingUser_note, 
     setEditingUser_note,
+    editingUser_recommendDuration, 
+    setEditingUser_recommendDuration,
   } = useMapContext()
+
+  const { data: auth } = useAuth()
 
   // Update visibility when selectedPlace changes
   useEffect(() => {
@@ -169,6 +174,14 @@ export const AttractionDetail = () => {
   const handleNoteClick = (note: string) => {
     setNoteValue(note);
     setIsNotePopupOpen(true);
+
+    // 通知 socket
+    socketRef.current?.emit("start_edit_note", {
+      roomId: id,
+      dayIndex: selectedDayIndex,
+      activityId: selectedPlace.place_id,
+      user: auth?.user,
+    })
   };
 
   const handleNoteChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
@@ -205,6 +218,7 @@ export const AttractionDetail = () => {
         dayIndex: selectedDayIndex,
         activityId: selectedPlace.place_id,
         note: noteValue,
+        user: auth?.user,
       });
 
       currentActivities?.find((activity) => {
@@ -219,6 +233,14 @@ export const AttractionDetail = () => {
 
   const handleNoteCancel = () => {
     setIsNotePopupOpen(false);
+
+    // 通知 socket
+    socketRef.current?.emit("cancel_edit_note", {
+      roomId: id,
+      dayIndex: selectedDayIndex,
+      activityId: selectedPlace.place_id,
+      user: auth?.user,
+    })
   };
 
   // 如果 selectedPlace 為 null 或 undefined，則返回 null
@@ -290,11 +312,11 @@ export const AttractionDetail = () => {
           style={{
             width: "100%", // 你可以根據需求調整寬度
             height: "80%", // 你可以根據需求調整高度
-            border: editingUser_note && editingUser_note.length > 0 && editingUser_note[0].day == parseInt(selectedDayIndex, 10) && editingUser_note[0].activityId == selectedPlace.place_id ? "4px solid rgb(75, 202, 118)" : "2px solid transparent", // 條件式邊框
+            border: editingUser_note && editingUser_note.length > 0 && auth?.user.id != editingUser_note[0].user.id && editingUser_note[0].day == parseInt(selectedDayIndex, 10) && editingUser_note[0].activityId == selectedPlace.place_id ? "4px solid rgb(75, 202, 118)" : "2px solid transparent", // 條件式邊框
             transition: "border 0.3s ease", // 加入過渡效果，使邊框變化更平滑
           }}
         >
-          { editingUser_note && editingUser_note.length > 0 && editingUser_note[0].day == parseInt(selectedDayIndex, 10) && editingUser_note[0].activityId == selectedPlace.place_id && (
+          { editingUser_note && editingUser_note.length > 0 && auth?.user.id != editingUser_note[0].user.id && editingUser_note[0].day == parseInt(selectedDayIndex, 10) && editingUser_note[0].activityId == selectedPlace.place_id && (
             <p
               style={{
                 backgroundColor: "rgb(188, 238, 188)", // 淡橘色背景
@@ -316,7 +338,14 @@ export const AttractionDetail = () => {
           {selectedPlace.note !== "預設的神奇空值" && (
             <p
               style={styles.address}
-              onClick={() => handleNoteClick(selectedPlace.note)}
+              onClick={(e) => {
+                if (editingUser_note && editingUser_note.length > 0 && auth?.user.id != editingUser_note[0].user.id && editingUser_note[0].day === parseInt(selectedDayIndex, 10) && editingUser_note[0].activityId === selectedPlace.place_id) {
+                  return;
+                } else {
+                  e.stopPropagation();
+                  handleNoteClick(selectedPlace.note);
+                }
+              }}
               className="cursor-pointer underline"
             >
               <strong>💡 個人筆記:</strong>
