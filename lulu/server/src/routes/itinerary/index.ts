@@ -181,10 +181,7 @@ router.get("/", requireAuth, async (req, res) => {
     .select()
     .from(itineraries)
     .where(
-      and(
-        eq(itineraries.userId, userId),
-        sql`EXISTS (SELECT 1 FROM jsonb_array_elements_text(${itineraries.allowedEditors}) AS editor WHERE editor = ${userId})`
-      )
+      sql`EXISTS (SELECT 1 FROM jsonb_array_elements_text(${itineraries.allowedEditors}) AS editor WHERE editor = ${userId})`
     );
 
   const responseData = itinerariesFromDB.map((itinerary) => {
