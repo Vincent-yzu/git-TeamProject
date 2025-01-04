@@ -1,7 +1,7 @@
 import { PlacesClient as Client } from "@googlemaps/places"
 import dotenv from "dotenv"
 import { Router } from "express"
-import { eq, and, or, sql } from "drizzle-orm"
+import { eq, and, or, sql, ne } from "drizzle-orm"
 import { db } from "@/lib/db"
 import { itineraries } from "@/lib/db/schema"
 import { BadRequestError } from "@/lib/error"
@@ -125,14 +125,60 @@ router.post("/recommended/:itineraryID/:userID", requireAuth, async (req, res) =
   }
 });
 
+// router.post("/addMember/:itineraryID/:userID", requireAuth, async (req, res) => {
+//   const { itineraryID, userID } = req.params;
+
+//   if (typeof itineraryID !== "string") {
+//     throw new BadRequestError("Invalid itinerary ID");
+//   }
+//   if (typeof userID !== "string") {
+//     throw new BadRequestError("Invalid user ID");
+//   }
+
+//   // Fetch the itinerary record
+//   const [itinerary] = await db
+//     .select()
+//     .from(itineraries)
+//     .where(eq(itineraries.id, itineraryID));
+
+//   if (!itinerary) {
+//     throw new BadRequestError("Itinerary not found or access denied");
+//   }
+
+//   const allowedEditors = itinerary.allowedEditors;
+
+//   if (!Array.isArray(allowedEditors)) {
+//     throw new BadRequestError("Invalid allowedEditors format");
+//   }
+
+//   if (allowedEditors.includes(userID)) {
+//     throw new BadRequestError("User already in the itinerary");
+//   }
+
+//   // Add userID to the allowedEditors array
+//   const updatedAllowedEditors = [...allowedEditors, userID];
+
+//   // Persist the updated allowedEditors array to the database
+//   await db
+//     .update(itineraries)
+//     .set({ allowedEditors: updatedAllowedEditors })
+//     .where(eq(itineraries.id, itineraryID));
+
+//   // Send a success status without additional content
+//   res.status(204).send(); // 204 No Content
+
+// })
+
 router.post("/addMember/:itineraryID/:userID", requireAuth, async (req, res) => {
   const { itineraryID, userID } = req.params;
 
   if (typeof itineraryID !== "string") {
-    throw new BadRequestError("Invalid itinerary ID");
+    res.status(400).json({ message: "Invalid itinerary ID" });
+    return;
   }
   if (typeof userID !== "string") {
-    throw new BadRequestError("Invalid user ID");
+    res.status(400).json({ message: "Invalid user ID" });
+    return;
   }
 
   // Fetch the itinerary record
@@ -142,17 +188,20 @@ router.post("/addMember/:itineraryID/:userID", requireAuth, async (req, res) => 
     .where(eq(itineraries.id, itineraryID));
 
   if (!itinerary) {
-    throw new BadRequestError("Itinerary not found or access denied");
+    res.status(400).json({ message: "Itinerary not found or access denied" });
+    return;
   }
 
   const allowedEditors = itinerary.allowedEditors;
 
   if (!Array.isArray(allowedEditors)) {
-    throw new BadRequestError("Invalid allowedEditors format");
+    res.status(400).json({ message: "Invalid allowedEditors format" });
+    return;
   }
 
   if (allowedEditors.includes(userID)) {
-    throw new BadRequestError("User already in the itinerary");
+    res.status(400).json({ message: "User already in the itinerary" });
+    return;
   }
 
   // Add userID to the allowedEditors array
@@ -164,10 +213,9 @@ router.post("/addMember/:itineraryID/:userID", requireAuth, async (req, res) => 
     .set({ allowedEditors: updatedAllowedEditors })
     .where(eq(itineraries.id, itineraryID));
 
-  // Send a success status without additional content
-  res.status(204).send(); // 204 No Content
-
-})
+  // Send a success status with a message
+  res.status(200).json({ message: "User added to the itinerary successfully" });
+});
 
 router.get("/", requireAuth, async (req, res) => {
   // const itinerariesFromDB = await db.select().from(itineraries).where(eq(itineraries.userId, req.user!.id))
@@ -181,7 +229,35 @@ router.get("/", requireAuth, async (req, res) => {
     .select()
     .from(itineraries)
     .where(
-      sql`EXISTS (SELECT 1 FROM jsonb_array_elements_text(${itineraries.allowedEditors}) AS editor WHERE editor = ${userId})`
+      eq(itineraries.userId, userId)
+      // sql`EXISTS (SELECT 1 FROM jsonb_array_elements_text(${itineraries.allowedEditors}) AS editor WHERE editor = ${userId})`
+    );
+
+  const responseData = itinerariesFromDB.map((itinerary) => {
+    const { userId, allowedEditors, ...rest } = itinerary;
+    return rest;
+  });
+
+  res.json(responseData);
+})
+
+// TODO: group
+router.get("/group", requireAuth, async (req, res) => {
+  // const itinerariesFromDB = await db.select().from(itineraries).where(eq(itineraries.userId, req.user!.id))
+  // res.json(itinerariesFromDB)
+  if (!req.user) {
+    throw new BadRequestError("User not authenticated");
+  }
+  const userId = req.user.id;
+
+  const itinerariesFromDB = await db
+    .select()
+    .from(itineraries)
+    .where(
+      and(
+        ne(itineraries.userId, userId),
+        sql`EXISTS (SELECT 1 FROM jsonb_array_elements_text(${itineraries.allowedEditors}) AS editor WHERE editor = ${userId})`
+      )
     );
 
   const responseData = itinerariesFromDB.map((itinerary) => {

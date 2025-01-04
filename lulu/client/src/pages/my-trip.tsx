@@ -7,7 +7,8 @@ import { fetcher } from "@/lib/fetcher"
 import "./my-trip.css" // 引入樣式檔案
 
 import { useAuth } from "@/hooks/use-auth"
-import { useItineraries } from "@/hooks/use-itineraries"
+import { useItineraries, useItinerariesGroup } from "@/hooks/use-itineraries"
+// import { useItinerariesGroup } from "@/hooks/use-itineraries"
 import ItineraryForm from "@/components/itinerary-form"
 import { NavUser } from "@/components/nav-user"
 import { CreateTripModal } from "@/components/create-trip-modal"
@@ -28,6 +29,8 @@ const MyTripPage: React.FC = () => {
   }, [auth, navigate]);
 
   const { data: itineraries, isLoading } = useItineraries()
+  const {data: itinerariesGroup, isLoading: isGroupLoading} = useItinerariesGroup()
+
   const [isModalOpen, setModalOpen] = useState(false) // 用於控制彈窗的狀態
   const [isCreateTripModalOpen, setCreateTripModalOpen] = useState(false)
   const [isDeleteOpen, setIsDeleteOpen] = useState(false);
@@ -43,6 +46,7 @@ const MyTripPage: React.FC = () => {
 
   // TODO: 我的行程 / 旅遊群組
   const [activeTab, setActiveTab] = useState("myTrips");
+
 
   const handleNavigateToMyTrip = () => {
     navigate("/my-trip")
@@ -103,6 +107,7 @@ const MyTripPage: React.FC = () => {
       });
 
       const result = await response.json();
+
       if (result.success) {
         userID = result.userID
         console.log('userID:', userID);
@@ -117,40 +122,27 @@ const MyTripPage: React.FC = () => {
 
           if (response.status === 204) {
             console.log('Member added successfully');
+            alert('Member added successfully');
           } else {
             const result = await response.json();
             console.error('Failed to add member:', result.message);
+            alert('Failed to add member: ' + result.message);
           }
         } catch (error) {
           console.error('Error adding member:', error);
+          alert('Error adding member');
         }
 
       } else {
         console.error('Failed to find userID:', result.message);
+        alert('Failed to find userID: ' + result.message);
       }
     } catch (error) {
       console.error('Error finding userID:', error);
+      alert('Error finding userID');
     }
 
-    // try {
-    //   const response = await fetch(`/api/itineraries/${selectedItineraryId}`, {
-    //     method: 'POST',
-    //     headers: { 'Content-Type': 'application/json' },
-    //     body: JSON.stringify({ email }),
-    //   });
-
-    //   const result = await response.json();
-    //   if (result.success) {
-    //     console.log('Member added successfully');
-    //   } else {
-    //     console.error('Failed to add member:', result.message);
-    //   }
-    // } catch (error) {
-    //   console.error('Error adding member:', error);
-    // }
-
     setAddMemberModalOpen(false)
-
   }
 
   const { toast } = useToast();
@@ -312,7 +304,7 @@ const MyTripPage: React.FC = () => {
           
           {/* 第一行標題 */}
           <div className="container mx-auto px-4 flex justify-between items-center mb-4">
-            <h1 className="text-2xl font-bold">行程</h1>
+            <h1 className="text-2xl font-bold">我的行程</h1>
           </div>
           
           {/* 第二行按鈕組 */}
@@ -328,7 +320,7 @@ const MyTripPage: React.FC = () => {
                 console.log('我的行程 button clicked ' + activeTab);
               }}
             >
-              我的行程
+              自建行程
             </button>
             <button
               className={`${
@@ -340,7 +332,7 @@ const MyTripPage: React.FC = () => {
               }}
               // className="text-gray-500"
             >
-              旅遊群組
+              受邀群組
             </button>
           </div>
 
@@ -387,6 +379,7 @@ const MyTripPage: React.FC = () => {
                             onClick={() => navigate(`/dashboard/${itinerary.id}`)}
                           >
                             <div className="relative w-full">
+
                               <img
                                 src={
                                   itinerary.days?.[0]?.activities?.[0]
@@ -397,6 +390,7 @@ const MyTripPage: React.FC = () => {
                                 }
                                 className="w-full h-full aspect-video object-cover rounded-md"
                               />
+
                               <button
                                 className="absolute top-0 right-0 m-2 bg-red-500 text-white p-1.5 rounded-full shadow-lg hover:bg-red-600 transition-all duration-300"
                                 onClick={(e) => {
@@ -406,6 +400,7 @@ const MyTripPage: React.FC = () => {
                               >
                                 <span className="text-xl font-semibold">X</span>
                               </button>
+
                               <button
                                 className="absolute top-0 right-8 m-2 bg-blue-500 text-white p-2 rounded-full shadow-lg hover:bg-blue-600 transition-all duration-300"
                                 onClick={(e) => {
@@ -416,6 +411,7 @@ const MyTripPage: React.FC = () => {
                               >
                                 <span className="text-sm font-medium">添加成員</span>
                               </button>
+
                             </div>
 
                             <h3 className="text-lg font-semibold">
@@ -427,6 +423,7 @@ const MyTripPage: React.FC = () => {
                                   1) +
                                 "日遊") : itinerary.description}
                             </h3>
+
                           </div>
                         )
                       })}
@@ -440,7 +437,7 @@ const MyTripPage: React.FC = () => {
           {activeTab === "travelGroups" && (
               <div className="container mx-auto px-4">
               <div className="trip-placeholder">
-                {!Array.isArray(itineraries) || itineraries.length < 10 ? (
+                {!Array.isArray(itinerariesGroup) || itinerariesGroup.length === 0 ? (
                   <>
                     <div className="placeholder-image">
                       <img
@@ -458,7 +455,7 @@ const MyTripPage: React.FC = () => {
                     <div
                       className="grid grid-cols-3 gap-6"
                     >
-                      {itineraries.map((itinerary) => {
+                      {itinerariesGroup.map((itinerary) => {
                         return (
                           <div
                             key={itinerary.id}  // Add the `key` prop here
@@ -485,7 +482,7 @@ const MyTripPage: React.FC = () => {
                               >
                                 <span className="text-xl font-semibold">X</span>
                               </button>
-                              <button
+                              {/* <button
                                 className="absolute top-0 right-8 m-2 bg-blue-500 text-white p-2 rounded-full shadow-lg hover:bg-blue-600 transition-all duration-300"
                                 onClick={(e) => {
                                   console.log("itinerary id is :", itinerary.id)
@@ -494,7 +491,7 @@ const MyTripPage: React.FC = () => {
                                 }}
                               >
                                 <span className="text-sm font-medium">添加成員</span>
-                              </button>
+                              </button> */}
                             </div>
 
                             <h3 className="text-lg font-semibold">

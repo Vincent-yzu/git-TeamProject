@@ -22,4 +22,14 @@ const useItineraries = () => {
   })
 }
 
-export { useItinerariesRecommended, useItineraries }
+const useItinerariesGroup = () => {
+  return useQuery<Itinerary[]>({
+    queryKey: ["itineraries-group"],
+    queryFn: async () => {
+      const response = await fetcher(`/api/itinerary/group`)
+      return response.json()
+    },
+  })
+}
+
+export { useItinerariesRecommended, useItineraries, useItinerariesGroup }

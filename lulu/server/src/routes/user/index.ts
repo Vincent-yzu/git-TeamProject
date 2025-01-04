@@ -48,7 +48,7 @@ router.get("/findUserID", async (req, res) => {
   const email = req.query.email as string;
 
   try {
-    // 查询用户
+    // search user
     const userID = await db.select().from(users).where(eq(users.email, email));
 
     if (userID.length === 0) {
@@ -60,12 +60,12 @@ router.get("/findUserID", async (req, res) => {
       return;
     }
 
-    const user = userID[0]; // 获取第一个用户记录
+    const user = userID[0];
     if (user) {
       console.log("User found:", user.id);
       res.status(200).json({
         success: true,
-        userID: user.id, // 返回用户 ID
+        userID: user.id, //return ID
       });
     } else {
       console.log("User not found");
