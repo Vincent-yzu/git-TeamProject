@@ -41,6 +41,9 @@ const MyTripPage: React.FC = () => {
   const [end_date, setEndDate] = useState("") // 結束日期
   const [destination, setDestination] = useState("") // 目的地
 
+  // TODO: 我的行程 / 旅遊群組
+  const [activeTab, setActiveTab] = useState("myTrips");
+
   const handleNavigateToMyTrip = () => {
     navigate("/my-trip")
   }
@@ -87,7 +90,7 @@ const MyTripPage: React.FC = () => {
 
   const handleAddMember = async () => {
     // find userID by email
-    
+
     let userID = ""
 
     try {
@@ -98,7 +101,7 @@ const MyTripPage: React.FC = () => {
           headers: { 'Content-Type': 'application/json' },
         }
       });
-  
+
       const result = await response.json();
       if (result.success) {
         userID = result.userID
@@ -111,7 +114,7 @@ const MyTripPage: React.FC = () => {
               headers: { 'Content-Type': 'application/json' }, // Optional if no body is sent
             }
           });
-        
+
           if (response.status === 204) {
             console.log('Member added successfully');
           } else {
@@ -127,7 +130,7 @@ const MyTripPage: React.FC = () => {
       }
     } catch (error) {
       console.error('Error finding userID:', error);
-    }  
+    }
 
     // try {
     //   const response = await fetch(`/api/itineraries/${selectedItineraryId}`, {
@@ -135,7 +138,7 @@ const MyTripPage: React.FC = () => {
     //     headers: { 'Content-Type': 'application/json' },
     //     body: JSON.stringify({ email }),
     //   });
-  
+
     //   const result = await response.json();
     //   if (result.success) {
     //     console.log('Member added successfully');
@@ -147,14 +150,13 @@ const MyTripPage: React.FC = () => {
     // }
 
     setAddMemberModalOpen(false)
-    
+
   }
 
-  // TODO:
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const handleRecommendedTrip = useMutation({
-    
+
     mutationFn: async (variables: { itineraryId: string, userID: string }) => {
       try {
         const response = await fetcher(`/api/itinerary/recommended/${variables.itineraryId}/${variables.userID}`, {
@@ -181,14 +183,14 @@ const MyTripPage: React.FC = () => {
           title: "Recommended Trip Added Successfully!",
           description: "You can now access the recommended itinerary.",
         });
-        
+
         if (data.itineraryId) {
           // Wait for queries to invalidate
           await Promise.all([
             queryClient.invalidateQueries({ queryKey: ['itinerary', data.itineraryId] }),
             queryClient.invalidateQueries({ queryKey: ['user', data.userID] })
           ]);
-          
+
           // Small delay to ensure everything is updated
           setTimeout(() => {
             navigate(`/dashboard/${data.itineraryId}`);
@@ -307,6 +309,41 @@ const MyTripPage: React.FC = () => {
         </header>
         <main className="main-content flex flex-col h-full" style={{ backgroundColor: "#f5f5f5" }}>
           {/* <h1 className="page-title">我的行程</h1> */}
+          
+          {/* 第一行標題 */}
+          <div className="container mx-auto px-4 flex justify-between items-center mb-4">
+            <h1 className="text-2xl font-bold">行程</h1>
+          </div>
+          
+          {/* 第二行按鈕組 */}
+          <div className="container mx-auto px-4 flex items-center gap-8 mb-4 border-b-2 border-gray-300 pb-2">
+            {/* 模擬多出來的兩個按鈕 */}
+            <button
+              // className="text-pink-500 font-bold border-b-2 border-pink-500 pb-1"
+              className={`${
+                activeTab === "myTrips" ? "text-pink-500 font-bold border-b-2 border-pink-500 pb-1" : "text-gray-500"
+              }`}
+              onClick={() => {
+                setActiveTab("myTrips");
+                console.log('我的行程 button clicked ' + activeTab);
+              }}
+            >
+              我的行程
+            </button>
+            <button
+              className={`${
+                activeTab === "travelGroups" ? "text-pink-500 font-bold border-b-2 border-pink-500 pb-1" : "text-gray-500"
+              }`}
+              onClick={() => {
+                setActiveTab("travelGroups");
+                console.log('旅遊群組 button clicked ' + activeTab);
+              }}
+              // className="text-gray-500"
+            >
+              旅遊群組
+            </button>
+          </div>
+
           <div className="container mx-auto px-4 flex justify-between">
             <div>
               <div className="flex items-center gap-4 justify-center">
@@ -318,96 +355,180 @@ const MyTripPage: React.FC = () => {
                 </button>
                 <ItineraryForm />
               </div>
-              </div>
-          </div>
-          <div className="container mx-auto px-4">
-            <div className="trip-placeholder">
-              {!Array.isArray(itineraries) || itineraries.length === 0 ? (
-                <>
-                  <div className="placeholder-image">
-                    <img
-                      src="/img/null.png"
-                      alt="null"
-                      className="null-image"
-                    />
-                  </div>
-                  <p className="placeholder-text">
-                    還沒有行程，現在就開始安排！
-                  </p>
-                </>
-              ) : (
-                <>
-                  <div 
-                    className="grid grid-cols-3 gap-6"
-                  >
-                    {itineraries.map((itinerary) => {
-                      return (
-                        <div
-                          key={itinerary.id}  // Add the `key` prop here
-                          className="flex flex-col gap-2 items-center cursor-pointer"
-                          onClick={() => navigate(`/dashboard/${itinerary.id}`)}
-                        >
-                          <div className="relative w-full">
-                            <img
-                              src={
-                                itinerary.days?.[0]?.activities?.[0]
-                                  ?.photoUrls?.[0]
-                              }
-                              alt={
-                                itinerary.days?.[0]?.activities?.[0]?.description
-                              }
-                              className="w-full h-full aspect-video object-cover rounded-md"
-                            />
-                            <button
-                              className="absolute top-0 right-0 m-2 bg-red-500 text-white p-1.5 rounded-full shadow-lg hover:bg-red-600 transition-all duration-300"
-                              onClick={(e) => {
-                                e.stopPropagation()
-                                handleDeleteOpenModal(itinerary.id)
-                              }}
-                            >
-                              <span className="text-xl font-semibold">X</span>
-                            </button>
-                            <button
-                              className="absolute top-0 right-8 m-2 bg-blue-500 text-white p-2 rounded-full shadow-lg hover:bg-blue-600 transition-all duration-300"
-                              onClick={(e) => {
-                                console.log("itinerary id is :", itinerary.id)
-                                e.stopPropagation()
-                                handleOpenAddMemberModal(itinerary.id)
-                              }}
-                            >
-                              <span className="text-sm font-medium">添加成員</span>
-                            </button>
-                          </div>
-    
-                          <h3 className="text-lg font-semibold">
-                            {itinerary.description.length > 15 ? (itinerary.location +
-                              " " +
-                              ((new Date(itinerary.endDate).getTime() -
-                                new Date(itinerary.startDate).getTime()) /
-                                (1000 * 60 * 60 * 24) +
-                                1) +
-                              "日遊"): itinerary.description}
-                          </h3>
-                        </div>
-                      )
-                    })}
-                  </div>
-                </>
-              )}
             </div>
           </div>
+
+          {activeTab === "myTrips" && (
+            <div className="container mx-auto px-4">
+              <div className="trip-placeholder">
+                {!Array.isArray(itineraries) || itineraries.length === 0 ? (
+                  <>
+                    <div className="placeholder-image">
+                      <img
+                        src="/img/null.png"
+                        alt="null"
+                        className="null-image"
+                      />
+                    </div>
+                    <p className="placeholder-text">
+                      還沒有行程，現在就開始安排！
+                    </p>
+                  </>
+                ) : (
+                  <>
+                    <div
+                      className="grid grid-cols-3 gap-6"
+                    >
+                      {itineraries.map((itinerary) => {
+                        return (
+                          <div
+                            key={itinerary.id}  // Add the `key` prop here
+                            className="flex flex-col gap-2 items-center cursor-pointer"
+                            onClick={() => navigate(`/dashboard/${itinerary.id}`)}
+                          >
+                            <div className="relative w-full">
+                              <img
+                                src={
+                                  itinerary.days?.[0]?.activities?.[0]
+                                    ?.photoUrls?.[0]
+                                }
+                                alt={
+                                  itinerary.days?.[0]?.activities?.[0]?.description
+                                }
+                                className="w-full h-full aspect-video object-cover rounded-md"
+                              />
+                              <button
+                                className="absolute top-0 right-0 m-2 bg-red-500 text-white p-1.5 rounded-full shadow-lg hover:bg-red-600 transition-all duration-300"
+                                onClick={(e) => {
+                                  e.stopPropagation()
+                                  handleDeleteOpenModal(itinerary.id)
+                                }}
+                              >
+                                <span className="text-xl font-semibold">X</span>
+                              </button>
+                              <button
+                                className="absolute top-0 right-8 m-2 bg-blue-500 text-white p-2 rounded-full shadow-lg hover:bg-blue-600 transition-all duration-300"
+                                onClick={(e) => {
+                                  console.log("itinerary id is :", itinerary.id)
+                                  e.stopPropagation()
+                                  handleOpenAddMemberModal(itinerary.id)
+                                }}
+                              >
+                                <span className="text-sm font-medium">添加成員</span>
+                              </button>
+                            </div>
+
+                            <h3 className="text-lg font-semibold">
+                              {itinerary.description.length > 15 ? (itinerary.location +
+                                " " +
+                                ((new Date(itinerary.endDate).getTime() -
+                                  new Date(itinerary.startDate).getTime()) /
+                                  (1000 * 60 * 60 * 24) +
+                                  1) +
+                                "日遊") : itinerary.description}
+                            </h3>
+                          </div>
+                        )
+                      })}
+                    </div>
+                  </>
+                )}
+              </div>
+            </div>
+          )}
+
+          {activeTab === "travelGroups" && (
+              <div className="container mx-auto px-4">
+              <div className="trip-placeholder">
+                {!Array.isArray(itineraries) || itineraries.length < 10 ? (
+                  <>
+                    <div className="placeholder-image">
+                      <img
+                        src="/img/null.png"
+                        alt="null"
+                        className="null-image"
+                      />
+                    </div>
+                    <p className="placeholder-text">
+                      還沒有被任何人邀請！
+                    </p>
+                  </>
+                ) : (
+                  <>
+                    <div
+                      className="grid grid-cols-3 gap-6"
+                    >
+                      {itineraries.map((itinerary) => {
+                        return (
+                          <div
+                            key={itinerary.id}  // Add the `key` prop here
+                            className="flex flex-col gap-2 items-center cursor-pointer"
+                            onClick={() => navigate(`/dashboard/${itinerary.id}`)}
+                          >
+                            <div className="relative w-full">
+                              <img
+                                src={
+                                  itinerary.days?.[0]?.activities?.[0]
+                                    ?.photoUrls?.[0]
+                                }
+                                alt={
+                                  itinerary.days?.[0]?.activities?.[0]?.description
+                                }
+                                className="w-full h-full aspect-video object-cover rounded-md"
+                              />
+                              <button
+                                className="absolute top-0 right-0 m-2 bg-red-500 text-white p-1.5 rounded-full shadow-lg hover:bg-red-600 transition-all duration-300"
+                                onClick={(e) => {
+                                  e.stopPropagation()
+                                  handleDeleteOpenModal(itinerary.id)
+                                }}
+                              >
+                                <span className="text-xl font-semibold">X</span>
+                              </button>
+                              <button
+                                className="absolute top-0 right-8 m-2 bg-blue-500 text-white p-2 rounded-full shadow-lg hover:bg-blue-600 transition-all duration-300"
+                                onClick={(e) => {
+                                  console.log("itinerary id is :", itinerary.id)
+                                  e.stopPropagation()
+                                  handleOpenAddMemberModal(itinerary.id)
+                                }}
+                              >
+                                <span className="text-sm font-medium">添加成員</span>
+                              </button>
+                            </div>
+
+                            <h3 className="text-lg font-semibold">
+                              {itinerary.description.length > 15 ? (itinerary.location +
+                                " " +
+                                ((new Date(itinerary.endDate).getTime() -
+                                  new Date(itinerary.startDate).getTime()) /
+                                  (1000 * 60 * 60 * 24) +
+                                  1) +
+                                "日遊") : itinerary.description}
+                            </h3>
+                          </div>
+                        )
+                      })}
+                    </div>
+                  </>
+                )}
+              </div>
+            </div>
+          )}
+
         </main>
+
         {/* 彈出視窗：範本選擇 */}
         {isModalOpen && (
           <div className="modal-overlay"
-               style={{
-                 position: "fixed",
-                 top: 0,
-                 left: 0,
-                 width: "100%",
-                 height: "100%",
-                 zIndex: 6,
-               }}
+            style={{
+              position: "fixed",
+              top: 0,
+              left: 0,
+              width: "100%",
+              height: "100%",
+              zIndex: 6,
+            }}
           >
             <div className="modal-content">
               <h2>選擇行程範本</h2>
@@ -426,7 +547,7 @@ const MyTripPage: React.FC = () => {
                   </button>
                 </li>
                 <li>
-                  <button 
+                  <button
                     className="option-button"
                     onClick={() => handleRecommendedTrip.mutate({ itineraryId: 'ZnHMQLXdjNGLg3Wdxk46T', userID: auth.user.id })}
                   >
@@ -439,7 +560,7 @@ const MyTripPage: React.FC = () => {
                   </button>
                 </li>
                 <li>
-                  <button 
+                  <button
                     className="option-button"
                     onClick={() => handleRecommendedTrip.mutate({ itineraryId: 'jamO_Vv78g7qERuY4dweS', userID: auth.user.id })}
                   >
@@ -452,7 +573,7 @@ const MyTripPage: React.FC = () => {
                   </button>
                 </li>
                 <li>
-                  <button 
+                  <button
                     className="option-button"
                     onClick={() => handleRecommendedTrip.mutate({ itineraryId: 'zISq8OjOoFtM0wsqjZ4K6', userID: auth.user.id })}
                   >
@@ -465,7 +586,7 @@ const MyTripPage: React.FC = () => {
                   </button>
                 </li>
                 <li>
-                  <button 
+                  <button
                     className="option-button"
                     onClick={() => handleRecommendedTrip.mutate({ itineraryId: 'qm8vqoFeROd2pX_NbXpZ4', userID: auth.user.id })}
                   >
@@ -478,7 +599,7 @@ const MyTripPage: React.FC = () => {
                   </button>
                 </li>
                 <li>
-                  <button 
+                  <button
                     className="option-button"
                     onClick={() => handleRecommendedTrip.mutate({ itineraryId: 'WnS2QZY4HDfDkLlwj-MFO', userID: auth.user.id })}
                   >
@@ -501,8 +622,8 @@ const MyTripPage: React.FC = () => {
         {/* 彈出視窗：刪除行程 */}
         {isDeleteOpen && (
           <DeleteTripModal
-            isOpen = {isDeleteOpen}
-            itineraryId = {selectedItineraryId!}
+            isOpen={isDeleteOpen}
+            itineraryId={selectedItineraryId!}
             onClose={handleDeleteCloseModal}
           />
         )}
